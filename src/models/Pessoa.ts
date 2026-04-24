@@ -1,5 +1,5 @@
 import { validarNome } from "../utils/validators";
-
+//TODO: Implementar as subclasses de Pessoa
 export class Pessoa {
     private _nome: string;
     private _cpf: string;

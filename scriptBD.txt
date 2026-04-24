@@ -1,0 +1,95 @@
+CREATE DATABASE IF NOT EXISTS sistema_agricola;
+USE sistema_agricola;
+
+-- 1. Tabela Tamanho (Utilizada em Propriedade e Talhão)
+CREATE TABLE IF NOT EXISTS tamanhos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    area DECIMAL(10, 2) NOT NULL,
+    unidade_medida ENUM('m²', 'ha') NOT NULL
+);
+
+-- 2. Tabela Endereco
+CREATE TABLE IF NOT EXISTS enderecos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cep CHAR(8) NOT NULL,
+    pais VARCHAR(100) NOT NULL,
+    uf CHAR(2) NOT NULL,
+    cidade VARCHAR(100) NOT NULL,
+    bairro VARCHAR(100) NOT NULL,
+    logradouro VARCHAR(255) NOT NULL
+);
+
+-- 3. Tabela Pessoa (Base para Herança)
+CREATE TABLE IF NOT EXISTS pessoas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    cpf CHAR(11) UNIQUE,
+    cnpj CHAR(14) UNIQUE
+);
+
+-- 4. Tabela Proprietario (Herda de Pessoa)
+CREATE TABLE IF NOT EXISTS proprietarios (
+    pessoa_id INT PRIMARY KEY,
+    FOREIGN KEY (pessoa_id) REFERENCES pessoas(id) ON DELETE CASCADE
+);
+
+-- 5. Tabela Propriedade
+CREATE TABLE IF NOT EXISTS propriedades (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    proprietario_id INT NOT NULL,
+    endereco_id INT NOT NULL,
+    tamanho_id INT NOT NULL,
+    FOREIGN KEY (proprietario_id) REFERENCES proprietarios(pessoa_id),
+    FOREIGN KEY (endereco_id) REFERENCES enderecos(id),
+    FOREIGN KEY (tamanho_id) REFERENCES tamanhos(id)
+);
+
+-- 6. Tabela Talhao
+CREATE TABLE IF NOT EXISTS talhoes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    propriedade_id INT NOT NULL,
+    tamanho_id INT NOT NULL,
+    qtd_pes_cafe INT NOT NULL,
+    tipo_cafe ENUM('Arábica', 'Conilon') NOT NULL,
+    data_inicio_talhao DATE NOT NULL,
+    data_fim_talhao DATE,
+    FOREIGN KEY (propriedade_id) REFERENCES propriedades(id),
+    FOREIGN KEY (tamanho_id) REFERENCES tamanhos(id)
+);
+
+-- 7. Tabela Variedades do Café (Para lidar com o array string[] em Talhao)
+CREATE TABLE IF NOT EXISTS talhao_variedades (
+    talhao_id INT NOT NULL,
+    variedade VARCHAR(100) NOT NULL,
+    PRIMARY KEY (talhao_id, variedade),
+    FOREIGN KEY (talhao_id) REFERENCES talhoes(id) ON DELETE CASCADE
+);
+
+-- 8. Tabela Evento (Base para Herança)
+CREATE TABLE IF NOT EXISTS eventos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    descricao VARCHAR(255) NOT NULL,
+    data_inicio DATETIME NOT NULL,
+    data_fim DATETIME,
+    propriedade_id INT NOT NULL,
+    FOREIGN KEY (propriedade_id) REFERENCES propriedades(id)
+);
+
+-- 9. Tabela Colheita (Herda de Evento)
+CREATE TABLE IF NOT EXISTS colheitas (
+    evento_id INT PRIMARY KEY,
+    quantidade_sacos_colhidos INT NOT NULL,
+    FOREIGN KEY (evento_id) REFERENCES eventos(id) ON DELETE CASCADE
+);
+
+-- 10. Tabela de Ligação Evento_Responsaveis (Muitos-para-Muitos)
+-- Representa o array _responsaveis: Pessoa[] na classe Evento
+CREATE TABLE IF NOT EXISTS evento_responsaveis (
+    evento_id INT NOT NULL,
+    pessoa_id INT NOT NULL,
+    PRIMARY KEY (evento_id, pessoa_id),
+    FOREIGN KEY (evento_id) REFERENCES eventos(id) ON DELETE CASCADE,
+    FOREIGN KEY (pessoa_id) REFERENCES pessoas(id) ON DELETE CASCADE
+);
