@@ -1,3 +1,5 @@
+A leitura automática travou. Esqueça o comando ReadFile. Vou colar o script do banco abaixo. Use ele como base para criar os CRUDs (Repository, Service, Controller, etc) seguindo as regras que discutimos antes:"
+
 CREATE DATABASE IF NOT EXISTS sistema_agricola;
 USE sistema_agricola;
 
@@ -45,7 +47,13 @@ CREATE TABLE IF NOT EXISTS propriedades (
     FOREIGN KEY (tamanho_id) REFERENCES tamanhos(id)
 );
 
--- 6. Tabela Talhao
+-- 1. Criamos a tabela de lookup (Catálogo de Variedades)
+CREATE TABLE IF NOT EXISTS variedades (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL UNIQUE -- UNIQUE garante que não haja duplicatas como 'Arara' e 'Arara'
+);
+
+-- 2. Tabela Talhões (Mantida, mas agora sem depender de strings diretas para variedade)
 CREATE TABLE IF NOT EXISTS talhoes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
@@ -59,12 +67,14 @@ CREATE TABLE IF NOT EXISTS talhoes (
     FOREIGN KEY (tamanho_id) REFERENCES tamanhos(id)
 );
 
--- 7. Tabela Variedades do Café (Para lidar com o array string[] em Talhao)
+-- 3. Classe Associativa (Tabela Intermediária)
+-- Agora ela liga o ID do Talhão ao ID da Variedade
 CREATE TABLE IF NOT EXISTS talhao_variedades (
     talhao_id INT NOT NULL,
-    variedade VARCHAR(100) NOT NULL,
-    PRIMARY KEY (talhao_id, variedade),
-    FOREIGN KEY (talhao_id) REFERENCES talhoes(id) ON DELETE CASCADE
+    variedade_id INT NOT NULL,
+    PRIMARY KEY (talhao_id, variedade_id),
+    FOREIGN KEY (talhao_id) REFERENCES talhoes(id) ON DELETE CASCADE,
+    FOREIGN KEY (variedade_id) REFERENCES variedades(id) ON DELETE CASCADE
 );
 
 -- 8. Tabela Evento (Base para Herança)

@@ -19,7 +19,7 @@ export class Talhao {
         this._id = id;
         this._nome = validarNome(nome);
         this._propriedade = propriedade;
-        if(tamanho.converterHaEmM2 > propriedade.areaTotal.converterHaEmM2){
+        if(tamanho.converterHaEmM2 > propriedade.tamanho.converterHaEmM2){
             throw new Error("O talhão não pode ter área maior que a propriedade.");
         }else if(tamanho.area <= 0){
             throw new Error("A área do talhão deve ser maior que zero.");
@@ -78,5 +78,23 @@ export class Talhao {
 
     finalizarTalhao(): void {
         this._dataFimTalhao = new Date();
+    }
+
+    toString(): string {
+        return `[Talhão ID: ${this._id || "Novo"}] Nome: ${this._nome}, Tipo: ${this._tipoCafe}, Propriedade: ${this._propriedade.id}`;
+    }
+
+    toJSON(): object {
+        return {
+            id: this.id,
+            nome: this.nome,
+            tamanho: this.tamanho.toJSON(),
+            propriedade: this.propriedade.toJSON(),
+            qtdPesDeCafe: this.qtdPesDeCafe,
+            tipoCafe: this.tipoCafe,
+            variedadesCafe: this.variedadesCafe,
+            dataInicioTalhao: this.dataInicioTalhao,
+            dataFimTalhao: this.dataFimTalhao
+        };
     }
 }

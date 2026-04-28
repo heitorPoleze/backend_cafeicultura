@@ -1,7 +1,10 @@
 import { Router } from "express";
-//fazer import das rotas 
+import routeProprietario from "./proprietario"; 
+import routePropriedade from "./propriedade";
 
 const router = Router();
 
-//router.use("/prefixo da rota", qual é a rota)
+router.use("/proprietario", routeProprietario);
+router.use("/propriedade", routePropriedade);
+
 export default router;

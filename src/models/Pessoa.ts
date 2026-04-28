@@ -3,13 +3,11 @@ import { validarNome } from "../utils/validators";
 export class Pessoa {
     private _nome: string;
     private _cpf: string;
-    private _cnpj: string;
     private _id: number | undefined;
-    constructor(nome: string, cpf: string, cnpj: string, id?: number){
+    constructor(nome: string, cpf: string, id?: number){
         this._id = id;
         this._nome = validarNome(nome);
-        this._cpf = this.validarCPF(cpf);
-        this._cnpj = this.validarCNPJ(cnpj);
+        this._cpf = this.validarCPF(cpf);     
     }
 
     get id(): number | undefined{
@@ -24,11 +22,6 @@ export class Pessoa {
         return this._cpf;
     }
 
-    get cnpj(): string {
-        return this._cnpj;
-    
-    }
-
     set nome(nome: string) {
         this._nome = validarNome(nome);
     }
@@ -37,17 +30,21 @@ export class Pessoa {
         this._cpf = this.validarCPF(cpf);
     }
 
-    set cnpj(cnpj: string) {
-        this._cnpj = this.validarCNPJ(cnpj);
-    }
 
     toString(): string {
         return `
         \nID: ${this._id}       
         \nNome: ${this._nome}
-        \nCPF: ${this._cpf}
-        \nCNPJ: ${this._cnpj}`;
+        \nCPF: ${this._cpf}`;
     
+    }
+
+    toJSON(): object {
+        return {
+            id: this.id,
+            nome: this.nome,
+            cpf: this.cpf
+        }
     }
 
 

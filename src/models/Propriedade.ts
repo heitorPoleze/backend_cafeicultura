@@ -8,14 +8,14 @@ export class Propriedade {
     private _nome: string;
     private _proprietario: Proprietario;
     private _endereco: Endereco;
-    private _areaTotal: Tamanho;
+    private _tamanho: Tamanho;
 
-    constructor(nome: string, proprietario: Proprietario, endereco: Endereco, areaTotal: Tamanho, id?: number){
+    constructor(nome: string, proprietario: Proprietario, endereco: Endereco, tamanho: Tamanho, id?: number){
         this._id = id;
         this._nome = validarNome(nome);
         this._proprietario = proprietario;
         this._endereco = endereco;
-        this._areaTotal = areaTotal;
+        this._tamanho = tamanho;
     }
 
     get id(): number | undefined{
@@ -34,8 +34,8 @@ export class Propriedade {
         return this._endereco;
     }
 
-    get areaTotal(): Tamanho {
-        return this._areaTotal;
+    get tamanho(): Tamanho {
+        return this._tamanho;
     }
 
     set nome(nome: string) {
@@ -50,8 +50,8 @@ export class Propriedade {
         this._endereco = endereco;
     }
 
-    set areaTotal(areaTotal: Tamanho) {
-        this._areaTotal = areaTotal;
+    set tamanho(tamanho: Tamanho) {
+        this._tamanho = tamanho;
     }
 
     toString(): string {
@@ -60,6 +60,16 @@ export class Propriedade {
         \nNome: ${this._nome}
         \nProprietário: ${this._proprietario.toString()}
         \nEndereço: ${this._endereco.toString()}
-        \nÁrea Total: ${this._areaTotal.toString()}`;
+        \nÁrea Total: ${this._tamanho.toString()}`;
+    }
+
+    toJSON(): object {
+        return {
+            id: this.id,
+            nome: this.nome,
+            proprietario: this.proprietario,
+            endereco: this.endereco,
+            tamanho: this.tamanho
+        }
     }
 }

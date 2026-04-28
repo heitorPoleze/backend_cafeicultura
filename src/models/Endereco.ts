@@ -91,4 +91,16 @@ export class Endereco {
         \nBairro: ${this._bairro}
         \nLogradouro: ${this._logradouro}`;
     }
+
+    toJSON(): object {
+        return {
+            id: this.id,
+            CEP: this.CEP,
+            pais: this.pais,
+            UF: this.UF,
+            cidade: this.cidade,
+            bairro: this.bairro,
+            logradouro: this.logradouro
+        }
+    }
 }
