@@ -9,4 +9,15 @@ export class Proprietario extends Pessoa {
     toString(): string {
         return super.toString(); 
     }
+
+    toJSON(): object {
+        return super.toJSON();
+    }
+
+    static fromJSON(json: any): Pessoa {
+        return new Proprietario(
+            json.nome,
+            json.cpf
+        );
+    }
 }

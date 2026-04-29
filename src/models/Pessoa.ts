@@ -47,6 +47,14 @@ export class Pessoa {
         }
     }
 
+    static fromJSON(json: any): Pessoa {
+        return new Pessoa(
+            json.nome,
+            json.cpf
+        );
+    }
+
+
 
     validarCPF(cpf: string): string {
         if(cpf.length != 11)

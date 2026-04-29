@@ -103,4 +103,15 @@ export class Endereco {
             logradouro: this.logradouro
         }
     }
+
+    static fromJSON(json: any): Endereco {
+        return new Endereco(
+            json.CEP,
+            json.pais,
+            json.UF,
+            json.cidade,
+            json.bairro,
+            json.logradouro
+        );
+    }
 }

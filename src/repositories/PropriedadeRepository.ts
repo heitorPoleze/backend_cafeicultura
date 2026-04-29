@@ -62,4 +62,16 @@ export class PropriedadeRepository {
             return null;
         return this.toDomain(result);
     }
+
+    async buscarPropriedadesPorProprietarioId(proprietarioId: number): Promise<Propriedade[]> {
+        const sql = `
+                SELECT pr.id, pr.nome, p.id as proprietario_id, p.nome as proprietario_nome, p.cpf as proprietario_cpf, e.id as endereco_id, e.cep as endereco_cep, e.pais as endereco_pais, e.uf as endereco_uf, e.cidade as endereco_cidade, e.bairro as endereco_bairro, e.logradouro as endereco_logradouro, t.id as tamanho_id, t.area as tamanho_area, t.unidade_medida as tamanho_unidade_medida
+                FROM ${this._tabela} pr
+                JOIN pessoas p ON pr.proprietario_id = p.id
+                JOIN enderecos e ON pr.endereco_id = e.id
+                JOIN tamanhos t ON pr.tamanho_id = t.id
+                WHERE pr.proprietario_id = ?`;
+        const [rows] = await this._conexao.query<PropriedadeCompletaRow[]>(sql, [proprietarioId]);
+        return rows.map(row => this.toDomain(row));
+    }
 }

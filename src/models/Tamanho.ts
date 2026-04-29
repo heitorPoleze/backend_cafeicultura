@@ -58,4 +58,12 @@ export class Tamanho {
             undMedida: this._unidade_medida
         }
     }
+
+    static fromJSON(json: any): Tamanho {
+        return new Tamanho(
+            json.area,
+            json.undMedida
+        );
+    }
+
 }

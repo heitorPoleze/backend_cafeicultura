@@ -3,6 +3,7 @@ import { ProprietarioController } from "../controllers/ProprietarioController";
 
 const routeProprietario = Router()
 const proprietarioController = new ProprietarioController();
+
 routeProprietario.get("/", (req, res) => {
     res.json({ message: "resposta da API da rota" });
 });

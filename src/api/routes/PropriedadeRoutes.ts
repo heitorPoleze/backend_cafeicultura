@@ -12,4 +12,9 @@ routePropriedade.get("/:id", async (req, res) => {
     await propriedadeController.buscarPropriedadeCompletaPorId(req, res);
 });
 
+routePropriedade.get("/proprietarios/:id_proprietario", async (req, res) => {
+    await propriedadeController.buscarPropriedadesPorProprietarioId(req, res);
+});
+
+
 export default routePropriedade;

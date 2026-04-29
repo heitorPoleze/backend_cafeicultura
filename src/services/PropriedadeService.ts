@@ -52,4 +52,8 @@ export class PropriedadeService {
     async buscarPropriedadeCompletaPorId(id: number): Promise<Propriedade | null> {
         return await this._propriedadeRepository.buscarPropriedadeCompletaPorId(id);
     }
+
+    async buscarPropriedadesPorProprietarioId(proprietarioId: number): Promise<Propriedade[]> {
+        return await this._propriedadeRepository.buscarPropriedadesPorProprietarioId(proprietarioId);
+    }
 }

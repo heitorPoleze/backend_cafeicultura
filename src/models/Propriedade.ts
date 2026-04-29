@@ -72,4 +72,13 @@ export class Propriedade {
             tamanho: this.tamanho
         }
     }
+
+    static fromJSON(json: any): Propriedade {
+        return new Propriedade(
+            json.nome,
+            Proprietario.fromJSON(json.proprietario),
+            Endereco.fromJSON(json.endereco),
+            Tamanho.fromJSON(json.tamanho)
+        );
+    }
 }

@@ -13,13 +13,13 @@ export class Talhao {
     private _tipoCafe: tipoCafe;
     private _variedadesCafe: string[];
     private _dataInicioTalhao: Date;
-    private _dataFimTalhao: Date | undefined;
+    private _dataFimTalhao: Date | null;
 
-    constructor(nome: string, tamanho: Tamanho, propriedade: Propriedade,qtdPesDeCafe: number, tipoCafe: tipoCafe, variedadesCafe: string[], dataInicioTalhao: Date, id?: number){
+    constructor(nome: string, tamanho: Tamanho, propriedade: Propriedade,qtdPesDeCafe: number, tipoCafe: tipoCafe, variedadesCafe: string[], dataInicioTalhao: Date, dataFimTalhao: Date | null, id?: number){
         this._id = id;
         this._nome = validarNome(nome);
         this._propriedade = propriedade;
-        if(tamanho.converterHaEmM2 > propriedade.tamanho.converterHaEmM2){
+        if(tamanho.converterHaEmM2() > propriedade.tamanho.converterHaEmM2()){
             throw new Error("O talhão não pode ter área maior que a propriedade.");
         }else if(tamanho.area <= 0){
             throw new Error("A área do talhão deve ser maior que zero.");
@@ -34,7 +34,7 @@ export class Talhao {
         this._tipoCafe = tipoCafe;
         this._variedadesCafe = variedadesCafe;
         this._dataInicioTalhao = dataInicioTalhao;
-        this._dataFimTalhao = undefined;
+        this._dataFimTalhao = dataFimTalhao;
     }
 
     get id(): number | undefined {
@@ -69,15 +69,8 @@ export class Talhao {
         return this._propriedade;
     }
 
-    get dataFimTalhao(): Date | undefined {
-        if (!this._dataFimTalhao) {
-            throw new Error("O talhão ainda não foi finalizado.");
-        }
+    get dataFimTalhao(): Date | null {
         return this._dataFimTalhao;
-    }
-
-    finalizarTalhao(): void {
-        this._dataFimTalhao = new Date();
     }
 
     toString(): string {
@@ -96,5 +89,18 @@ export class Talhao {
             dataInicioTalhao: this.dataInicioTalhao,
             dataFimTalhao: this.dataFimTalhao
         };
+    }
+
+    static fromJSON(json: any): Talhao {
+        return new Talhao(
+            json.nome,
+            Tamanho.fromJSON(json.tamanho),
+            Propriedade.fromJSON(json.propriedade),
+            json.qtdPesDeCafe,
+            json.tipoCafe,
+            json.variedadesCafe,
+            json.dataInicioTalhao,
+            json.dataFimTalhao,
+        )
     }
 }
