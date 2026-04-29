@@ -9,16 +9,9 @@ abstract class PessoaDAO extends GenericoDAO<Pessoa> {
 
   protected async salvarPessoa(p: Pessoa, conn?: PoolConnection): Promise<number | null> {
     return await super.salvar(
-      `INSERT INTO pessoas (data_hora_cadastro) VALUES (?);`,
-      [p.data_hora_cadastro],
+      `INSERT INTO pessoas (dataCadastro) VALUES (?);`,
+      [p.dataCadastro],
       conn
-    );
-  };
-
-  protected async buscarPessoa(id: number): Promise<Pessoa | null> {
-    return await super.buscar<Pessoa>(
-      `SELECT * FROM pessoas WHERE idPessoa = ?;`,
-      [id]
     );
   };
 };

@@ -1,14 +1,16 @@
 import Usuario from "./Usuario";
 import Pessoa from "./Pessoa";
+import PessoaFisica from "./PessoaFisica";
+import PessoaJuridica from "./PessoaJuridica";
 
-class Proprietario extends Usuario {
+class Proprietario extends Usuario<PessoaFisica | PessoaJuridica> {
   
   constructor(
     id: number | undefined,
     email: string,
     telefone: string,
     senha: string,
-    perfil: Pessoa
+    perfil: PessoaFisica | PessoaJuridica
   ) {
     super(id, email, telefone, senha, perfil);
   }

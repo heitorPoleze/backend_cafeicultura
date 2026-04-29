@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Café App - Teste API</title>
+    <style>
+        /* TEMA: Verde, Branco e Preto */
+        :root {
+            --verde-escuro: #1b4332;
+            --verde-claro: #2d6a4f;
+            --preto: #081c15;
+            --branco: #ffffff;
+            --cinza: #f4f4f4;
+            --erro-bg: #ffe6e6;
+            --erro-texto: #cc0000;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--cinza);
+            color: var(--preto);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .container {
+            background-color: var(--branco);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+            border-top: 5px solid var(--verde-claro);
+            margin: 20px;
+        }
+
+        h2 { color: var(--verde-escuro); text-align: center; }
+        
+        .form-group { margin-bottom: 15px; position: relative; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9em; }
+        input, select {
+            width: 100%; padding: 10px; border: 1px solid #ccc;
+            border-radius: 4px; box-sizing: border-box; font-family: inherit;
+        }
+        input:focus, select:focus {
+            border-color: var(--verde-claro); outline: none;
+        }
+
+        /* Botões */
+        button {
+            width: 100%; padding: 12px; background-color: var(--verde-claro);
+            color: var(--branco); border: none; border-radius: 4px;
+            font-size: 1em; cursor: pointer; font-weight: bold; transition: 0.3s;
+        }
+        button:hover { background-color: var(--verde-escuro); }
+        button:disabled { background-color: #a5a5a5; cursor: not-allowed; }
+        button.btn-danger { background-color: #d62828; margin-top: 15px;}
+        button.btn-danger:hover { background-color: #9d0208; }
+
+        .link { text-align: center; margin-top: 15px; font-size: 0.9em; }
+        .link a { color: var(--verde-claro); text-decoration: none; font-weight: bold; cursor: pointer; }
+        
+        /* Oculta seções dinamicamente */
+        .hidden { display: none !important; }
+        
+        /* Estilização de Erros */
+        .error-box {
+            background-color: var(--erro-bg);
+            color: var(--erro-texto);
+            padding: 12px;
+            border-radius: 4px;
+            border-left: 4px solid var(--erro-texto);
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+        .error-box ul { margin: 5px 0 0; padding-left: 20px; }
+
+        /* Painel */
+        #dados-painel {
+            background-color: var(--preto); color: var(--branco);
+            padding: 15px; border-radius: 4px; font-family: monospace;
+            white-space: pre-wrap; word-wrap: break-word;
+        }
+
+        /* Visibilidade da Senha */
+        .toggle-password {
+            position: absolute; right: 10px; top: 32px;
+            background: none; border: none; cursor: pointer;
+            font-size: 1.2em; color: #555; padding: 0; width: auto;
+        }
+        .toggle-password:hover { background: none; color: var(--verde-claro); }
+
+        /* Requisitos de Senha */
+        .password-requirements {
+            font-size: 0.8em; margin-top: 5px; padding-left: 20px; color: #666;
+        }
+        .password-requirements li.valid { color: var(--verde-claro); list-style-type: "✔️ "; }
+        .password-requirements li.invalid { color: var(--erro-texto); list-style-type: "❌ "; }
+        
+        #match-message { font-size: 0.85em; font-weight: bold; display: block; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <div id="login-view" class="container">
+        <h2>Login - Cafeicultura</h2>
+        <div id="login-error" class="error-box hidden"></div>
+        <form id="form-login">
+            <div class="form-group">
+                <label>Email, CPF ou CNPJ</label>
+                <input type="text" id="login-entrada" required placeholder="Digite seu acesso">
+            </div>
+            <div class="form-group">
+                <label>Senha</label>
+                <input type="password" id="login-senha" required>
+                <button type="button" class="toggle-password" onclick="toggleVisibility('login-senha')">👁️</button>
+            </div>
+            <button type="submit">Entrar</button>
+        </form>
+        <div class="link">
+            Não tem conta? <a onclick="trocarTela('register-view')">Cadastre-se</a>
+        </div>
+    </div>
+
+    <div id="register-view" class="container hidden">
+        <h2>Novo Cadastro</h2>
+        <div id="register-error" class="error-box hidden"></div>
+        
+        <form id="form-register">
+            <div class="form-group">
+                <label>Você é:</label>
+                <select id="reg-tipoUsuario" onchange="atualizarFormularioCadastro()">
+                    <option value="proprietario">Proprietário</option>
+                    <option value="consultor">Consultor Técnico</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="div-tipoPessoa">
+                <label>Tipo de Conta:</label>
+                <select id="reg-tipoPessoa" onchange="atualizarFormularioCadastro()">
+                    <option value="fisica">Pessoa Física (CPF)</option>
+                    <option value="juridica">Pessoa Jurídica (CNPJ)</option>
+                </select>
+            </div>
+
+            <div id="campos-pf">
+                <div class="form-group"><label>Nome Completo</label><input type="text" id="reg-nome"></div>
+                <div class="form-group"><label>CPF</label><input type="text" id="reg-cpf" placeholder="000.000.000-00" maxlength="14"></div>
+            </div>
+
+            <div id="campos-pj" class="hidden">
+                <div class="form-group"><label>Razão Social</label><input type="text" id="reg-razao"></div>
+                <div class="form-group"><label>CNPJ</label><input type="text" id="reg-cnpj" placeholder="00.000.000/0000-00" maxlength="18"></div>
+                <div class="form-group"><label>Inscrição Estadual (Opcional)</label><input type="text" id="reg-inscr"></div>
+            </div>
+
+            <div class="form-group"><label>Email</label><input type="email" id="reg-email" required></div>
+            <div class="form-group"><label>Telefone</label><input type="text" id="reg-telefone" placeholder="(00) 00000-0000" maxlength="15" required></div>
+            
+            <div class="form-group">
+                <label>Senha</label>
+                <input type="password" id="reg-senha" required>
+                <button type="button" class="toggle-password" onclick="toggleVisibility('reg-senha')">👁️</button>
+                <ul class="password-requirements" id="psw-reqs">
+                    <li id="req-length" class="invalid">Mínimo de 8 caracteres</li>
+                    <li id="req-upper" class="invalid">Uma letra maiúscula</li>
+                    <li id="req-lower" class="invalid">Uma letra minúscula</li>
+                    <li id="req-num" class="invalid">Um número</li>
+                    <li id="req-sym" class="invalid">Um símbolo (!@#$%^&*)</li>
+                </ul>
+            </div>
+
+            <div class="form-group">
+                <label>Confirmar Senha</label>
+                <input type="password" id="reg-senha-confirm" required disabled>
+                <button type="button" class="toggle-password" onclick="toggleVisibility('reg-senha-confirm')">👁️</button>
+                <span id="match-message"></span>
+            </div>
+
+            <button type="submit" id="btn-submit-register" disabled>Cadastrar</button>
+        </form>
+        <div class="link">
+            Já tem conta? <a onclick="trocarTela('login-view')">Fazer Login</a>
+        </div>
+    </div>
+
+    <div id="painel-view" class="container hidden">
+        <h2>Meu Painel</h2>
+        <p>Dados capturados da API (Protegida por Sessão):</p>
+        <pre id="dados-painel">Carregando...</pre>
+        <button class="btn-danger" onclick="fazerLogout()">Sair (Logout)</button>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3001/api/v1';
+        const FETCH_CONFIG = {
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+        };
+
+        // --- EXIBIÇÃO DE ERROS ---
+        function mostrarErro(containerId, data) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            container.classList.remove('hidden');
+
+            if (data.erros && Array.isArray(data.erros)) {
+                let ul = document.createElement('ul');
+                data.erros.forEach(err => {
+                    let li = document.createElement('li');
+                    li.textContent = err.msg || err;
+                    ul.appendChild(li);
+                });
+                container.appendChild(ul);
+            } else {
+                container.textContent = data.mensagem || 'Ocorreu um erro desconhecido.';
+            }
+        }
+
+        function limparErros() {
+            document.getElementById('login-error').classList.add('hidden');
+            document.getElementById('register-error').classList.add('hidden');
+        }
+
+        // --- CONTROLE DE TELAS ---
+        function trocarTela(idTela) {
+            limparErros();
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('register-view').classList.add('hidden');
+            document.getElementById('painel-view').classList.add('hidden');
+            document.getElementById(idTela).classList.remove('hidden');
+            if (idTela === 'register-view') atualizarFormularioCadastro();
+        }
+
+        function toggleVisibility(fieldId) {
+            const field = document.getElementById(fieldId);
+            field.type = field.type === 'password' ? 'text' : 'password';
+        }
+
+        // --- MÁSCARAS DE INPUT (Regex) ---
+        // --- MÁSCARA DO LOGIN (Email, CPF ou CNPJ) ---
+        document.getElementById('login-entrada').addEventListener('input', function(e) {
+            let v = e.target.value;
+
+            // If the input contains any letters or the '@' symbol, we assume it's an email.
+            // In this case, we stop formatting and let the user type normally.
+            if (/[a-zA-Z@]/.test(v)) {
+                return;
+            }
+
+            // If it only contains numbers, apply the CPF or CNPJ mask
+            v = v.replace(/\D/g, ""); // Remove non-digits
+
+            if (v.length <= 11) {
+                // CPF Format
+                v = v.replace(/(\d{3})(\d)/, "$1.$2");
+                v = v.replace(/(\d{3})(\d)/, "$1.$2");
+                v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+            } else {
+                // CNPJ Format
+                v = v.substring(0, 14); // Prevent exceeding 14 digits
+                v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+                v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+                v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
+                v = v.replace(/(\d{4})(\d)/, "$1-$2");
+            }
+
+            e.target.value = v;
+        });
+
+        document.getElementById('reg-cpf').addEventListener('input', function(e) {
+            let v = e.target.value.replace(/\D/g, ""); // Remove não numéricos
+            v = v.replace(/(\d{3})(\d)/, "$1.$2");
+            v = v.replace(/(\d{3})(\d)/, "$1.$2");
+            v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+            e.target.value = v;
+        });
+
+        document.getElementById('reg-cnpj').addEventListener('input', function(e) {
+            let v = e.target.value.replace(/\D/g, "");
+            v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+            v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+            v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
+            v = v.replace(/(\d{4})(\d)/, "$1-$2");
+            e.target.value = v;
+        });
+
+        document.getElementById('reg-telefone').addEventListener('input', function(e) {
+            let v = e.target.value.replace(/\D/g, "");
+            v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+            v = v.replace(/(\d)(\d{4})$/, "$1-$2");
+            e.target.value = v;
+        });
+
+        // --- VALIDAÇÃO DE SENHA ---
+        const regSenha = document.getElementById('reg-senha');
+        const regConfirm = document.getElementById('reg-senha-confirm');
+        const btnRegister = document.getElementById('btn-submit-register');
+        const matchMsg = document.getElementById('match-message');
+
+        let isPasswordValid = false;
+
+        regSenha.addEventListener('input', function() {
+            const val = this.value;
+            const hasLen = val.length >= 8;
+            const hasUpper = /[A-Z]/.test(val);
+            const hasLower = /[a-z]/.test(val);
+            const hasNum = /\d/.test(val);
+            const hasSym = /[!@#$%^&*(),.?":{}|<>]/.test(val);
+
+            document.getElementById('req-length').className = hasLen ? 'valid' : 'invalid';
+            document.getElementById('req-upper').className = hasUpper ? 'valid' : 'invalid';
+            document.getElementById('req-lower').className = hasLower ? 'valid' : 'invalid';
+            document.getElementById('req-num').className = hasNum ? 'valid' : 'invalid';
+            document.getElementById('req-sym').className = hasSym ? 'valid' : 'invalid';
+
+            isPasswordValid = hasLen && hasUpper && hasLower && hasNum && hasSym;
+            regConfirm.disabled = !isPasswordValid;
+            
+            if (!isPasswordValid) regConfirm.value = '';
+            checkMatch();
+        });
+
+        regConfirm.addEventListener('input', checkMatch);
+
+        function checkMatch() {
+            if (!isPasswordValid) {
+                matchMsg.textContent = "";
+                btnRegister.disabled = true;
+                return;
+            }
+            if (regConfirm.value === "") {
+                matchMsg.textContent = "";
+                btnRegister.disabled = true;
+            } else if (regSenha.value === regConfirm.value) {
+                matchMsg.textContent = "Senhas coincidem!";
+                matchMsg.style.color = "var(--verde-claro)";
+                btnRegister.disabled = false;
+            } else {
+                matchMsg.textContent = "As senhas não coincidem.";
+                matchMsg.style.color = "var(--erro-texto)";
+                btnRegister.disabled = true;
+            }
+        }
+
+        // --- ALTERNÂNCIA DE FORMULÁRIO ---
+        function atualizarFormularioCadastro() {
+            const tipoUsuario = document.getElementById('reg-tipoUsuario').value;
+            const tipoPessoa = document.getElementById('reg-tipoPessoa').value;
+            
+            const divTipoPessoa = document.getElementById('div-tipoPessoa');
+            const divPF = document.getElementById('campos-pf');
+            const divPJ = document.getElementById('campos-pj');
+
+            if (tipoUsuario === 'consultor') {
+                divTipoPessoa.classList.add('hidden');
+                divPF.classList.remove('hidden');
+                divPJ.classList.add('hidden');
+            } else {
+                divTipoPessoa.classList.remove('hidden');
+                if (tipoPessoa === 'fisica') {
+                    divPF.classList.remove('hidden');
+                    divPJ.classList.add('hidden');
+                } else {
+                    divPF.classList.add('hidden');
+                    divPJ.classList.remove('hidden');
+                }
+            }
+        }
+
+        // --- LOGIN ---
+        document.getElementById('form-login').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            limparErros();
+            
+            const entradaRaw = document.getElementById('login-entrada').value.trim();
+            const senha = document.getElementById('login-senha').value;
+
+            let tipoEntrada = 'email';
+            const limpo = entradaRaw.replace(/\D/g, ''); 
+            
+            if (entradaRaw.includes('@')) {
+                tipoEntrada = 'email';
+            } else if (limpo.length === 11) {
+                tipoEntrada = 'cpf';
+            } else if (limpo.length === 14) {
+                tipoEntrada = 'cnpj';
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/usuarios/autenticar`, {
+                    ...FETCH_CONFIG,
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        tipoEntrada: tipoEntrada, 
+                        entrada: entradaRaw,
+                        senha: senha 
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    acessarPainel();
+                } else {
+                    mostrarErro('login-error', data);
+                }
+            } catch (error) {
+                mostrarErro('login-error', { mensagem: 'Falha na comunicação com o servidor.' });
+            }
+        });
+
+        // --- CADASTRO ---
+        document.getElementById('form-register').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            limparErros();
+
+            const tipoUsuario = document.getElementById('reg-tipoUsuario').value;
+            const tipoPessoa = document.getElementById('reg-tipoPessoa').value;
+
+            let payload = {
+                email: document.getElementById('reg-email').value,
+                telefone: document.getElementById('reg-telefone').value,
+                senha: document.getElementById('reg-senha').value
+            };
+
+            let endpoint = '';
+
+            if (tipoUsuario === 'consultor') {
+                endpoint = `${API_BASE_URL}/consultores-tecnicos`;
+                payload.nome = document.getElementById('reg-nome').value;
+                payload.cpf = document.getElementById('reg-cpf').value;
+            } else {
+                endpoint = `${API_BASE_URL}/proprietarios`;
+                payload.tipoPessoa = tipoPessoa;
+                
+                if (tipoPessoa === 'fisica') {
+                    payload.nome = document.getElementById('reg-nome').value;
+                    payload.cpf = document.getElementById('reg-cpf').value;
+                } else {
+                    payload.razaoSocial = document.getElementById('reg-razao').value;
+                    payload.cnpj = document.getElementById('reg-cnpj').value;
+                    
+                    const inscr = document.getElementById('reg-inscr').value;
+                    if (inscr) payload.inscrEstadual = inscr;
+                }
+            }
+
+            try {
+                const response = await fetch(endpoint, {
+                    ...FETCH_CONFIG,
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Cadastro realizado! Faça o login.');
+                    trocarTela('login-view');
+                    document.getElementById('form-register').reset();
+                    regConfirm.disabled = true;
+                    btnRegister.disabled = true;
+                    document.querySelectorAll('#psw-reqs li').forEach(li => li.className = 'invalid');
+                    matchMsg.textContent = "";
+                } else {
+                    mostrarErro('register-error', data);
+                }
+            } catch (error) {
+                mostrarErro('register-error', { mensagem: 'Falha na comunicação com o servidor.' });
+            }
+        });
+
+        // --- PAINEL E LOGOUT ---
+        async function acessarPainel() {
+            trocarTela('painel-view');
+            try {
+                const response = await fetch(`${API_BASE_URL}/usuarios/painel`, {
+                    ...FETCH_CONFIG, method: 'GET'
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    document.getElementById('dados-painel').textContent = JSON.stringify(data, null, 2);
+                } else {
+                    alert('Acesso negado! ' + data.mensagem);
+                    trocarTela('login-view');
+                }
+            } catch (error) {
+                document.getElementById('dados-painel').textContent = 'Erro de comunicação.';
+            }
+        }
+
+        async function fazerLogout() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/usuarios/logout`, {
+                    ...FETCH_CONFIG, method: 'POST'
+                });
+                if (response.ok) {
+                    trocarTela('login-view');
+                    document.getElementById('form-login').reset();
+                }
+            } catch (error) {
+                alert('Erro ao tentar sair.');
+            }
+        }
+
+        // --- VERIFICAÇÃO DE SESSÃO AO CARREGAR A PÁGINA ---
+        async function verificarSessaoAtiva() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/usuarios/painel`, {
+                    ...FETCH_CONFIG, method: 'GET'
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    trocarTela('painel-view');
+                    document.getElementById('dados-painel').textContent = JSON.stringify(data, null, 2);
+                }
+                // If it fails (no session), it silently stays on the login screen
+            } catch (error) {
+                console.log('Nenhuma sessão ativa no momento.');
+            }
+        }
+
+        // Trigger the check as soon as the DOM is ready
+        window.addEventListener('DOMContentLoaded', verificarSessaoAtiva);
+    </script>
+</body>
+</html>

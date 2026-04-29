@@ -1,19 +1,19 @@
 import bcrypt from "bcryptjs";
 import Pessoa from "./Pessoa";
 
-class Usuario {
+class Usuario<T extends Pessoa> {
   private _id: number | undefined;
   private _email: string;
   private _telefone: string;
   private _senha: string;
-  private _perfil: Pessoa; // Composition: Holds the physical or legal identity
+  private _perfil: T;
 
   constructor(
     id: number | undefined,
     email: string,
     telefone: string,
     senha: string,
-    perfil: Pessoa,
+    perfil: T,
   ) {
     if (id && id <= 0)
       throw new Error("ID do usuário deve ser maior que zero!");
@@ -88,11 +88,11 @@ class Usuario {
     return this._senha;
   }
 
-  public get perfil(): Pessoa {
+  public get perfil(): T {
     return this._perfil;
   }
 
-  public set perfil(novo_valor: Pessoa) {
+  public set perfil(novo_valor: T) {
     if (!novo_valor)
       throw new Error("Usuário deve estar vinculado a uma Pessoa!");
     this._perfil = novo_valor;

@@ -1,14 +1,13 @@
 import { cpf as validarCPF } from "cpf-cnpj-validator";
 import Pessoa from "./Pessoa";
 
-abstract class PessoaFisica extends Pessoa {
+class PessoaFisica extends Pessoa {
   private _nome: string;
   private _cpf: string;
 
   constructor(
     id: number | undefined,
     nome: string,
-    data_nascimento: Date,
     cpf: string,
   ) {
     super(id);

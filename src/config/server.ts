@@ -6,7 +6,10 @@ import dotenv from "dotenv";
 
 // Rotas
 
-import conexao from "./conexao"; // Seu pool de conexão MySQL
+import conexao from "./conexao"; // Pool de conexão MySQL
+import usuarioRotas from "../rotas/usuarioRotas";
+import proprietarioRotas from "../rotas/proprietarioRotas";
+import consultorTecnicoRotas from "../rotas/consultorTecnicoRotas";
 
 dotenv.config(); // Carrega as variáveis de ambiente do .env
 
@@ -73,5 +76,9 @@ const sessMiddleware = session({
 app.use(sessMiddleware); // Aplica o middleware de sessão
 
 // --- Registra as rotas da API ---
-app.use("/api/usuarios", usuarioRotas);
+const API_VERSION = "/api/v1";
+app.use(`${API_VERSION}/usuarios`, usuarioRotas);
+app.use(`${API_VERSION}/proprietarios`, proprietarioRotas);
+app.use(`${API_VERSION}/consultores-tecnicos`, consultorTecnicoRotas);
+
 export default app;

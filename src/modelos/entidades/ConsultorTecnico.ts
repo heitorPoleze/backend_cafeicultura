@@ -1,14 +1,15 @@
 import Usuario from "./Usuario";
 import Pessoa from "./Pessoa";
+import PessoaFisica from "./PessoaFisica";
 
-class ConsultorTecnico extends Usuario {
+class ConsultorTecnico extends Usuario<PessoaFisica> {
   
   constructor(
     id: number | undefined,
     email: string,
     telefone: string,
     senha: string,
-    perfil: Pessoa
+    perfil: PessoaFisica
   ) {
     // Calls the constructor of the parent class (Usuario)
     super(id, email, telefone, senha, perfil);

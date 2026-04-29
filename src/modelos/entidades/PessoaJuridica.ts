@@ -1,23 +1,23 @@
 import { cnpj as validarCNPJ } from "cpf-cnpj-validator";
 import Pessoa from "./Pessoa";
 
-abstract class PessoaJuridica extends Pessoa {
-  private _razao_social: string;
+class PessoaJuridica extends Pessoa {
+  private _razaoSocial: string;
   private _cnpj: string | undefined;
-  private _inscricao_estadual: string | undefined;
+  private _inscricaoEstadual: string | undefined;
 
   constructor(
     id: number | undefined,
-    razao_social: string,
+    razaoSocial: string,
     cnpj: string | undefined,
-    inscricao_estadual?: string | undefined,
+    inscricaoEstadual?: string | undefined,
   ) {
     super(id);
 
-    if (razao_social == "") throw new Error("Razao social nao pode ser vazio!");
-    if (razao_social.length < 3)
+    if (razaoSocial == "") throw new Error("Razao social nao pode ser vazio!");
+    if (razaoSocial.length < 3)
       throw new Error("Razao social deve conter pelo menos 3 letras!");
-    this._razao_social = razao_social;
+    this._razaoSocial = razaoSocial;
 
     if (cnpj) {
       if (cnpj == "") throw new Error("CNPJ nao pode ser vazio!");
@@ -29,22 +29,22 @@ abstract class PessoaJuridica extends Pessoa {
       this._cnpj = cnpj;
     }
 
-    if (inscricao_estadual) {
-      if (inscricao_estadual == "")
+    if (inscricaoEstadual) {
+      if (inscricaoEstadual == "")
         throw new Error("Inscrição estadual não pode ser vazia!");
-      this._inscricao_estadual = inscricao_estadual;
+      this._inscricaoEstadual = inscricaoEstadual;
     }
   }
 
-  public get razao_social(): string {
-    return this._razao_social;
+  public get razaoSocial(): string {
+    return this._razaoSocial;
   }
 
-  public set razao_social(novo_valor: string) {
+  public set razaoSocial(novo_valor: string) {
     if (novo_valor == "") throw new Error("Razao social nao pode ser vazio!");
     if (novo_valor.length < 3)
       throw new Error("Razao social deve conter pelo menos 3 letras!");
-    this._razao_social = novo_valor;
+    this._razaoSocial = novo_valor;
   }
 
   public get cnpj(): string | undefined {
@@ -59,20 +59,21 @@ abstract class PessoaJuridica extends Pessoa {
     this._cnpj = novo_valor;
   }
 
-  public get inscricao_estadual(): string | undefined {
-    return this._inscricao_estadual;
+  public get inscricaoEstadual(): string | undefined {
+    return this._inscricaoEstadual;
   }
 
-  public set inscricao_estadual(novo_valor: string) {
+
+  public set inscricaoEstadual(novo_valor: string) {
     if (novo_valor == "") throw new Error("Inscrição estadual nao pode ser vazia!");
-    this._inscricao_estadual = novo_valor;
+    this._inscricaoEstadual = novo_valor;
   }
 
   public toJSON(filhos?: object) {
     return super.toJSON({
-      razao_social: this._razao_social,
+      razaoSocial: this._razaoSocial,
       cnpj: this._cnpj,
-      inscricao_estadual: this._inscricao_estadual,
+      inscricaoEstadual: this._inscricaoEstadual,
       ...filhos,
     });
   }
@@ -80,13 +81,13 @@ abstract class PessoaJuridica extends Pessoa {
   public toString(): string {
     return (
       "Razão social: " +
-      this._razao_social +
+      this._razaoSocial +
       "\n" +
       "CNPJ: " +
       this._cnpj +
       "\n" +
       "Inscrição estadual: " +
-      this._inscricao_estadual +
+      this._inscricaoEstadual +
       "\n" +
       super.toString()
     );

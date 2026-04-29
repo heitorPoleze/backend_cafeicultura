@@ -2,22 +2,22 @@ import Formatador from "../../utilitarios/Formatador";
 
 abstract class Pessoa {
   private _id: number | undefined;
-  private _data_hora_cadastro: Date;
+  private _dataCadastro: Date;
 
   constructor(id: number | undefined,) {
-    this._data_hora_cadastro = new Date();
+    this._dataCadastro = new Date();
 
     if (id && id <= 0) 
       throw new Error("ID do produto deve ser maior que zero!");
     this._id = id;
   }
 
-  public get data_hora_cadastro(): Date {
-    return this._data_hora_cadastro;
+  public get dataCadastro(): Date {
+    return this._dataCadastro;
   }
 
-  public set data_hora_cadastro(novo_valor: Date) {
-    this._data_hora_cadastro = novo_valor;
+  public set dataCadastro(novo_valor: Date) {
+    this._dataCadastro = novo_valor;
   }
 
   public get id(): number | undefined {
@@ -27,7 +27,7 @@ abstract class Pessoa {
   public toJSON(filhos?: object) {
     return {
       id: this._id,
-      data_hora_cadastro: this._data_hora_cadastro,
+      dataCadastro: this._dataCadastro,
       ...filhos,
     };
   }
@@ -35,7 +35,7 @@ abstract class Pessoa {
   public toString(): string {
     return (
       "Data e hora de cadastro: " +
-      Formatador.dataFormatada(this._data_hora_cadastro, true)
+      Formatador.dataFormatada(this._dataCadastro, true)
     );
   }
 }
