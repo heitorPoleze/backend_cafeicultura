@@ -2,6 +2,6 @@
   "watch": ["src"],
   "ext": "ts json",
   "ignore": ["node_modules", "dist"],
-  "exec": "npm run build && node dist/app.js",
+  "exec": "npm run build && node dist/server.js",
   "delay": "500"
 }
