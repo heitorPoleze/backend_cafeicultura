@@ -1,7 +1,17 @@
-import app from "./config/app";
+import app from "./app";
+import { testarConexao } from "./shared/config/database";
 
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3333;
 
-app.listen(port, () => {
-    console.log(`Servidor rodando na porta ${port}`);
-});
+async function iniciarServidor() {
+  // 1. Testa o banco antes de liberar o acesso à API
+  await testarConexao();
+
+  // 2. Inicia o servidor HTTP
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+    console.log(`🌍 Ambiente: ${process.env.NODE_ENV || 'development'}`);
+  });
+}
+
+iniciarServidor();
