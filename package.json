@@ -4,17 +4,22 @@
   "description": "",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "nodemon src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js"
+    "dev": "npm run lint && nodemon src/server.ts",
+    "build": "npm run lint && tsc",
+    "start": "node dist/server.js",
+    "lint": "eslint .",
+  	"lint:fix": "eslint . --fix"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/express-mysql-session": "^3.0.8",
     "@types/express-session": "^1.19.0",
     "@types/node": "^25.6.0",
+    "eslint": "^10.4.0",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.4"
   },
   "dependencies": {
     "@types/cors": "^2.8.19",
