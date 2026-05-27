@@ -1,0 +1,10 @@
+generator client {
+  provider = "prisma-client"
+  
+  // código do bd sairá nessa pasta
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
