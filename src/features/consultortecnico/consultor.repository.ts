@@ -44,7 +44,7 @@ class ConsultorTecnicoRepository {
 
     } catch (error) {
       await conn.rollback(); // Se a query 4 falhar, a 1, 2 e 3 são desfeitas automaticamente.
-      throw new Error(`Erro ao salvar consultor: ${(error as Error).message}`);
+       throw new Error(`Erro ao salvar consultor: ${(error as Error).message}`, { cause: error });   
     } finally {
       conn.release();
     };

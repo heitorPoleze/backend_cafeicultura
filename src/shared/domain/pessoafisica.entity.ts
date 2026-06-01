@@ -42,7 +42,7 @@ class PessoaFisica extends Pessoa {
 
   private validarCpf(cpf: string): void {
     if (!cpf) throw new Error("CPF não pode ser vazio!");
-    if (!/^\d{3}\.\d{3}\.\d{3}\-\d{2}$/.test(cpf)) {
+    if (!/^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(cpf)) {
       throw new Error("CPF deve estar no formato válido (XXX.XXX.XXX-XX)");
     }
     if (!validarCPF.isValid(cpf)) throw new Error("CPF inválido!");

@@ -12,8 +12,13 @@ class ProprietarioController {
     try {
       const id = await this.service.cadastrar(req.body);
       res.status(201).json({ mensagem: "Proprietário cadastrado com sucesso", id });
-    } catch (error: any) {
-      res.status(400).json({ mensagem: error.message });
+    } catch (error) {
+      if(error instanceof Error){
+        res.status(400).json({ mensagem: error.message });
+      }
+      else{
+        res.status(500).json({ mensagem: "Erro interno do servidor" });
+      }
     };
   };
 
@@ -21,8 +26,13 @@ class ProprietarioController {
     try {
       const dto = await this.service.buscarPorId(Number(req.params.id));
       res.status(200).json(dto);
-    } catch (error: any) {
-      res.status(404).json({ mensagem: error.message });
+    } catch (error) {
+      if(error instanceof Error){
+        res.status(404).json({ mensagem: error.message });
+      }
+      else{
+        res.status(500).json({ mensagem: "Erro interno do servidor" });
+      }
     };
   };
 }

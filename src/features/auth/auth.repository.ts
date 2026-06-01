@@ -1,4 +1,4 @@
-import { Pool, PoolConnection, RowDataPacket } from "mysql2/promise";
+import { Pool, PoolConnection } from "mysql2/promise";
 import Credencial from "./auth.entity";
 import { IAuthRow } from "./auth.model";
 
