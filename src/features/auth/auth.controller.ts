@@ -30,8 +30,13 @@ class AuthController {
       };
 
       res.status(200).json(resposta);
-    } catch (error: any) {
-      res.status(401).json({ mensagem: error.message });
+    } catch (error) {
+      if(error instanceof Error){
+        res.status(401).json({ mensagem: error.message });
+      }
+      else{
+        res.status(500).json({ mensagem: "Erro interno do servidor" });
+      }
     }
   }
 

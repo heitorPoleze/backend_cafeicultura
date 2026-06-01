@@ -50,7 +50,7 @@ class PessoaJuridica extends Pessoa {
 
   private validarCnpj(cnpj: string): void {
     if (!cnpj) throw new Error("CNPJ não pode ser vazio!");
-    if (!/^\d{2}\.\d{3}\.\d{3}\/\d{4}\-\d{2}$/.test(cnpj)) {
+    if (!/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/.test(cnpj)) {
       throw new Error("CNPJ deve estar no formato válido (XX.XXX.XXX/XXXX-XX)");
     }
     if (!validarCNPJ.isValid(cnpj)) throw new Error("CNPJ inválido!");
