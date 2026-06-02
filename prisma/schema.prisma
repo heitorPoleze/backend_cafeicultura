@@ -1,10 +1,80 @@
 generator client {
-  provider = "prisma-client"
-  
-  // código do bd sairá nessa pasta
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "mysql"
+}
+
+model consultorestecnicos {
+  idConsultor_PFK Int @id @unique(map: "idConsultor_PFK_UNIQUE") @db.UnsignedInt
+}
+
+model enderecos {
+  idEndereco_PK Int    @id @unique(map: "idEndereco_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
+  logradouro    String @db.VarChar(50)
+  bairro        String @db.VarChar(50)
+  cidade        String @db.VarChar(50)
+  uf            String @db.Char(2)
+  pais          String @db.VarChar(20)
+  cep           String @db.Char(9)
+}
+
+model pessoas {
+  idPessoa_PK    Int             @id @unique(map: "idPessoa_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
+  dataCadastro   DateTime        @unique(map: "dataCadastro_UNIQUE") @db.DateTime(0)
+  pessoasfisicas pessoasfisicas?
+}
+
+model pessoasfisicas {
+  idPeFisica_PFK Int     @id @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
+  nome           String  @db.VarChar(100)
+  cpf            String  @unique(map: "cpf_UNIQUE") @db.Char(14)
+  pessoas        pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "PessoaFisica_Pessoa")
+}
+
+model pessoasjuridicas {
+  idPeJuridica_PFK Int     @id @unique(map: "idPeJuridica_PFK_UNIQUE") @db.UnsignedInt
+  razaoSocial      String  @db.VarChar(100)
+  cnpj             String  @unique(map: "cnpj_UNIQUE") @db.Char(18)
+  inscEstadual     String? @unique(map: "inscEstadual_UNIQUE") @db.VarChar(45)
+}
+
+model propriedades {
+  idPropriedade_PK  Int    @id @unique(map: "idPropriedade_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
+  idEndereco_FK     Int    @db.UnsignedInt
+  idProprietario_FK Int    @db.UnsignedInt
+  idTamanho_FK      Int    @db.UnsignedInt
+  nome              String @db.VarChar(25)
+
+  @@index([idEndereco_FK], map: "propriedade_endereco_idx")
+  @@index([idProprietario_FK], map: "propriedade_proprietario_idx")
+  @@index([idTamanho_FK], map: "propriedade_tamanho_idx")
+}
+
+model proprietarios {
+  idProprietario_PFK Int @id @unique(map: "idProprietario_PFK_UNIQUE") @db.UnsignedInt
+}
+
+model tamanhos {
+  idTamanho_PK Int    @id @unique(map: "idTamanho_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
+  valor        Float  @db.Float
+  medida       String @db.VarChar(7)
+}
+
+model usuarios {
+  idUsuario_PFK Int    @unique(map: "idUsuario_PFK_UNIQUE") @db.UnsignedInt
+  email         String @unique(map: "email_UNIQUE") @db.VarChar(50)
+  telefone      String @unique(map: "telefone_UNIQUE") @db.Char(15)
+  senha         String @db.VarChar(500)
+
+  @@id([idUsuario_PFK, telefone, email])
+}
+
+/// Model criado manualmente para lidar com Session
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String   @db.Text 
+  expiresAt DateTime
 }

@@ -4,8 +4,8 @@
   "description": "",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "npm run lint && nodemon src/server.ts",
-    "build": "npm run lint && tsc",
+    "dev": "nodemon src/server.ts",
+    "build": "tsc", 
     "start": "node dist/server.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"

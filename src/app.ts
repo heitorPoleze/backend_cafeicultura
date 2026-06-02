@@ -1,9 +1,11 @@
 import express from "express";
 import session from "express-session";
-const MySQLStoreFactory = require("express-mysql-session");
 import cors from "cors";
 import dotenv from "dotenv";
-import { pool } from "./shared/config/database";
+
+//prisma
+import { PrismaSessionStore } from "@quixo3/prisma-session-store";
+import { prisma } from "./shared/config/database";
 
 // Rotas
 import usuarioRotas from "./features/auth/auth.routes";
@@ -15,7 +17,6 @@ dotenv.config(); // Carrega as variáveis de ambiente do .env
 const app = express();
 
 // --- Configuração do CORS ---
-// Define a origem permitida com base no ambiente (produção ou desenvolvimento)
 const allowedOriginsString =
   process.env.NODE_ENV === "production"
     ? process.env.FRONTEND_URL_PROD
@@ -48,26 +49,25 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const MySQLStore = MySQLStoreFactory(session);
-
 // Configura o middleware de sessão
 const sessMiddleware = session({
-  store: new MySQLStore(
+  store: new PrismaSessionStore(
+    prisma,
     {
-      expiration: 1000 * 10 * 60 * 24 * 30, // TTL de 30 dias
-      createDatabaseTable: true, // Cria a tabela de sessões automaticamente
+      checkPeriod: 2 * 60 * 1000,
+      dbRecordIdIsSessionId: true, // Usa o código hash do cookie (sid) como chave primária (id) da tabela
     },
-    pool // Pool de conexão
   ),
-  secret: process.env.SESSION_SECRET!, // Segredo para assinar o cookie de sessão (muito importante!)
+  secret: process.env.SESSION_SECRET!, // Segredo para assinar o cookie de sessão
   resave: false, // Evita salvar sessões que não foram modificadas
   saveUninitialized: false, // Evita salvar sessões novas que não foram inicializadas/modificadas
   proxy: true,
   cookie: {
+    maxAge: 1000 * 60 * 60 * 24 * 30, // TTL
     httpOnly: true, // Impede acesso ao cookie via JavaScript (segurança)
     secure: process.env.NODE_ENV === "production", // Cookie seguro (HTTPS) apenas em produção
     sameSite: 'lax',
-    domain: process.env.NODE_ENV === "production" ? process.env.DOMAIN : "localhost",
+    domain: process.env.NODE_ENV === "production" ? process.env.DOMAIN : undefined, 
     priority: 'high'
   },
 });
