@@ -41,7 +41,10 @@ class Credencial {
 
   private validarTelefone(telefone: string) {
     if (!telefone || telefone.trim() === "") throw new Error("Telefone não pode ser vazio");
-    if (!/^\([0-9]{2}\) [0-9]{5}-[0-9]{4}$/.test(telefone)) throw new Error("Telefone inválido");
+    
+    // Aceita: (XX) XXXX-XXXX, (XX) XXXXX-XXXX ou apenas números (10 ou 11 dígitos)
+    const regexTelefone = /^(\d{10,11}|\(\d{2}\) \s?\d{4,5}-\d{4})$/;
+    if (!regexTelefone.test(telefone)) throw new Error("Telefone inválido");
   }
 
   private validarSenhaForte(senha: string) {

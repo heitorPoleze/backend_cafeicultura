@@ -1,8 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import "dotenv/config";
-
-// Importa a função do Prisma que habilita o autocompletar e valida os tipos
 import { defineConfig } from "prisma/config";
 
 export default defineConfig({
@@ -13,6 +9,6 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    url: "mysql://root:@localhost:3306/cafeicultura",
   },
 });

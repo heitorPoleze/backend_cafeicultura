@@ -5,13 +5,14 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "nodemon src/server.ts",
-    "build": "tsc", 
+    "build": "tsc",
     "start": "node dist/server.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@quixo3/prisma-session-store": "^3.1.20",
     "@types/express-mysql-session": "^3.0.8",
     "@types/express-session": "^1.19.0",
     "@types/node": "^25.9.1",
@@ -23,6 +24,7 @@
     "typescript-eslint": "^8.59.4"
   },
   "dependencies": {
+    "@prisma/adapter-mariadb": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",

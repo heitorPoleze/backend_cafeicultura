@@ -1,14 +1,12 @@
 import { Router, Request, Response } from "express";
 import { body } from "express-validator";
-import { pool } from "../../shared/config/database";
 import AuthRepository from "./auth.repository";
 import AuthService from "./auth.service";
 import AuthController from "./auth.controller";
 import exigeLogin from "../../shared/middlewares/exigeLogin";
-
+import { prisma } from "../../shared/config/database";
 const router = Router();
-
-const authRepo = new AuthRepository(pool);
+const authRepo = new AuthRepository(prisma);
 const authService = new AuthService(authRepo);
 const authController = new AuthController(authService);
 

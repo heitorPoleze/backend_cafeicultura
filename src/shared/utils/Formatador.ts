@@ -23,7 +23,7 @@ class Formatador {
    * @param valor O valor a ser formatado (pode ser string, número ou nulo).
    * @returns A string formatada, ex: "1.234,567".
    */
-  public static decimal(valor: any): string {
+  public static decimal(valor: unknown): string {
     if (valor === null || valor === undefined) {
       return '0,00';
     }
@@ -50,9 +50,9 @@ class Formatador {
   }
 
   static limparValoresOpcionaisVazios(
-    dados: Record<string, any>,
+    dados: Record<string, unknown>,
     camposOpcionais: string[]
-  ): Record<string, any> {
+  ): Record<string, unknown> {
     const dadosLimpos = JSON.parse(JSON.stringify(dados));
 
     for (const chave of Object.keys(dadosLimpos)) {

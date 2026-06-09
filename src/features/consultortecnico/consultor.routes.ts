@@ -1,16 +1,16 @@
 import { Router } from "express";
 import { body } from "express-validator";
 import { cpf as validarCPF } from "cpf-cnpj-validator";
-import { pool } from "../../shared/config/database";
-import AuthRepository from "../auth/auth.repository";
+import { prisma } from "../../shared/config/database";
+//import AuthRepository from "../auth/auth.repository";
 import ConsultorTecnicoRepository from "./consultor.repository";
 import ConsultorTecnicoService from "./consultor.service";
 import ConsultorTecnicoController from "./consultor.controller";
 
 const router = Router();
 
-const authRepo = new AuthRepository(pool);
-const consultorRepo = new ConsultorTecnicoRepository(pool, authRepo);
+//const authRepo = new AuthRepository(prisma);
+const consultorRepo = new ConsultorTecnicoRepository(prisma);
 const consultorService = new ConsultorTecnicoService(consultorRepo);
 const consultorController = new ConsultorTecnicoController(consultorService);
 

@@ -1,5 +1,6 @@
 import { cpf as validarCPF } from "cpf-cnpj-validator";
 import Pessoa from "./pessoa.entity";
+import Endereco from "../endereco/endereco.vo";
 
 class PessoaFisica extends Pessoa {
   private _nome: string;
@@ -8,9 +9,11 @@ class PessoaFisica extends Pessoa {
   constructor(
     nome: string,
     cpf: string,
-    dataCadastro?: Date
+    dataCadastro?: Date,
+    idPeFisica?: number,
+    endereco?: Endereco
   ) {
-    super(dataCadastro);
+    super(idPeFisica, dataCadastro || new Date(), endereco);
     
     // Validações delegadas para métodos privados mantêm o construtor limpo
     this.validarNome(nome);
@@ -26,9 +29,11 @@ class PessoaFisica extends Pessoa {
     this.validarNome(novo_nome);
     this._nome = novo_nome;
   };
-
+  public get endereco(): Endereco | undefined { return this._endereco; };
+  public get documentos(): string[] { return [this._cpf]; };
+  public get idPessoa(): number | undefined { return this._idPessoa; };
   public get cpf(): string { return this._cpf; };
-
+  public get dataCadastro(): Date { return this._dataCadastro; }
   // --- Implementação do Contrato Abstrato ---
   public get documento(): string { return this._cpf; }
   public get nomeExibicao(): string { return this._nome; }
@@ -42,10 +47,15 @@ class PessoaFisica extends Pessoa {
 
   private validarCpf(cpf: string): void {
     if (!cpf) throw new Error("CPF não pode ser vazio!");
-    if (!/^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(cpf)) {
-      throw new Error("CPF deve estar no formato válido (XXX.XXX.XXX-XX)");
+    
+    // Esta regex aceita APENAS formatos de CPF:
+    // - 11 dígitos (sem máscara) OU
+    // - XXX.XXX.XXX-XX (com máscara)
+    if (!/^\d{11}$|^\d{3}\.\d{3}\.\d{3}\d{2}$/.test(cpf)) {
+      throw new Error("CPF deve conter 11 dígitos ou estar no formato XXX.XXX.XXX-XX");
     }
-    if (!validarCPF.isValid(cpf)) throw new Error("CPF inválido!");
+    
+    if (!validarCPF.isValid(cpf)) throw new Error("CPF informado é matematicamente inválido!");
   };
 
   // --- Saídas ---

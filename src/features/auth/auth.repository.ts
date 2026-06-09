@@ -1,17 +1,26 @@
-import { Pool, PoolConnection } from "mysql2/promise";
+import { PrismaClient } from "@prisma/client";
 import Credencial from "./auth.entity";
-import { IAuthRow } from "./auth.model";
 
 class AuthRepository {
-  constructor(private db: Pool) {}
+  constructor(private db: PrismaClient) {}
 
-  // Este método é chamado POR OUTROS repositórios (Proprietário ou Consultor)
-  // passando a conexão da transação aberta.
-  public async salvarCredencial(credencial: Credencial, idUsuarioRef: number, conn: PoolConnection): Promise<void> {
-    await conn.execute(
-      `INSERT INTO usuarios (idUsuario_PFK, email, telefone, senha) VALUES (?, ?, ?, ?);`,
-      [idUsuarioRef, credencial.email, credencial.telefone, credencial.senha]
-    );
+  /**
+   * Salva uma nova credencial. 
+   * Aceita um cliente Prisma opcional (para uso em transações).
+   */
+  public async salvarCredencial(
+    credencial: Credencial, 
+    idUsuarioRef: number, 
+  ): Promise<void> {
+  const client = this.db;
+    await client.usuarios.create({
+      data: {
+        idUsuario_PFK: idUsuarioRef,
+        email: credencial.email,
+        telefone: credencial.telefone,
+        senha: credencial.senha,
+      },
+    });
   };
 
   // Busca Inteligente para Login: Traz a credencial e o Nome para a Sessão
@@ -19,31 +28,60 @@ class AuthRepository {
     entrada: string, 
     tipo: "email" | "cpf" | "cnpj"
   ): Promise<{ credencial: Credencial, nomeSessao: string } | null> {
+    let usuario = null;
+
+    if (tipo === "email") {
+      usuario = await this.db.usuarios.findFirst({
+        where: { email: entrada },
+      });
+    } else if (tipo === "cpf") {
+      // Para CPF, busca na tabela pessoasfisicas primeiro
+      const pf = await this.db.pessoasfisicas.findFirst({
+        where: { cpf: entrada },
+      });
+      if (pf) {
+        usuario = await this.db.usuarios.findFirst({
+          where: { idUsuario_PFK: pf.idPeFisica_PFK },
+        });
+      }
+    } else if (tipo === "cnpj") {
+      // Para CNPJ, busca na tabela pessoasjuridicas primeiro
+      const pj = await this.db.pessoasjuridicas.findFirst({
+        where: { cnpj: entrada },
+      });
+      if (pj) {
+        usuario = await this.db.usuarios.findFirst({
+          where: { idUsuario_PFK: pj.idPeJuridica_PFK },
+        });
+      }
+    }
+
+    if (!usuario) return null;
+
+    // Busca o nome na tabela de pessoas
+    const pessoa = await this.db.pessoas.findUnique({
+      where: { idPessoa_PK: usuario.idUsuario_PFK },
+      include: {
+        pessoasfisicas: true,
+        pessoasjuridicas: true,
+      },
+    });
     
-    let whereClause = "";
-    if (tipo === "email") whereClause = "u.email = ?";
-    else if (tipo === "cpf") whereClause = "pf.cpf = ?";
-    else if (tipo === "cnpj") whereClause = "pj.cnpj = ?";
+    const nomeSessao =
+      pessoa?.pessoasfisicas?.nome ||
+      (pessoa?.pessoasjuridicas as unknown as { razaoSocial: string })?.razaoSocial ||
+      usuario.email ||
+      "Usuário";
 
-    const sql = `
-      SELECT 
-        u.idUsuario_PFK, u.email, u.telefone, u.senha,
-        COALESCE(pf.nome, pj.razaoSocial) as nomeExibicao
-      FROM usuarios u
-      JOIN pessoas p ON u.idUsuario_PFK = p.idPessoa_PK
-      LEFT JOIN pessoasfisicas pf ON p.idPessoa_PK = pf.idPeFisica_PFK
-      LEFT JOIN pessoasjuridicas pj ON p.idPessoa_PK = pj.idPeJuridica_PFK
-      WHERE ${whereClause} LIMIT 1;
-    `;
+    const credencial = new Credencial(
+      usuario.email, 
+      usuario.telefone, 
+      usuario.senha, 
+      usuario.idUsuario_PFK
+    );
 
-    const [rows] = await this.db.execute<IAuthRow[]>(sql, [entrada]);
-    if (rows.length === 0) return null;
-
-    const row = rows[0];
-    const credencial = new Credencial(row.email, row.telefone, row.senha, row.idUsuario_PFK);
-
-    return { credencial, nomeSessao: row.nomeExibicao };
-  };
+    return { credencial, nomeSessao };
+  }
 }
 
 export default AuthRepository;

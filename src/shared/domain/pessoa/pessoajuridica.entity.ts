@@ -1,18 +1,21 @@
 import { cnpj as validarCNPJ } from "cpf-cnpj-validator";
 import Pessoa from "./pessoa.entity";
+import Endereco from "../endereco/endereco.vo";
 
 class PessoaJuridica extends Pessoa {
   private _razaoSocial: string;
   private _cnpj: string;
-  private _inscricaoEstadual?: string;
+  private _inscricaoEstadual: string | null;
 
   constructor(
     razaoSocial: string,
     cnpj: string,
-    inscricaoEstadual?: string,
-    dataCadastro?: Date
+    inscricaoEstadual: string | null,
+    dataCadastro?: Date,
+    idPeJuridica?: number, 
+    endereco?: Endereco,
   ) {
-    super(dataCadastro);
+    super(idPeJuridica, dataCadastro || new Date(), endereco);
 
     this.validarRazaoSocial(razaoSocial);
     this.validarCnpj(cnpj);
@@ -29,11 +32,13 @@ class PessoaJuridica extends Pessoa {
     this.validarRazaoSocial(nova_razao);
     this._razaoSocial = nova_razao;
   };
-
+  public get endereco(): Endereco | undefined { return this._endereco; };
+  public get documentos(): string[] { return [this._cnpj]; }
+  public get idPessoa(): number | undefined { return this._idPessoa; };
   public get cnpj(): string { return this._cnpj; };
-
-  public get inscricaoEstadual(): string | undefined { return this._inscricaoEstadual; };
-  public set inscricaoEstadual(nova_ie: string | undefined) {
+  public get dataCadastro(): Date { return this._dataCadastro; }
+  public get inscricaoEstadual(): string | null { return this._inscricaoEstadual; };
+  public set inscricaoEstadual(nova_ie: string | null) {
     if (nova_ie) this.validarInscricaoEstadual(nova_ie);
     this._inscricaoEstadual = nova_ie;
   };
@@ -50,10 +55,15 @@ class PessoaJuridica extends Pessoa {
 
   private validarCnpj(cnpj: string): void {
     if (!cnpj) throw new Error("CNPJ não pode ser vazio!");
-    if (!/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/.test(cnpj)) {
-      throw new Error("CNPJ deve estar no formato válido (XX.XXX.XXX/XXXX-XX)");
+    
+    // Esta regex aceita APENAS formatos de CNPJ:
+    // - 14 dígitos (sem máscara) OU
+    // - XX.XXX.XXX/XXXX-XX (com máscara)
+    if (!/^\d{14}$|^\d{2}\.\d{3}\.\d{3}\/\d{4}\d{2}$/.test(cnpj)) {
+      throw new Error("CNPJ deve conter 14 dígitos ou estar no formato XX.XXX.XXX/XXXX-XX");
     }
-    if (!validarCNPJ.isValid(cnpj)) throw new Error("CNPJ inválido!");
+    
+    if (!validarCNPJ.isValid(cnpj)) throw new Error("CNPJ informado é matematicamente inválido!");
   };
 
   private validarInscricaoEstadual(ie: string): void {
