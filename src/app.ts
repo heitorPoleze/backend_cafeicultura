@@ -32,7 +32,15 @@ const corsOptions = {
     origin: string | undefined,
     callback: (err: Error | null, allow?: boolean) => void
   ) => {
-    if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ""))) {
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (process.env.NODE_ENV !== "production" && origin.includes("localhost")) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin.replace(/\/$/, ""))) {
       callback(null, true);
     } else {
       callback(new Error("Acesso não permitido por CORS"));
@@ -68,7 +76,7 @@ const sessMiddleware = session({
     httpOnly: true, // Impede acesso ao cookie via JavaScript (segurança)
     secure: process.env.NODE_ENV === "production", // Cookie seguro (HTTPS) apenas em produção
     sameSite: 'lax',
-    domain: process.env.NODE_ENV === "production" ? process.env.DOMAIN : undefined, 
+    domain: process.env.NODE_ENV === "production" ? process.env.DOMAIN : undefined,
     priority: 'high'
   },
 });
