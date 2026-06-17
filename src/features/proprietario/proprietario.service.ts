@@ -1,161 +1,88 @@
 import ProprietarioRepository from "./proprietario.repository";
 import Proprietario from "./proprietario.entity";
 import Credencial from "../auth/auth.entity";
-import PessoaFisica from "../../shared/domain/pessoa/pessoafisica.entity";
-import PessoaJuridica from "../../shared/domain/pessoa/pessoajuridica.entity";
-import Pessoa from "../../shared/domain/pessoa/pessoa.entity";
-import { CreateProprietarioDTO, ReturnProprietarioDTO, UpdateProprietarioDTO } from "./proprietario.dto";
+import PessoaFactory from "../../shared/domain/pessoa/pessoafactory.entity";
+import Pessoa from "../../shared/domain/pessoa/pessoabase.entity";
+import { CreateProprietarioDTO } from "./proprietario.dto";
 import Endereco from "../../shared/domain/endereco/endereco.vo";
+import PessoaRepository from "../../shared/domain/pessoa/pessoa.repository";
+import UsuarioRepository from "../usuario/usuario.repository";
+import Usuario from "../usuario/usuario.entity";
 
-export default class ProprietarioService {
-  constructor(private repo: ProprietarioRepository) {}
+class ProprietarioService {
+  constructor(
+    private repo: ProprietarioRepository,
+    private pessoaRepo: PessoaRepository,
+    private usuarioRepo: UsuarioRepository
+  ) {}
 
   public async cadastrar(dados: CreateProprietarioDTO): Promise<number> {
-    // 0. Validar duplicação de CPF/CNPJ
+    
     if (dados.tipoPessoa === "fisica") {
-      const cpfExistente = await this.repo.verificarCPFExistente(dados.cpf!);
+      const cpfExistente = await this.pessoaRepo.verificarCpfExistente(dados.cpf!);
       if (cpfExistente) {
         throw new Error(`Já existe um proprietário cadastrado com o CPF: ${dados.cpf}`);
       }
     } else if (dados.tipoPessoa === "juridica") {
-      const cnpjExistente = await this.repo.verificarCNPJExistente(dados.cnpj!);
+      const cnpjExistente = await this.pessoaRepo.verificarCnpjExistente(dados.cnpj!);
       if (cnpjExistente) {
         throw new Error(`Já existe um proprietário cadastrado com o CNPJ: ${dados.cnpj}`);
-      }
-    }
+      };
+    };
 
-    // 1. Determinar e instanciar o perfil (PF ou PJ)
-    let perfil: Pessoa;
-    if (dados.tipoPessoa === "fisica") {
-      perfil = new PessoaFisica(dados.nome!, dados.cpf!);
-    } else if (dados.tipoPessoa === "juridica") {
-      perfil = new PessoaJuridica(dados.razaoSocial!, dados.cnpj!, dados.inscrEstadual);
-    } else {
-      throw new Error("Tipo de pessoa inválido.");
-    }
-    // instanciar credencial
-    const credencial = new Credencial(dados.email as string, dados.telefone as string, dados.senha as string);
+    const emailExistente = await this.usuarioRepo.verificarEmailExistente(dados.email);
+    if (emailExistente) {
+      throw new Error(`O e-mail ${dados.email} já está em uso.`);
+    };
+
+    const telefoneExistente = await this.usuarioRepo.verificarTelefoneExistente(dados.telefone);
+    if (telefoneExistente) {
+      throw new Error(`O telefone ${dados.telefone} já está em uso.`);
+    };
+
+    const perfil: Pessoa = PessoaFactory.criarPessoa(dados.tipoPessoa, dados);
+
+    const credencial = new Usuario(dados.email, dados.telefone, dados.senha, perfil);
     await credencial.criptografarSenha();
+
     const proprietario = new Proprietario(
       perfil,
       credencial.email,
       credencial.telefone,
       credencial.senha
     );
-    return await this.repo.salvarComTransacao(proprietario, credencial);
-  }
-
-  public async buscarPorId(id: number): Promise<ReturnProprietarioDTO | null> {
-    const proprietario = await this.repo.buscarPorId(id);
-    if (!proprietario) return null;
-
-    return {
-      id: proprietario.idPessoa!,
-      nomeExibicao: proprietario.nomeExibicao,
-      tipoPessoa: proprietario.tipoUser,
-      email: proprietario.email,
-      telefone: proprietario.telefone,
-      documentos: proprietario.documentos || [],
-      dataCadastro: proprietario.perfil.dataCadastro,
-      endereco: proprietario.endereco
-        ? {
-            idEndereco: proprietario.endereco.idEndereco || 0,
-            cidade: proprietario.endereco.cidade,
-            bairro: proprietario.endereco.bairro,
-            cep: proprietario.endereco.cep,
-            uf: proprietario.endereco.uf,
-            pais: proprietario.endereco.pais,
-            logradouro: proprietario.endereco.logradouro,
-          }
-        : undefined,
-    };
-  }
+    return await this.repo.salvarComTransacao(proprietario);
+  };
 
   public async criarEndereco(dados: Record<string, unknown>, pessoaId: number): Promise<number> {
     const endereco = new Endereco(
       dados.cidade as string,
       dados.bairro as string,
-      dados.cep as string || dados.cep as string,
-      dados.uf as string || dados.uf as string,
-      dados.pais as string || "Brasil",
+      dados.cep as string, 
+      dados.uf as string,
+      (dados.pais as string) || "Brasil",
       dados.logradouro as string,
-      pessoaId // O ID será o próprio pessoaId no banco
+      pessoaId 
     );
-    return await this.repo.cadastrarEndereco(endereco, pessoaId);
-  }
+    return await this.pessoaRepo.cadastrarEndereco(endereco, pessoaId);
+  };
 
   public async removerEndereco(pessoaId: number): Promise<void> {
-    await this.repo.removerEndereco(pessoaId);
-  }
-
-  public async excluir(id: number): Promise<void> {
-    const proprietario = await this.repo.buscarPorId(id);
-    if (!proprietario) {
-      throw new Error("Proprietário não encontrado para exclusão.");
-    }
-    if (proprietario.endereco) {
-      await this.repo.removerEndereco(id);
-    }
-    await this.repo.excluir(id);
-  }
-  
-  public async atualizar(id: number, dados: UpdateProprietarioDTO): Promise<void> {
-    const existente = await this.repo.buscarPorId(id);
-    if (!existente) {
-      throw new Error("Proprietário não encontrado para atualização.");
-    }
-
-    // 1. Preparar credenciais (tratar senha se fornecida)
-    let senhaFinal = existente.credencial.senha;
-    if (dados.senha) {
-      const cred = new Credencial(dados.email as string || existente.email as string, dados.telefone as string || existente.telefone as string, dados.senha as string);
-      await cred.criptografarSenha();
-      senhaFinal = cred.senha;
-    }
-
-    // 2. Atualizar Perfil (PF ou PJ)
-    let perfil: Pessoa;
-    if (existente.tipoUser === "PF") {
-      const pfAtual = existente.perfil as PessoaFisica;
-      perfil = new PessoaFisica(
-        dados.nome as string ?? pfAtual.nomeExibicao,
-        pfAtual.cpf,
-        pfAtual.dataCadastro,
-        id,
-        pfAtual.endereco
-      );
-    } else {
-      const pjAtual = existente.perfil as PessoaJuridica;
-      perfil = new PessoaJuridica(
-        dados.razaoSocial as string?? pjAtual.razaoSocial,
-        pjAtual.cnpj,
-        dados.inscrEstadual as string ?? pjAtual.inscricaoEstadual,
-        pjAtual.dataCadastro,
-        id,
-        pjAtual.endereco
-      );
-    }
-
-    const proprietarioAtualizado = new Proprietario(
-      perfil,
-      dados.email as string ?? existente.email as string,
-      dados.telefone as string ?? existente.telefone as string,
-      senhaFinal
-    );
-
-    await this.repo.atualizarProprietario(proprietarioAtualizado);
-  }
+    await this.pessoaRepo.removerEndereco(pessoaId);
+  };
 
   public async atualizarEndereco(pessoaId: number, dados: Record<string, unknown>): Promise<void> {
     const endereco = new Endereco(
       dados.cidade as string,
       dados.bairro as string,
-      dados.cep as string || dados.cep as string,
-      dados.uf as string || dados.uf as string,
-      dados.pais as string || "Brasil",
+      dados.cep as string,
+      dados.uf as string,
+      (dados.pais as string) || "Brasil",
       dados.logradouro as string,
       pessoaId
     );
-    await this.repo.atualizarEndereco(endereco, pessoaId);
-  }
+    await this.pessoaRepo.atualizarEndereco(endereco, pessoaId);
+  };
 }
+
+export default ProprietarioService;

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import AuthService from "./auth.service";
-import { LoginRequestDTO, LoginResponseDTO } from "./auth.dto";
+import { LoginRequestDTO, LoginResponseDTO, LogoutResponseDTO } from "./auth.dto";
 
 class AuthController {
   constructor(private authService: AuthService) {}
@@ -10,7 +10,7 @@ class AuthController {
     const erros = validationResult(req);
     if (!erros.isEmpty()) {
       return res.status(400).json({ erros: erros.array() });
-    }
+    };
 
     const dto: LoginRequestDTO = req.body;
 
@@ -24,11 +24,7 @@ class AuthController {
       req.session.idUsuario = dadosSessao.idUsuario;
       req.session.nome = dadosSessao.nome;
 
-      const resposta: LoginResponseDTO = {
-        mensagem: "Login efetuado com sucesso!",
-        sessaoAtiva: dadosSessao,
-      };
-
+      const resposta: LoginResponseDTO = { mensagem: "Login efetuado com sucesso!"};
       res.status(200).json(resposta);
     } catch (error: unknown) {
       const mensagem = error instanceof Error ? error.message : "Erro de autenticação";
@@ -37,13 +33,16 @@ class AuthController {
   }
 
   public logout(req: Request, res: Response) {
+    let resposta: LogoutResponseDTO;
     req.session.destroy((err) => {
       if (err) {
-        res.status(500).json({ mensagem: "Erro ao encerrar sessão" });
+        resposta = { mensagem: "Erro ao realizar logout. Tente novamente." };
+        res.status(500).json(resposta);
         return;
       }
       res.clearCookie("connect.sid");
-      res.status(200).json({ mensagem: "Logout realizado com sucesso" });
+      resposta = { mensagem: "Logout realizado com sucesso" };
+      res.status(200).json(resposta);
     });
   };
 }

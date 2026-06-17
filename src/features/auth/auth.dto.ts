@@ -8,8 +8,8 @@ export type LoginRequestDTO = {
 
 export type LoginResponseDTO = {
   mensagem: string;
-  sessaoAtiva?: {
-    idUsuario: number;
-    nome: string;
-  };
-}
+};
+
+export type LogoutResponseDTO = {
+  mensagem: string;
+};

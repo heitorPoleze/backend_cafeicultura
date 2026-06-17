@@ -2,16 +2,18 @@ import { Router } from "express";
 import { body } from "express-validator";
 import { cpf as validarCPF, cnpj as validarCNPJ } from "cpf-cnpj-validator";
 import exigeLogin from "../../shared/middlewares/exigeLogin";
-//import AuthRepository from "../auth/auth.repository";
+import PessoaRepository from "../../shared/domain/pessoa/pessoa.repository";
+import UsuarioRepository from "../usuario/usuario.repository";
 import ProprietarioRepository from "./proprietario.repository";
 import ProprietarioService from "./proprietario.service";
 import ProprietarioController from "./proprietario.controller";
 import { prisma } from "../../shared/config/database";
 const router = Router();
 
-//const authRepo = new AuthRepository(prisma);
-const proprietarioRepo = new ProprietarioRepository(prisma);
-const proprietarioService = new ProprietarioService(proprietarioRepo);
+const pessoaRepo = new PessoaRepository(prisma);
+const usuarioRepo = new UsuarioRepository(prisma);
+const proprietarioRepo = new ProprietarioRepository(prisma, pessoaRepo, usuarioRepo);
+const proprietarioService = new ProprietarioService(proprietarioRepo, pessoaRepo, usuarioRepo);
 const proprietarioController = new ProprietarioController(proprietarioService);
 
 
@@ -20,7 +22,7 @@ const proprietarioController = new ProprietarioController(proprietarioService);
 router.post(
   "/",
   [
-    // Validações Base (Credenciais)
+    // Validações Base (usuário)
     body("email").isEmail().withMessage("O email informado não é válido"),
     body("telefone")
       .matches(/^(\d{10,11}|\(\d{2}\) \s?\d{4,5}-\d{4})$/)
@@ -43,26 +45,6 @@ router.post(
     body("inscrEstadual").if(body("tipoPessoa").equals("juridica")).optional()
   ],
   proprietarioController.cadastrar.bind(proprietarioController)
-);
-
-router.get(
-  "/:id",
-  exigeLogin(),
-  proprietarioController.buscarPorId.bind(proprietarioController)
-);
-
-router.put(
-  "/:id",
-  exigeLogin(),
-  [
-    body("email").optional().isEmail().withMessage("Email inválido"),
-    body("telefone").optional().matches(/^(\d{10,11}|\(\d{2}\) \s?\d{4,5}-\d{4})$/).withMessage("Telefone inválido"),
-    body("senha").optional().isLength({ min: 8 }).withMessage("Senha deve ter 8 caracteres"),
-    body("nome").optional().notEmpty().withMessage("O nome não pode ser vazio"),
-    body("razaoSocial").optional().notEmpty().withMessage("A Razão Social não pode ser vazia"),
-    body("nomeFantasia").optional().notEmpty().withMessage("O Nome Fantasia não pode ser vazio")
-  ],
-  proprietarioController.atualizar.bind(proprietarioController)
 );
 
 router.put(
@@ -96,12 +78,6 @@ router.delete(
   "/:id/endereco/:enderecoId",
   exigeLogin(),
   proprietarioController.removerEndereco.bind(proprietarioController)
-);
-
-router.delete(
-  "/:id",
-  exigeLogin(),
-  proprietarioController.excluir.bind(proprietarioController)
 );
 
 export default router;

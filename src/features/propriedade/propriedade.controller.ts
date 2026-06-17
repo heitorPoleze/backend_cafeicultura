@@ -10,11 +10,10 @@ class PropriedadeController {
     if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
 
     try {
-      // Puxa o ID da sessão injetado pelo exigeLogin
       const idUsuario = req.session.idUsuario!; 
-      const id = await this.service.cadastrar(req.body, idUsuario);
+      await this.service.cadastrar(req.body, idUsuario);
       
-      res.status(201).json({ mensagem: "Propriedade cadastrada com sucesso", id });
+      res.status(201).json({ mensagem: "Propriedade cadastrada com sucesso" });
     } catch (error: unknown) {
       res.status(403).json({ mensagem: (error as Error).message }); // 403 Forbidden ou 400
     };

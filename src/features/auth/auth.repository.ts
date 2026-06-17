@@ -4,31 +4,12 @@ import Credencial from "./auth.entity";
 class AuthRepository {
   constructor(private db: PrismaClient) {}
 
-  /**
-   * Salva uma nova credencial. 
-   * Aceita um cliente Prisma opcional (para uso em transações).
-   */
-  public async salvarCredencial(
-    credencial: Credencial, 
-    idUsuarioRef: number, 
-  ): Promise<void> {
-  const client = this.db;
-    await client.usuarios.create({
-      data: {
-        idUsuario_PFK: idUsuarioRef,
-        email: credencial.email,
-        telefone: credencial.telefone,
-        senha: credencial.senha,
-      },
-    });
-  };
-
-  // Busca Inteligente para Login: Traz a credencial e o Nome para a Sessão
-  public async buscarParaLogin(
+  public async autenticar(
     entrada: string, 
     tipo: "email" | "cpf" | "cnpj"
   ): Promise<{ credencial: Credencial, nomeSessao: string } | null> {
     let usuario = null;
+    let nomeSessao = "Usuário";
 
     if (tipo === "email") {
       usuario = await this.db.usuarios.findFirst({
@@ -66,16 +47,18 @@ class AuthRepository {
         pessoasjuridicas: true,
       },
     });
-    
-    const nomeSessao =
-      pessoa?.pessoasfisicas?.nome ||
-      (pessoa?.pessoasjuridicas as unknown as { razaoSocial: string })?.razaoSocial ||
-      usuario.email ||
-      "Usuário";
 
+    if (pessoa) {
+      if (pessoa.pessoasfisicas) {
+        nomeSessao = pessoa.pessoasfisicas.nome;
+      } else if (pessoa.pessoasjuridicas) {
+        nomeSessao = pessoa.pessoasjuridicas.razaoSocial;
+      }
+    };
+    
     const credencial = new Credencial(
-      usuario.email, 
-      usuario.telefone, 
+      tipo,
+      entrada, 
       usuario.senha, 
       usuario.idUsuario_PFK
     );

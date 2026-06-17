@@ -6,90 +6,6 @@ datasource db {
   provider = "mysql"
 }
 
-model consultorestecnicos {
-  idConsultor_PFK Int @id @unique(map: "idConsultor_PFK_UNIQUE") @db.UnsignedInt
-}
-
-model enderecos {
-  idEndereco_PK Int        @id @unique(map: "idEndereco_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
-  logradouro    String     @db.VarChar(50)
-  bairro        String     @db.VarChar(50)
-  cidade        String     @db.VarChar(50)
-  uf            String     @db.Char(2)
-  pais          String     @db.VarChar(20)
-  cep           String     @db.Char(9)
-  armazens      armazens[]
-  propriedades   propriedades[]
-  pessoas        pessoas?   @relation(fields: [idEndereco_PK], references: [idPessoa_PK], map: "Endereco_Pessoa")
-}
-
-model pessoas {
-  idPessoa_PK           Int                     @id @unique(map: "idPessoa_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
-  dataCadastro          DateTime                @unique(map: "dataCadastro_UNIQUE") @db.DateTime(0)
-  pessoasfisicas        pessoasfisicas?
-  pessoasjuridicas      pessoasjuridicas?
-  enderecos             enderecos?
-  usuarios              usuarios?
-  transacoesfinanceiras transacoesfinanceiras[]
-
-  @@map("pessoas")
-}
-
-model pessoasfisicas {
-  idPeFisica_PFK Int     @id @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
-  nome           String  @db.VarChar(100)
-  cpf            String  @unique(map: "cpf_UNIQUE") @db.Char(14)
-  pessoas        pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "PessoaFisica_Pessoa")
-}
-
-model pessoasjuridicas {
-  idPeJuridica_PFK Int     @id @unique(map: "idPeJuridica_PFK_UNIQUE") @db.UnsignedInt
-  razaoSocial      String  @db.VarChar(100)
-  cnpj             String  @unique(map: "cnpj_UNIQUE") @db.Char(18)
-  inscEstadual     String? @unique(map: "inscEstadual_UNIQUE") @db.VarChar(45)
-  pessoas          pessoas @relation(fields: [idPeJuridica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "PessoaJuridica_Pessoa")
-}
-
-model propriedades {
-  idPropriedade_PK      Int                     @id @unique(map: "idPropriedade_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
-  idEndereco_FK         Int                     @db.UnsignedInt
-  idProprietario_FK     Int                     @db.UnsignedInt
-  idTamanho_FK          Int                     @db.UnsignedInt
-  nome                  String                  @db.VarChar(25)
-  safras                safras[]
-  transacoesfinanceiras transacoesfinanceiras[]
-
-  @@index([idEndereco_FK], map: "propriedade_endereco_idx")
-  @@index([idProprietario_FK], map: "propriedade_proprietario_idx")
-  @@index([idTamanho_FK], map: "propriedade_tamanho_idx")
-  proprietario       proprietarios @relation(fields: [idProprietario_FK], references: [idProprietario_PFK], map: "propriedade_proprietario")
-  tamanho               tamanhos               @relation(fields: [idTamanho_FK], references: [idTamanho_PK], map: "propriedade_tamanho")
-  endereco             enderecos              @relation(fields: [idEndereco_FK], references: [idEndereco_PK], map: "propriedade_endereco")
-}
-
-model proprietarios {
-  idProprietario_PFK Int @id @unique(map: "idProprietario_PFK_UNIQUE") @db.UnsignedInt
-  propriedades       propriedades[]
-}
-
-model tamanhos {
-  idTamanho_PK Int    @id @unique(map: "idTamanho_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
-  valor        Float  @db.Float
-  medida       String @db.VarChar(7)
-  propriedades propriedades[]
-
-}
-
-model usuarios {
-  idUsuario_PFK Int    @unique(map: "idUsuario_PFK_UNIQUE") @db.UnsignedInt
-  email         String @unique(map: "email_UNIQUE") @db.VarChar(50)
-  telefone      String @unique(map: "telefone_UNIQUE") @db.Char(15)
-  senha         String @db.VarChar(500)
-  pessoas       pessoas  @relation(fields: [idUsuario_PFK], references: [idPessoa_PK], map: "Usuario_Pessoa")
-
-  @@id([idUsuario_PFK, telefone, email])
-}
-
 model armazenagens {
   idEventoAgricola_PFK Int                  @unique(map: "idEventoAgricola_PFK_UNIQUE") @db.UnsignedInt
   idPilagem_PFK        Int                  @db.UnsignedInt
@@ -146,6 +62,11 @@ model consultorespropriedades {
   @@index([idPropriedade_PFK], map: "propriedade_propriedade_idx")
 }
 
+model consultorestecnicos {
+  idConsultor_PFK Int      @id @unique(map: "idConsultor_PFK_UNIQUE") @db.UnsignedInt
+  usuarios        usuarios @relation(fields: [idConsultor_PFK], references: [idUsuario_PFK], onDelete: NoAction, onUpdate: NoAction, map: "consultor_usuario")
+}
+
 model despesas {
   idTransacaoFinanceira_PFK Int                   @id @unique(map: "idTransacaoFinanceira_PFK_UNIQUE") @db.UnsignedInt
   descricao                 String                @db.VarChar(50)
@@ -181,6 +102,29 @@ model documentosetiquetas {
 
   @@id([idDocumento_PFK, idEtiqueta_PFK])
   @@index([idEtiqueta_PFK], map: "etiqueta_etiqueta_idx")
+}
+
+model enderecos {
+  idEndereco_PK Int            @id @unique(map: "idEndereco_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
+  logradouro    String         @db.VarChar(50)
+  bairro        String         @db.VarChar(50)
+  cidade        String         @db.VarChar(50)
+  uf            String         @db.Char(2)
+  pais          String         @db.VarChar(20)
+  cep           String         @db.Char(9)
+  armazens      armazens[]
+  pessoas       pessoas[]
+  propriedades  propriedades[]
+}
+
+model estoque {
+  idEstoque_PK    Int   @id @unique(map: "idEstoque_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
+  idEventogricola Int   @db.UnsignedInt
+  idPropriedade   Int   @db.UnsignedInt
+  idTalhao        Int   @db.UnsignedInt
+  idSafra         Int   @db.UnsignedInt
+  idTipoCafe      Int   @db.UnsignedInt
+  quantidade      Float @db.Float
 }
 
 model etiquetas {
@@ -314,6 +258,34 @@ model metodossecagens {
   secagens        secagens[]
 }
 
+model pessoas {
+  idPessoa_PK           Int                     @id @unique(map: "idPessoa_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
+  idEndereco_FK         Int?                    @db.UnsignedInt
+  dataCadastro          DateTime                @unique(map: "dataCadastro_UNIQUE") @db.DateTime(0)
+  enderecos             enderecos?              @relation(fields: [idEndereco_FK], references: [idEndereco_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_endereco")
+  pessoasfisicas        pessoasfisicas?
+  pessoasjuridicas      pessoasjuridicas?
+  transacoesfinanceiras transacoesfinanceiras[]
+  usuarios              usuarios?
+
+  @@index([idEndereco_FK], map: "pessoa_endereco_idx")
+}
+
+model pessoasfisicas {
+  idPeFisica_PFK Int     @id @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
+  nome           String  @db.VarChar(100)
+  cpf            String  @unique(map: "cpf_UNIQUE") @db.Char(14)
+  pessoas        pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "PessoaFisica_Pessoa")
+}
+
+model pessoasjuridicas {
+  idPeJuridica_PFK Int     @id @unique(map: "idPeJuridica_PFK_UNIQUE") @db.UnsignedInt
+  razaoSocial      String  @db.VarChar(100)
+  cnpj             String  @unique(map: "cnpj_UNIQUE") @db.Char(18)
+  inscEstadual     String? @unique(map: "inscEstadual_UNIQUE") @db.VarChar(45)
+  pessoas          pessoas @relation(fields: [idPeJuridica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoaJuridica_pessoa")
+}
+
 model pilagens {
   idEventoAgricola_PFK Int              @id @unique(map: "idEventoAgricola_PFK_UNIQUE") @db.UnsignedInt
   idTipoCafe_FK        Int              @db.UnsignedInt
@@ -344,6 +316,30 @@ model presecagens {
 
 model prestadoresdeservico {
   idPeFisica_PFK Int @id @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
+}
+
+model propriedades {
+  idPropriedade_PK      Int                     @id @unique(map: "idPropriedade_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
+  idEndereco_FK         Int                     @db.UnsignedInt
+  idProprietario_FK     Int                     @db.UnsignedInt
+  idTamanho_FK          Int                     @db.UnsignedInt
+  nome                  String                  @db.VarChar(25)
+  enderecos             enderecos               @relation(fields: [idEndereco_FK], references: [idEndereco_PK], onDelete: NoAction, onUpdate: NoAction, map: "propriedade_endereco")
+  proprietarios         proprietarios           @relation(fields: [idProprietario_FK], references: [idProprietario_PFK], onDelete: NoAction, onUpdate: NoAction, map: "propriedade_proprietario")
+  tamanhos              tamanhos                @relation(fields: [idTamanho_FK], references: [idTamanho_PK], onDelete: NoAction, onUpdate: NoAction, map: "propriedade_tamanho")
+  safras                safras[]
+  talhoes               talhoes[]
+  transacoesfinanceiras transacoesfinanceiras[]
+
+  @@index([idEndereco_FK], map: "propriedade_endereco_idx")
+  @@index([idProprietario_FK], map: "propriedade_proprietario_idx")
+  @@index([idTamanho_FK], map: "propriedade_tamanho_idx")
+}
+
+model proprietarios {
+  idProprietario_PFK Int            @id @unique(map: "idProprietario_PFK_UNIQUE") @db.UnsignedInt
+  propriedades       propriedades[]
+  usuarios           usuarios       @relation(fields: [idProprietario_PFK], references: [idUsuario_PFK], onDelete: NoAction, onUpdate: NoAction, map: "proprietario_usuario")
 }
 
 model receitas {
@@ -379,18 +375,10 @@ model secagens {
   qtdRepasseMeeiro     Int              @default(0) @db.UnsignedInt
   eventosagricolas     eventosagricolas @relation(fields: [idEventoAgricola_PFK], references: [idEvento_PFK], onDelete: NoAction, onUpdate: NoAction, map: "secagem_eventoagricola")
   metodossecagens      metodossecagens  @relation(fields: [idMetSecagem_FK], references: [idMetSecagem_PK], onDelete: NoAction, onUpdate: NoAction, map: "secagem_metodo")
-  subtiposcafes        subtiposcafes    @relation(fields: [idSubtipoCafe_FK], references: [idSubTipoCafe_PK], onDelete: NoAction, onUpdate: NoAction, map: "secagem_subtipocafe")
   tiposcafes           tiposcafes       @relation(fields: [idTipoCafe_FK], references: [idTipoCafe_PK], onDelete: NoAction, onUpdate: NoAction, map: "secagem_tipocafe")
 
   @@index([idMetSecagem_FK], map: "secagem_metodo_idx")
-  @@index([idSubtipoCafe_FK], map: "secagem_subtipocafe_idx")
   @@index([idTipoCafe_FK], map: "secagem_tipocafe_idx")
-}
-
-model subtiposcafes {
-  idSubTipoCafe_PK Int        @id @unique(map: "idSubTipoCafe_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
-  descricao        String     @unique(map: "descricao_UNIQUE") @db.VarChar(8)
-  secagens         secagens[]
 }
 
 model talhoes {
@@ -398,15 +386,26 @@ model talhoes {
   idPropriedade_FK  Int                 @db.UnsignedInt
   idTamanho_FK      Int                 @db.UnsignedInt
   nome              String              @db.VarChar(25)
+  qtdPeCafe         Int                 @db.UnsignedInt
   especie           String              @db.Char(7)
-  dataInicio        DateTime            @db.DateTime(0)
-  dataFim           DateTime?           @db.DateTime(0)
+  dataInicio        DateTime            @db.Date
+  dataFim           DateTime?           @db.Date
   arquivado         Int                 @db.TinyInt
   eventosagricolas  eventosagricolas[]
+  propriedades      propriedades        @relation(fields: [idPropriedade_FK], references: [idPropriedade_PK], onDelete: NoAction, onUpdate: NoAction, map: "talhao_propriedade")
+  tamanhos          tamanhos            @relation(fields: [idTamanho_FK], references: [idTamanho_PK], onDelete: NoAction, onUpdate: NoAction, map: "talhao_tamanho")
   variedadestalhoes variedadestalhoes[]
 
   @@index([idPropriedade_FK], map: "talhao_propriedade_idx")
   @@index([idTamanho_FK], map: "talhao_tamanho_idx")
+}
+
+model tamanhos {
+  idTamanho_PK Int            @id @unique(map: "idTamanho_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
+  valor        Float          @db.Float
+  medida       String         @db.VarChar(7)
+  propriedades propriedades[]
+  talhoes      talhoes[]
 }
 
 model tiposcafes {
@@ -472,6 +471,18 @@ model tratosinsumos {
   @@index([idInsumo_PFK], map: "insumo_insumo_idx")
 }
 
+model usuarios {
+  idUsuario_PFK       Int                  @unique(map: "idUsuario_PFK_UNIQUE") @db.UnsignedInt
+  email               String               @unique(map: "email_UNIQUE") @db.VarChar(50)
+  telefone            String               @unique(map: "telefone_UNIQUE") @db.Char(15)
+  senha               String               @db.VarChar(500)
+  consultorestecnicos consultorestecnicos?
+  proprietarios       proprietarios?
+  pessoas             pessoas              @relation(fields: [idUsuario_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "usuario_pessoa")
+
+  @@id([idUsuario_PFK, telefone, email])
+}
+
 model variedades {
   idVariedade_PK    Int                 @unique(map: "idVariedade_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
   descricao         String              @unique(map: "descricao_UNIQUE") @db.VarChar(10)
@@ -509,8 +520,8 @@ model vendasarmazenagens {
 }
 
 model session {
-  id String   @id
+  id        String   @id
   sid       String   @unique(map: "sid_UNIQUE")
   data      String   @db.Text
-  expiresAt   DateTime
+  expiresAt DateTime
 }

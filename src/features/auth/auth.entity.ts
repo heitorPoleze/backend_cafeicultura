@@ -2,58 +2,58 @@ import bcrypt from "bcryptjs";
 
 class Credencial {
   constructor(
-    private _email: string,
-    private _telefone: string,
+    private _tipoEntrada: "email" | "cnpj" | "cpf",
+    private _entrada: string,
     private _senha: string,
     private _idUsuario?: number
   ) {
-    this.validarEmail(_email);
-    this.validarTelefone(_telefone);
+    this.validarEntrada(_entrada);
     // A senha pode vir já em hash do banco, então só validamos se não estiver "hasheada"
     if (!_senha.startsWith("$2a$") && !_senha.startsWith("$2b$")) {
       this.validarSenhaForte(_senha);
-    }
-  }
+    };
+  };
 
   // --- Getters ---
-  public get email(): string { return this._email; }
-  public get telefone(): string { return this._telefone; }
+  public get entrada(): string { return this._entrada; }
   public get senha(): string { return this._senha; }
   public get idUsuario(): number | undefined { return this._idUsuario; }
 
   // --- Comportamentos ---
-  public async criptografarSenha(): Promise<void> {
-    const salt = await bcrypt.genSalt(10);
-    this._senha = await bcrypt.hash(this._senha, salt);
-  }
-
   public async compararSenha(senhaRecebida: string): Promise<boolean> {
     return await bcrypt.compare(senhaRecebida, this._senha);
-  }
+  };
 
   // --- Validações (Blindagem do Modelo) ---
-  private validarEmail(email: string) {
-    if (!email || email.trim() === "") throw new Error("Email não pode ser vazio");
-    if (!/^[a-zA-Záéíóúãõàèùâêô0-9._%+-]+@[a-zA-Z0-9.-]+(\.[a-zA-Z]{2,})?$/.test(email)) {
-      throw new Error("Email inválido");
-    }
-  }
-
-  private validarTelefone(telefone: string) {
-    if (!telefone || telefone.trim() === "") throw new Error("Telefone não pode ser vazio");
-    
-    // Aceita: (XX) XXXX-XXXX, (XX) XXXXX-XXXX ou apenas números (10 ou 11 dígitos)
-    const regexTelefone = /^(\d{10,11}|\(\d{2}\) \s?\d{4,5}-\d{4})$/;
-    if (!regexTelefone.test(telefone)) throw new Error("Telefone inválido");
-  }
+  private validarEntrada(entrada: string) {
+    if (!entrada || entrada.trim() === "") throw new Error("Entrada não pode ser vazio");
+    // Verificar qual tipo de entrada é
+    switch (this._tipoEntrada) {
+      case "email":
+        if (!/^[a-zA-Záéíóúãõàèùâêô0-9._%+-]+@[a-zA-Z0-9.-]+(\.[a-zA-Z]{2,})?$/.test(entrada)) {
+          throw new Error("Email inválido");
+        };
+        break;
+      case "cnpj":
+        if (!/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/.test(entrada)) {
+          throw new Error("CNPJ inválido");
+        };
+        break;
+      case "cpf":
+        if (!/^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(entrada)) {
+          throw new Error("CPF inválido");
+        };
+        break;
+    };
+  };
 
   private validarSenhaForte(senha: string) {
     if (!senha) throw new Error("Senha não pode ser vazia!");
     if (senha.length < 8) throw new Error("Senha deve conter pelo menos 8 caracteres!");
     if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).+$/.test(senha)) {
       throw new Error("Senha deve conter maiúscula, minúscula, número e símbolo.");
-    }
-  }
+    };
+  };
 }
 
 export default Credencial;

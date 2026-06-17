@@ -9,18 +9,18 @@ class PropriedadeRepository {
     const novaPropriedade = await this.db.propriedades.create({
       data: {
         nome: prop.nome,
-        proprietario: {
+        proprietarios: {
           connect: {
             idProprietario_PFK: prop.idProprietario,
           },
         },
-        tamanho: {
+        tamanhos: {
           create: {
             valor: prop.tamanho.valor,
             medida: prop.tamanho.medida,
           },
         },
-        endereco: {
+        enderecos: {
           create: {
             logradouro: prop.endereco.logradouro,
             bairro: prop.endereco.bairro,
@@ -40,18 +40,18 @@ class PropriedadeRepository {
     const prop = await this.db.propriedades.findUnique({
       where: { idPropriedade_PK: idPropriedade },
       include: {
-        tamanho: true,
-        endereco: true,
+        tamanhos: true,
+        enderecos: true,
       },
     });
 
     if (!prop) return null;
     
-    const tamanhoEntidade = new Tamanho(prop.tamanho.valor, prop.tamanho.medida as "hectare" | "m2", prop.tamanho.idTamanho_PK);
+    const tamanhoEntidade = new Tamanho(prop.tamanhos.valor, prop.tamanhos.medida as "hectare" | "m2", prop.tamanhos.idTamanho_PK);
     const enderecoEntidade = new Endereco(
-      prop.endereco.logradouro, prop.endereco.bairro, prop.endereco.cidade, 
-      prop.endereco.uf, prop.endereco.pais, prop.endereco.cep, 
-      prop.endereco.idEndereco_PK
+      prop.enderecos.logradouro, prop.enderecos.bairro, prop.enderecos.cidade, 
+      prop.enderecos.uf, prop.enderecos.pais, prop.enderecos.cep, 
+      prop.enderecos.idEndereco_PK
     );
     
     return new Propriedade(prop.nome, prop.idProprietario_FK, tamanhoEntidade, enderecoEntidade, prop.idPropriedade_PK);
@@ -89,17 +89,17 @@ class PropriedadeRepository {
     const propriedades = await this.db.propriedades.findMany({
       where: { idProprietario_FK: idProprietario },
       include: {
-        tamanho: true,
-        endereco: true
+        tamanhos: true,
+        enderecos: true
       }
     });
 
     return propriedades.map(p => {
-      const tamanho = new Tamanho(p.tamanho.valor, p.tamanho.medida as "hectare" | "m2", p.tamanho.idTamanho_PK);
+      const tamanho = new Tamanho(p.tamanhos.valor, p.tamanhos.medida as "hectare" | "m2", p.tamanhos.idTamanho_PK);
       const endereco = new Endereco(
-        p.endereco.logradouro, p.endereco.bairro, p.endereco.cidade, 
-        p.endereco.uf, p.endereco.pais, p.endereco.cep, 
-        p.endereco.idEndereco_PK
+        p.enderecos.logradouro, p.enderecos.bairro, p.enderecos.cidade, 
+        p.enderecos.uf, p.enderecos.pais, p.enderecos.cep, 
+        p.enderecos.idEndereco_PK
       );
       return new Propriedade(p.nome, p.idProprietario_FK, tamanho, endereco, p.idPropriedade_PK);
     });

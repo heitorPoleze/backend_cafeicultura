@@ -10,9 +10,10 @@ import { prisma } from "./shared/config/database";
 // Rotas
 import authRotas from "./features/auth/auth.routes";
 import proprietarioRotas from "./features/proprietario/proprietario.routes";
-import usuarioRotas from "./features/usuario/usuario.routes";
-import consultorTecnicoRotas from "./features/consultortecnico/consultor.routes";
+// import usuarioRotas from "./features/usuario/usuario.routes";
+// import consultorTecnicoRotas from "./features/consultortecnico/consultor.routes";
 import propriedadeRotas from "./features/propriedade/propriedade.routes";
+import talhoesRotas from "./features/talhao/talhao.routes";
 dotenv.config(); // Carrega as variáveis de ambiente do .env
 
 const app = express();
@@ -80,7 +81,8 @@ const API_VERSION = "/api/v1";
 app.use(`${API_VERSION}/auth`, authRotas);
 app.use(`${API_VERSION}/proprietarios`, proprietarioRotas);
 app.use(`${API_VERSION}/propriedades`, propriedadeRotas);
-app.use(`${API_VERSION}/usuarios`, usuarioRotas);
-app.use(`${API_VERSION}/consultores-tecnicos`, consultorTecnicoRotas);
+// app.use(`${API_VERSION}/usuarios`, usuarioRotas);
+// app.use(`${API_VERSION}/consultores-tecnicos`, consultorTecnicoRotas);
+app.use(`${API_VERSION}/talhoes`, talhoesRotas);
 
 export default app;

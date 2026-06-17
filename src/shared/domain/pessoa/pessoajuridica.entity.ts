@@ -1,89 +1,56 @@
-import { cnpj as validarCNPJ } from "cpf-cnpj-validator";
-import Pessoa from "./pessoa.entity";
-import Endereco from "../endereco/endereco.vo";
+import PessoaBase from './pessoabase.entity';
+import Endereco from '../endereco/endereco.vo';
+import { cnpj as cnpjValidator} from 'cpf-cnpj-validator';
+import Pessoa from './pessoa.interface';
 
-class PessoaJuridica extends Pessoa {
-  private _razaoSocial: string;
+class PessoaJuridica extends PessoaBase {
   private _cnpj: string;
-  private _inscricaoEstadual: string | null;
+  private _razaoSocial: string;
+  private _inscrEstadual: string | null;
 
   constructor(
-    razaoSocial: string,
+    id: number | undefined,
     cnpj: string,
-    inscricaoEstadual: string | null,
-    dataCadastro?: Date,
-    idPeJuridica?: number, 
-    endereco?: Endereco,
+    razaoSocial: string,
+    inscrEstadual: string | null = null,
+    endereco: Endereco | null = null,
+    dataCadastro: Date
   ) {
-    super(idPeJuridica, dataCadastro || new Date(), endereco);
+    super(id, endereco, dataCadastro);
+
+    if (!cnpjValidator.isValid(cnpj)) {
+      throw new Error("CNPJ inválido. O CNPJ deve conter 18 caracteres. Formato: XX.XXX.XXX/XXXX-XX");
+    };
+    this._cnpj = cnpj;
 
     this.validarRazaoSocial(razaoSocial);
-    this.validarCnpj(cnpj);
-    if (inscricaoEstadual) this.validarInscricaoEstadual(inscricaoEstadual);
-
     this._razaoSocial = razaoSocial;
-    this._cnpj = cnpj;
-    this._inscricaoEstadual = inscricaoEstadual;
+    this._inscrEstadual = inscrEstadual;
   };
 
-  // --- Getters & Setters ---
-  public get razaoSocial(): string { return this._razaoSocial; };
-  public set razaoSocial(nova_razao: string) {
-    this.validarRazaoSocial(nova_razao);
-    this._razaoSocial = nova_razao;
-  };
-  public get endereco(): Endereco | undefined { return this._endereco; };
-  public get documentos(): string[] { return [this._cnpj]; }
-  public get idPessoa(): number | undefined { return this._idPessoa; };
   public get cnpj(): string { return this._cnpj; };
-  public get dataCadastro(): Date { return this._dataCadastro; }
-  public get inscricaoEstadual(): string | null { return this._inscricaoEstadual; };
-  public set inscricaoEstadual(nova_ie: string | null) {
-    if (nova_ie) this.validarInscricaoEstadual(nova_ie);
-    this._inscricaoEstadual = nova_ie;
+  public get razaoSocial(): string { return this._razaoSocial; };
+  public get inscrEstadual(): string | null { return this._inscrEstadual; };
+
+  private validarRazaoSocial(razaoSocial: string) {
+    if (!razaoSocial || razaoSocial.trim() === "") {
+      throw new Error("Razão Social é obrigatória.");
+    };
+    if (razaoSocial.length < 3) {
+      throw new Error("Razão Social deve ter no mínimo 3 caracteres.");
+    };
+    if (razaoSocial.length > 100) {
+      throw new Error("Razão Social deve ter no máximo 100 caracteres.");
+    };
   };
 
-  // --- Implementação do Contrato Abstrato ---
-  public get documento(): string { return this._cnpj; };
-  public get nomeExibicao(): string { return this._razaoSocial; };
-
-  // --- Validações Privadas (Blindagem do Modelo) ---
-  private validarRazaoSocial(razaoSocial: string): void {
-    if (!razaoSocial || razaoSocial.trim() === "") throw new Error("Razão social não pode ser vazia!");
-    if (razaoSocial.length < 3) throw new Error("Razão social deve conter pelo menos 3 letras!");
-  };
-
-  private validarCnpj(cnpj: string): void {
-    if (!cnpj) throw new Error("CNPJ não pode ser vazio!");
-    
-    // Esta regex aceita APENAS formatos de CNPJ:
-    // - 14 dígitos (sem máscara) OU
-    // - XX.XXX.XXX/XXXX-XX (com máscara)
-    if (!/^\d{14}$|^\d{2}\.\d{3}\.\d{3}\/\d{4}\d{2}$/.test(cnpj)) {
-      throw new Error("CNPJ deve conter 14 dígitos ou estar no formato XX.XXX.XXX/XXXX-XX");
-    }
-    
-    if (!validarCNPJ.isValid(cnpj)) throw new Error("CNPJ informado é matematicamente inválido!");
-  };
-
-  private validarInscricaoEstadual(ie: string): void {
-    if (ie.trim() === "") throw new Error("Inscrição estadual não pode ser apenas espaços em branco!");
-  };
-
-  // --- Saídas ---
-  public toJSON(filhos?: object) {
+  public toJSON(filhos?: object): object {
     return super.toJSON({
-      razaoSocial: this._razaoSocial,
-      cnpj: this._cnpj,
-      inscricaoEstadual: this._inscricaoEstadual || null,
-      ...filhos,
+      cnpj: this.cnpj,
+      razaoSocial: this.razaoSocial,
+      inscrEstadual: this.inscrEstadual,
+      ...filhos
     });
   };
-
-  public toString(): string {
-    const ieString = this._inscricaoEstadual ? `\nInscrição estadual: ${this._inscricaoEstadual}` : "";
-    return `Razão social: ${this._razaoSocial}\nCNPJ: ${this._cnpj}${ieString}\n${super.toString()}`;
-  };
 }
-
 export default PessoaJuridica;

@@ -26,18 +26,4 @@ router.post(
   authController.logout.bind(authController)
 );
 
-router.get(
-  "/painel",
-  exigeLogin(),
-  (req: Request, res: Response) => {
-    res.status(200).json({
-      mensagem: "Acesso autorizado! Bem-vindo ao painel.",
-      sessaoAtiva: {
-        idUsuario: req.session.idUsuario,
-        nome: req.session.nome
-      }
-    });
-  }
-);
-
 export default router;

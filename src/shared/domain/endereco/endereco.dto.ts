@@ -1,4 +1,4 @@
-export type EnderecoDTO = {
+type EnderecoDTO = {
   idEndereco: number;
   cidade: string;
   bairro: string;
@@ -7,3 +7,4 @@ export type EnderecoDTO = {
   pais: string;
   logradouro: string;
 }
+export default EnderecoDTO;

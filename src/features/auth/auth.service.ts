@@ -5,27 +5,29 @@ class AuthService {
 
   public async autenticar(
     entrada: string,
-    senhaLimpa: string,
+    senha: string,
     tipoEntrada: "email" | "cpf" | "cnpj",
   ) {
-    const resultado = await this.repo.buscarParaLogin(entrada, tipoEntrada);
+    const resultado = await this.repo.autenticar(entrada, tipoEntrada);
 
-    const erroAutenticacao = new Error("Credenciais inválidas. Verifique seu usuário e senha.");
+    const erroAutenticacao = new Error(
+      "Credenciais inválidas. Verifique seu usuário e senha.",
+    );
 
     if (!resultado) {
       throw erroAutenticacao;
-    }
+    };
 
     const { credencial, nomeSessao } = resultado;
 
-    const senhaValida = await credencial.compararSenha(senhaLimpa);
+    const senhaValida = await credencial.compararSenha(senha);
 
     if (!senhaValida) {
       throw erroAutenticacao;
-    }
+    };
 
     return {
-      idUsuario: credencial.idUsuario as number,
+      idUsuario: credencial.idUsuario,
       nome: nomeSessao,
     };
   }
