@@ -8,6 +8,7 @@ import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import { prisma } from "./shared/config/database";
 
 // Rotas
+import pessoaRotas from "./features/pessoa/pessoa.routes";
 import authRotas from "./features/auth/auth.routes";
 import proprietarioRotas from "./features/proprietario/proprietario.routes";
 // import usuarioRotas from "./features/usuario/usuario.routes";
@@ -86,6 +87,7 @@ app.use(sessMiddleware); // Aplica o middleware de sessão
 
 // --- Registra as rotas da API ---
 const API_VERSION = "/api/v1";
+app.use(`${API_VERSION}`, pessoaRotas);
 app.use(`${API_VERSION}/auth`, authRotas);
 app.use(`${API_VERSION}/proprietarios`, proprietarioRotas);
 app.use(`${API_VERSION}/propriedades`, propriedadeRotas);

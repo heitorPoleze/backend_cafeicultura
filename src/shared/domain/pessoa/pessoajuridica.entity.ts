@@ -44,7 +44,7 @@ class PessoaJuridica extends PessoaBase {
     };
   };
 
-  public toJSON(filhos?: object): object {
+  public toJSON(filhos?: object) {
     return super.toJSON({
       cnpj: this.cnpj,
       razaoSocial: this.razaoSocial,

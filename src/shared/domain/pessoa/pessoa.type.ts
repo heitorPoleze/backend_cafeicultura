@@ -1,6 +1,6 @@
 import Endereco from "../endereco/endereco.vo";
 
-type PessoaDTO = {
+type Pessoa = {
   id?: number;
   nome?: string;
   cpf?: string;
@@ -11,4 +11,4 @@ type PessoaDTO = {
   dataCadastro: Date;
 };
 
-export default PessoaDTO;
+export default Pessoa;

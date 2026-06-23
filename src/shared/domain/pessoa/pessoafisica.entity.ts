@@ -33,7 +33,7 @@ class PessoaFisica extends PessoaBase {
     };
   };
 
-  public toJSON(filhos?: object): object {
+  public toJSON(filhos?: object) {
     return super.toJSON({
       nome: this._nome,
       cpf: this._cpf,

@@ -1,10 +1,10 @@
-import PessoaDTO from './pessoa.dto';
+import Pessoa from './pessoa.type';
 import PessoaBase from './pessoabase.entity';
 import PessoaFisica from './pessoafisica.entity';
 import PessoaJuridica from './pessoajuridica.entity';
 
 class PessoaFactory {
-  public static criarPessoa(tipo: 'fisica' | 'juridica', dados: PessoaDTO): PessoaBase {
+  public static criarPessoa(tipo: 'fisica' | 'juridica', dados: Pessoa) {
     if (tipo === 'fisica') {
       return new PessoaFisica(
         dados.id,
@@ -25,7 +25,7 @@ class PessoaFactory {
     };
 
     throw new Error(`Tipo de pessoa inválido: ${tipo}`);
-  }
+  };
 };
 
 export default PessoaFactory;

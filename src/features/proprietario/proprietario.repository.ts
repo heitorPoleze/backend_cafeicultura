@@ -12,6 +12,7 @@ class ProprietarioRepository {
     private usuarioRepo: UsuarioRepository
   ) {}
 
+
   public async salvarComTransacao(prop: Proprietario): Promise<number> {
     
     // Inicia a transação (Unit of Work)

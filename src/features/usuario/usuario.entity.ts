@@ -1,17 +1,18 @@
-import Pessoa from "../../shared/domain/pessoa/pessoabase.entity";
 import bcrypt from "bcryptjs";
+import PessoaFisica from "../../shared/domain/pessoa/pessoafisica.entity";
+import PessoaJuridica from "../../shared/domain/pessoa/pessoajuridica.entity";
 
 class Usuario {
   private _email: string;
   private _telefone: string;
   private _senha: string;
-  private _perfil: Pessoa;
+  private _perfil: PessoaFisica | PessoaJuridica;
 
   constructor(
     email: string,
     telefone: string,
     senha: string,
-    perfil: Pessoa,
+    perfil: PessoaFisica | PessoaJuridica,
   ){
     this._email = email;
     this._telefone = telefone;
@@ -20,7 +21,7 @@ class Usuario {
   };
   
 
-  get perfil(): Pessoa {
+  get perfil(): PessoaFisica | PessoaJuridica {
     return this._perfil;
   };
   

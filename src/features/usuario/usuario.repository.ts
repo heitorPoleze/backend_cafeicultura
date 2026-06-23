@@ -14,6 +14,7 @@ class UsuarioRepository {
       }
     });
   };
+  
   public async verificarEmailExistente(email: string): Promise<boolean> {
     const existe = await this.prisma.usuarios.findUnique({
       where: { email }

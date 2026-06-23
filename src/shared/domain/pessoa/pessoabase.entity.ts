@@ -21,7 +21,7 @@ abstract class PessoaBase implements Pessoa {
     return this._endereco;
   };
 
-  public toJSON(filhos?: object): object {
+  public toJSON(filhos?: object) {
     return {
       id: this._id,
       dataCadastro: this._dataCadastro,

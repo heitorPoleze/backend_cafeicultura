@@ -194,8 +194,8 @@ model fornecedores {
 
 model funcionarios {
   idPeFisica_PFK Int     @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
-  ctps           String  @unique(map: "ctps_UNIQUE") @db.Char(12)
-  salario        Decimal @db.Decimal(5, 2)
+  ctps           String  @unique(map: "ctps_UNIQUE") @db.VarChar(14)
+  salario        Decimal @db.Decimal(10, 2)
 
   @@id([idPeFisica_PFK, ctps])
 }

@@ -1,5 +1,4 @@
 import { Prisma, PrismaClient } from "@prisma/client";
-import PessoaBase from "./pessoabase.entity";
 import PessoaFisica from "./pessoafisica.entity";
 import PessoaJuridica from "./pessoajuridica.entity";
 import Endereco from "../endereco/endereco.vo";
@@ -8,7 +7,7 @@ class PessoaRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   public async salvar(
-    perfil: PessoaBase,
+    perfil: PessoaFisica | PessoaJuridica,
     tx: Prisma.TransactionClient,
   ): Promise<number> {
     // 1. Salva a tabela base (pessoas)

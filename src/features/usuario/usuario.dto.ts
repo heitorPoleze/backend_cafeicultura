@@ -6,7 +6,7 @@ export type CreateUsuarioDTO = {
   senha: string;
 };
 
-export interface ResponseUsuarioDTO {
+export type ResponseUsuarioDTO = {
   email: string;
   telefone: string;
   perfil: Pessoa;

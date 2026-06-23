@@ -1,5 +1,3 @@
-// src/features/auth/auth.dto.ts
-
 export type LoginRequestDTO = {
   tipoEntrada: "email" | "cpf" | "cnpj";
   entrada: string;
