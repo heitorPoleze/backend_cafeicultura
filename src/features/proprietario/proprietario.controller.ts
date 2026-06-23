@@ -48,7 +48,33 @@ class ProprietarioController {
       res.status(400).json({ mensagem: (error as Error).message });
     };
   };
+  //revisar
+  public async atualizarSenha(req: Request, res: Response) {
+    try{
+      const pessoaId = Number(req.params.id)
+      await this.service.atualizarSenha(req.body, pessoaId)
+      res.status(200).json({mensagem: "Senha atualizada com sucesso"})
+    }catch(error:unknown){
+      res.status(400).json({mensagem: (error as Error).message});
+    }}
 
-}
+  public async atualizarEmail(req:Request, res: Response){
+      try{
+        await this.service.atualizarEmail(req.body, Number(req.params.id))
+        res.status(200).json({mensagem: "Email atualizado com sucesso"})
+      }catch(error:unknown){
+        res.status(400).json({mensagem: (error as Error).message})
+      }}
+  public async atualizarTelefone(req:Request, res: Response){
+    try{
+      await this.service.atualizarTelefone(req.body, Number(req.params.id))
+      res.status(200).json({mensagem: "Telefone atualizado com sucesso"})
+    }catch(error:unknown){
+      res.status(400).json({mensagem: (error as Error).message})
+    }}
+  }
+ 
+
+
 
 export default ProprietarioController;

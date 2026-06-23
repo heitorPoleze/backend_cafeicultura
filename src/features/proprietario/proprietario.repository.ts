@@ -76,6 +76,16 @@ class ProprietarioRepository {
 
     return new Proprietario(perfil, u.email, u.telefone, u.senha);
   };
+  //revisar
+  public async updateSenhaProprietario(novaSenha: string, id: number){
+    await this.usuarioRepo.updateSenhaUser(novaSenha, id);
+  }
+  public async updateEmailProprietario(email: string, id: number){
+    await this.usuarioRepo.updateEmail(email, id);
+  }
+  public async updateTelefoneProprietario(telefone: string, id: number){
+    await this.usuarioRepo.updateTelefone(telefone, id);
+  }
 };
 
 export default ProprietarioRepository;

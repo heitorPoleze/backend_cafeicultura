@@ -85,7 +85,25 @@ class PessoaRepository {
     });
     return !!existe;
   };
+  public async atualizarNomePessoaFisica(cpf:string, nome?:string){
+    await this.prisma.pessoasfisicas.update({
+      where: { cpf: cpf },
+      data: {
+        nome: nome
+      }
+    });
+  }
+  public async atualizarRazaoSocialOuInscrEstadualPessoaJuridica(cnpj:string, razaoSocial:string, inscrEstadual:string){
+    await this.prisma.pessoasjuridicas.update({
+      where: { cnpj: cnpj },
+      data: {
+        razaoSocial: razaoSocial,
+        inscEstadual: inscrEstadual
+      }
+    })
+  }
 }
+
 
 
 export default PessoaRepository;

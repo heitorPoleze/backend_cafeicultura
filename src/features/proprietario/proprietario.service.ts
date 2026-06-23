@@ -8,6 +8,7 @@ import Endereco from "../../shared/domain/endereco/endereco.vo";
 import PessoaRepository from "../../shared/domain/pessoa/pessoa.repository";
 import UsuarioRepository from "../usuario/usuario.repository";
 import Usuario from "../usuario/usuario.entity";
+import bcrypt from "bcryptjs";
 
 class ProprietarioService {
   constructor(
@@ -83,6 +84,18 @@ class ProprietarioService {
     );
     await this.pessoaRepo.atualizarEndereco(endereco, pessoaId);
   };
+  //revisar
+  public async atualizarSenha(senha: string,pessoaId:number){
+    const salt = await bcrypt.genSalt(10);
+    const novaSenhaCriptografada = await bcrypt.hash(senha, salt);
+    this.repo.updateSenhaProprietario(novaSenhaCriptografada,pessoaId)
+  }
+  public async atualizarEmail(email:string,pessoaId:number){
+    this.repo.updateEmailProprietario(email,pessoaId)
+  }
+  public async atualizarTelefone(telefone:string,pessoaId:number){
+    this.repo.updateTelefoneProprietario(telefone,pessoaId)
+  }
 }
 
 export default ProprietarioService;
