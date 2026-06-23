@@ -79,5 +79,40 @@ router.delete(
   exigeLogin(),
   proprietarioController.removerEndereco.bind(proprietarioController)
 );
+//revisar
+// Atualizar senha de um proprietário
+router.put(
+  "/:id/senha",
+  exigeLogin(),
+  [
+    body("senha")
+      .isLength({ min: 8 }).withMessage("A senha deve conter pelo menos 8 caracteres")
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).+$/)
+      .withMessage("A senha deve conter maiúscula, minúscula, número e símbolo")
+  ],
+  proprietarioController.atualizarSenha.bind(proprietarioController)
+);
+//revisar
+// Atualizar email de um proprietário
+router.put(
+  "/:id/email",
+  exigeLogin(),
+  [
+    body("email").isEmail().withMessage("O email informado não é válido")
+  ],
+  proprietarioController.atualizarEmail.bind(proprietarioController)
+);
+//revisar
+// Atualizar telefone de um proprietário
+router.put(
+  "/:id/telefone",
+  exigeLogin(),
+  [
+    body("telefone")
+      .matches(/^(\d{10,11}|\(\d{2}\) \s?\d{4,5}-\d{4})$/)
+      .withMessage("O telefone deve conter 10 ou 11 dígitos, com ou sem máscara.")
+  ],
+  proprietarioController.atualizarTelefone.bind(proprietarioController)
+);
 
 export default router;
