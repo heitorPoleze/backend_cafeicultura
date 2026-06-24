@@ -1,0 +1,219 @@
+tags:
+  - name: Propriedades
+    description: Gerenciamento das propriedades rurais do usuário logado
+
+components:
+  schemas:
+    TamanhoInput:
+      type: object
+      required:
+        - valor
+        - medida
+      properties:
+        valor:
+          type: number
+          format: float
+          description: Deve ser maior que zero.
+          example: 15.5
+        medida:
+          type: string
+          enum: [hectare, m2]
+          example: "hectare"
+    EnderecoInput:
+      type: object
+      required:
+        - logradouro
+        - bairro
+        - cidade
+        - uf
+        - pais
+        - cep
+      properties:
+        logradouro:
+          type: string
+          example: "Rodovia ES-080, Km 21"
+        bairro:
+          type: string
+          example: "São João de Petrópolis"
+        cidade:
+          type: string
+          example: "Santa Teresa"
+        uf:
+          type: string
+          minLength: 2
+          maxLength: 2
+          example: "ES"
+        pais:
+          type: string
+          example: "Brasil"
+        cep:
+          type: string
+          pattern: '^\d{5}-?\d{3}$'
+          example: "29660-000"
+
+paths:
+  /api/v1/propriedades:
+    post:
+      summary: Cadastra uma nova Propriedade
+      tags: 
+        - Propriedades
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nome
+                - tamanho
+                - endereco
+              properties:
+                nome:
+                  type: string
+                  example: "Sítio Vô Augusto"
+                tamanho:
+                  $ref: '#/components/schemas/TamanhoInput'
+                endereco:
+                  $ref: '#/components/schemas/EnderecoInput'
+      responses:
+        '201':
+          description: Propriedade cadastrada com sucesso
+        '400':
+          description: Erro de validação nos campos (ex. tamanho zero, CEP inválido)
+        '500':
+          description: Erro interno ao cadastrar propriedade
+
+  /api/v1/propriedades/{id}:
+    get:
+      summary: Busca uma Propriedade pelo ID
+      tags: 
+        - Propriedades
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID da propriedade
+      responses:
+        '200':
+          description: Dados da propriedade retornados com sucesso
+        '403':
+          description: Acesso negado! O usuário logado não é o dono da propriedade.
+        '404':
+          description: Propriedade não encontrada
+        '500':
+          description: Erro interno ao buscar propriedade
+
+  /api/v1/propriedades/{id}/nome:
+    patch:
+      summary: Atualiza apenas o nome da Propriedade
+      tags: 
+        - Propriedades
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nome
+              properties:
+                nome:
+                  type: string
+                  example: "Fazenda Nova Esperança"
+      responses:
+        '200':
+          description: Nome atualizado com sucesso
+        '400':
+          description: O nome não pode ser vazio
+        '403':
+          description: Acesso negado! O usuário não tem permissão para alterar esta propriedade.
+        '404':
+          description: Propriedade não encontrada
+        '500':
+          description: Erro ao atualizar nome da propriedade
+
+  /api/v1/propriedades/{id}/tamanho:
+    patch:
+      summary: Atualiza o tamanho e unidade de medida da Propriedade
+      tags: 
+        - Propriedades
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tamanho
+              properties:
+                tamanho:
+                  $ref: '#/components/schemas/TamanhoInput'
+      responses:
+        '200':
+          description: Tamanho atualizado com sucesso
+        '400':
+          description: Valor zero/negativo ou medida diferente de 'hectare' ou 'm2'
+        '403':
+          description: Acesso negado
+        '404':
+          description: Propriedade não encontrada
+        '500':
+          description: Erro ao atualizar tamanho
+
+  /api/v1/propriedades/{id}/endereco:
+    patch:
+      summary: Atualiza o endereço completo da Propriedade
+      tags: 
+        - Propriedades
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - endereco
+              properties:
+                endereco:
+                  $ref: '#/components/schemas/EnderecoInput'
+      responses:
+        '200':
+          description: Endereço atualizado com sucesso
+        '400':
+          description: Erro de validação nos campos de endereço (UF inválida, CEP sem formato)
+        '403':
+          description: Acesso negado
+        '404':
+          description: Propriedade não encontrada
+        '500':
+          description: Erro ao atualizar endereço

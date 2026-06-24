@@ -24,7 +24,7 @@ class AuthController {
       req.session.idUsuario = dadosSessao.idUsuario;
       req.session.nome = dadosSessao.nome;
 
-      const resposta: LoginResponseDTO = { mensagem: "Login efetuado com sucesso!"};
+      const resposta: LoginResponseDTO = { mensagem: "Login efetuado com sucesso"};
       res.status(200).json(resposta);
     } catch (error: unknown) {
       if (error instanceof Error) {

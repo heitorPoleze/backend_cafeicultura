@@ -52,7 +52,7 @@ class PropriedadeService {
     };
 
     return propriedade;
-  }
+  };
 
   public async atualizarNome(
     idPropriedade: number,
@@ -63,7 +63,7 @@ class PropriedadeService {
 
     propriedade.nome = dto.nome;
     await this.repo.atualizarNome(propriedade.id!, propriedade.nome);
-  }
+  };
 
   public async atualizarTamanho(
     idPropriedade: number,

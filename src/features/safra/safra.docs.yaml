@@ -1,0 +1,136 @@
+tags:
+  - name: Safras
+    description: Gerenciamento das safras vinculadas a uma propriedade
+
+paths:
+  /api/v1/safras:
+    post:
+      summary: Cadastra uma nova Safra
+      tags: 
+        - Safras
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - idPropriedade
+                - dataInicio
+              properties:
+                idPropriedade:
+                  type: integer
+                  description: ID da propriedade onde a safra será registrada.
+                  example: 1
+                dataInicio:
+                  type: string
+                  format: date-time
+                  description: Data de início da safra no formato ISO 8601.
+                  example: "2026-06-23T00:00:00.000Z"
+      responses:
+        '201':
+          description: Safra cadastrada com sucesso
+        '400':
+          description: Erro de validação nos campos (ex. formato de data inválido)
+        '403':
+          description: Acesso negado! O usuário não tem permissão para cadastrar nesta propriedade.
+        '404':
+          description: Propriedade da safra não encontrada
+        '422':
+          description: Propriedade possui duas safras ativas (limite atingido)
+        '500':
+          description: Erro interno inesperado ao cadastrar safra
+
+  /api/v1/safras/{id}:
+    get:
+      summary: Busca uma Safra pelo ID
+      tags: 
+        - Safras
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico da safra
+      responses:
+        '200':
+          description: Dados da safra retornados com sucesso
+        '400':
+          description: ID da safra inválido
+        '403':
+          description: Acesso negado ou Propriedade da safra não encontrada
+        '404':
+          description: Safra não encontrada
+        '500':
+          description: Erro interno inesperado ao buscar safra
+
+    delete:
+      summary: Exclui ou arquiva uma Safra
+      tags: 
+        - Safras
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico da safra
+      responses:
+        '200':
+          description: Safra excluída com sucesso
+        '400':
+          description: ID da safra inválido
+        '403':
+          description: Acesso negado ou Propriedade da safra não encontrada
+        '404':
+          description: Safra não encontrada
+        '500':
+          description: Erro interno inesperado ao excluir safra
+
+  /api/v1/safras/{id}/finalizar:
+    patch:
+      summary: Finaliza uma Safra
+      description: Atualiza a data de fim de uma safra, alterando seu status de ativa para finalizada.
+      tags: 
+        - Safras
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico da safra
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - dataFim
+              properties:
+                dataFim:
+                  type: string
+                  format: date-time
+                  description: Data de encerramento da safra no formato ISO 8601.
+                  example: "2026-12-16T00:00:00.000Z"
+      responses:
+        '200':
+          description: Safra finalizada com sucesso
+        '400':
+          description: Erro de validação (ex. dataFim inválida)
+        '403':
+          description: Acesso negado ou Propriedade da safra não encontrada
+        '404':
+          description: Safra não encontrada
+        '500':
+          description: Erro interno inesperado ao finalizar safra

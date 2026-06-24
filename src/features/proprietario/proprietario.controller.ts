@@ -36,6 +36,7 @@ class ProprietarioController {
       res.status(201).json({ mensagem: "Endereço adicionado com sucesso" });
     } catch (error: unknown) {
       if (error instanceof Error) {
+        console.log(error)
         return res.status(500).json({ error: "Erro ao adicionar endereço" });
       };
     };
@@ -64,7 +65,6 @@ class ProprietarioController {
       };
     };
   };
-
 }
 
 export default ProprietarioController;

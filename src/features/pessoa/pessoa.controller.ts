@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import PessoaService from "./pessoa.service";
-import { ClienteResponseDTO } from "./pessoa.dto";
 
 class PessoaController {
   constructor(private service: PessoaService) {}

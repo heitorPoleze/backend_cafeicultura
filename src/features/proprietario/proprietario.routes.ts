@@ -52,8 +52,8 @@ router.put(
   exigeLogin(),
   [
     body("cidade").notEmpty().withMessage("Cidade é obrigatória"),
-    body("CEP").matches(/^\d{5}-\d{3}$/).withMessage("CEP inválido"),
-    body("UF").isLength({ min: 2, max: 2 }).withMessage("UF deve ter 2 caracteres"),
+    body("cep").matches(/^\d{5}-\d{3}$/).withMessage("CEP inválido"),
+    body("uf").isLength({ min: 2, max: 2 }).withMessage("UF deve ter 2 caracteres"),
     body("logradouro").notEmpty().withMessage("Logradouro é obrigatório")
   ],
   proprietarioController.atualizarEndereco.bind(proprietarioController)
@@ -66,8 +66,8 @@ router.post(
   [
     body("cidade").notEmpty().withMessage("Cidade é obrigatória"),
     body("bairro").notEmpty().withMessage("Bairro é obrigatório"),
-    body("CEP").matches(/^\d{5}-\d{3}$/).withMessage("CEP deve estar no formato 00000-000"),
-    body("UF").isLength({ min: 2, max: 2 }).withMessage("UF deve ter 2 caracteres"),
+    body("cep").matches(/^\d{5}-\d{3}$/).withMessage("CEP deve estar no formato 00000-000"),
+    body("uf").isLength({ min: 2, max: 2 }).withMessage("UF deve ter 2 caracteres"),
     body("logradouro").notEmpty().withMessage("Logradouro é obrigatório")
   ],
   proprietarioController.criarEndereco.bind(proprietarioController)
@@ -75,7 +75,7 @@ router.post(
 
 // Remover endereço de um proprietário
 router.delete(
-  "/:id/endereco/:enderecoId",
+  "/:id/endereco",
   exigeLogin(),
   proprietarioController.removerEndereco.bind(proprietarioController)
 );
