@@ -46,8 +46,8 @@ Com o terminal aberto na raiz do projeto, instale todas as bibliotecas necessár
 npm install
 ```
 
-### 5. Sincronizar o Prisma ORM
-Como o banco de dados foi criado a partir de um script externo, precisamos fazer a engenharia reversa (introspecção) para o Prisma e gerar o Client para uso no código:
+### 5. Sincronizar o Prisma ORM a partir das alterações no Banco de Dados
+Engenharia reversa (introspecção) do Prisma e gerar o Client para uso no código:
 
 ```bash
 # Atualiza o arquivo schema.prisma com as tabelas do banco de dados
@@ -61,6 +61,12 @@ npx prisma generate
 Com todas as dependências instaladas e o banco conectado, inicie o servidor em modo de desenvolvimento:
 
 ```bash
+# Envia as alterações do schema do prisma para o banco de dados
+npx prisma db push
+
+# Sincroniza as alterações
+npx prisma generate
+
 npx nodemon
 ```
 
