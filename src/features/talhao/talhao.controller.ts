@@ -16,7 +16,7 @@ export class TalhaoController {
       const idUsuario = req.session.idUsuario!
       await this.talhaoService.cadastrarTalhao(dto, idUsuario);
       
-      res.status(201).json({mensagem: 'Talhão cadastrado com sucesso!'});
+      res.status(201).json({mensagem: 'Talhão cadastrado com sucesso'});
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === 'NAO_ENCONTRADA') {
@@ -26,7 +26,7 @@ export class TalhaoController {
         };
         return res.status(400).json({ error: error.message });
       };
-      return res.status(500).json({ error: 'Erro interno inesperado ao cadastrar talhão.' });
+      return res.status(500).json({ error: 'Erro ao cadastrar talhão' });
     };
   };
 
@@ -58,7 +58,7 @@ export class TalhaoController {
         }
         return res.status(400).json({ error: error.message });
       };
-      return res.status(500).json({ error: 'Erro interno inesperado ao encerrar talhão' });
+      return res.status(500).json({ error: 'Erro ao encerrar talhão' });
     };
   };
 
@@ -83,7 +83,7 @@ export class TalhaoController {
         };
         return res.status(400).json({ error: error.message });
       };
-      return res.status(500).json({ error: 'Erro interno inesperado ao excluir talhão' });
+      return res.status(500).json({ error: 'Erro ao excluir talhão' });
     };
   };  
 }

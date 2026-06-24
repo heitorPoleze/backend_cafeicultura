@@ -21,14 +21,14 @@ class ProprietarioService {
         dados.cpf!,
       );
       if (cpfExistente) {
-        throw new Error(`Já existe um proprietário cadastrado com o CPF.`);
+        throw new Error(`CPF_EXISTENTE`);
       };
     } else if (dados.tipoPessoa === "juridica") {
       const cnpjExistente = await this.pessoaRepo.verificarCnpjExistente(
         dados.cnpj!,
       );
       if (cnpjExistente) {
-        throw new Error(`Já existe um proprietário cadastrado com o CNPJ.`);
+        throw new Error(`CNPJ_EXISTENTE`);
       };
     };
 
@@ -36,14 +36,14 @@ class ProprietarioService {
       dados.email,
     );
     if (emailExistente) {
-      throw new Error(`O e-mail ${dados.email} já está em uso.`);
+      throw new Error(`EMAIL_EXISTENTE`);
     };
 
     const telefoneExistente = await this.usuarioRepo.verificarTelefoneExistente(
       dados.telefone,
     );
     if (telefoneExistente) {
-      throw new Error(`O telefone ${dados.telefone} já está em uso.`);
+      throw new Error(`TELEFONE_EXISTENTE`);
     };
 
     const perfil = PessoaFactory.criarPessoa(dados.tipoPessoa, dados);

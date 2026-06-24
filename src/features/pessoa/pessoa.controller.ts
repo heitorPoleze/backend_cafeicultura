@@ -16,7 +16,14 @@ class PessoaController {
 
       res.status(201).json({ mensagem: "Cliente cadastrado com sucesso" });
     } catch (error: unknown) {
-      res.status(403).json({ error: (error as Error).message });
+      if (error instanceof Error) {
+        if (error.message === "CPF_EXISTENTE") {
+          return res.status(409).json({ error: "CPF já cadastrado" });
+        } else if (error.message === "CNPJ_EXISTENTE") {
+          return res.status(409).json({ error: "CNPJ já cadastrado" });
+        };
+        return res.status(500).json({ error: error.message });
+      };
     };
   };
 
@@ -30,7 +37,12 @@ class PessoaController {
 
       res.status(201).json({ mensagem: "Fornecedor cadastrado com sucesso" });
     } catch (error: unknown) {
-      res.status(403).json({ error: (error as Error).message });
+      if (error instanceof Error) {
+        if (error.message === "CPF_EXISTENTE") {
+          return res.status(409).json({ error: "CPF já cadastrado" });
+        };
+        return res.status(500).json({ error: error.message });
+      };
     };
   };
 
@@ -44,7 +56,12 @@ class PessoaController {
 
       res.status(201).json({ mensagem: "Funcionário cadastrado com sucesso" });
     } catch (error: unknown) {
-      res.status(403).json({ error: (error as Error).message });
+      if (error instanceof Error) {
+        if (error.message === "CPF_EXISTENTE") {
+          return res.status(409).json({ error: "CPF já cadastrado" });
+        };
+        return res.status(500).json({ error: error.message });
+      };
     };
   };
 
@@ -66,7 +83,7 @@ class PessoaController {
         if (error.message === "NAO_ENCONTRADO") {
           return res.status(404).json({ error: "Funcionário não encontrado" });
         } else if (error.message === "NAO_ATUALIZADO") {
-          return res.status(400).json({ error: "Erro ao atualizar salário" });
+          return res.status(500).json({ error: "Erro ao atualizar salário" });
         };
       };
     };
@@ -82,7 +99,12 @@ class PessoaController {
 
       res.status(201).json({ mensagem: "Meeiro cadastrado com sucesso" });
     } catch (error: unknown) {
-      res.status(403).json({ error: (error as Error).message });
+      if (error instanceof Error) {
+        if (error.message === "CPF_EXISTENTE") {
+          return res.status(409).json({ error: "CPF já cadastrado" });
+        };
+        return res.status(500).json({ error: error.message });
+      };
     };
   };
 
@@ -96,7 +118,12 @@ class PessoaController {
 
       res.status(201).json({ mensagem: "Prestador de Serviço cadastrado com sucesso" });
     } catch (error: unknown) {
-      res.status(403).json({ error: (error as Error).message });
+      if (error instanceof Error) {
+        if (error.message === "CPF_EXISTENTE") {
+          return res.status(409).json({ error: "CPF já cadastrado" });
+        };
+        return res.status(500).json({ error: error.message });
+      };
     };
   };
 
@@ -109,7 +136,7 @@ class PessoaController {
         if (error.message === "NAO_ENCONTRADO") {
           return res.status(404).json({ error: "Cliente não encontrado" });
         } else if (error.message === "ERRO_AO_BUSCAR") {
-          return res.status(403).json({ error: "Erro ao buscar cliente" });
+          return res.status(500).json({ error: "Erro ao buscar cliente" });
         };
       }
     };
@@ -124,7 +151,7 @@ class PessoaController {
         if (error.message === "NAO_ENCONTRADO") {
           return res.status(404).json({ error: "Fornecedor não encontrado" });
         } else if (error.message === "ERRO_AO_BUSCAR") {
-          return res.status(403).json({ error: "Erro ao buscar fornecedor" });
+          return res.status(500).json({ error: "Erro ao buscar fornecedor" });
         };
       }
     };
@@ -139,7 +166,7 @@ class PessoaController {
         if (error.message === "NAO_ENCONTRADO") {
           return res.status(404).json({ error: "Funcionário não encontrado" });
         } else if (error.message === "ERRO_AO_BUSCAR") {
-          return res.status(403).json({ error: "Erro ao buscar funcionário" });
+          return res.status(500).json({ error: "Erro ao buscar funcionário" });
         };
       }
     };
@@ -154,7 +181,7 @@ class PessoaController {
         if (error.message === "NAO_ENCONTRADO") {
           return res.status(404).json({ error: "Meeiro não encontrado" });
         } else if (error.message === "ERRO_AO_BUSCAR") {
-          return res.status(403).json({ error: "Erro ao buscar meeiro" });
+          return res.status(500).json({ error: "Erro ao buscar meeiro" });
         };
       };
     };
@@ -169,7 +196,7 @@ class PessoaController {
         if (error.message === "NAO_ENCONTRADO") {
           return res.status(404).json({ error: "Prestador de Serviço não encontrado" });
         } else if (error.message === "ERRO_AO_BUSCAR") {
-          return res.status(403).json({ error: "Erro ao buscar prestador de serviço" });
+          return res.status(500).json({ error: "Erro ao buscar prestador de serviço" });
         };
       };
     };

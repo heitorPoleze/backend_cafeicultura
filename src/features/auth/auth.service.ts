@@ -10,9 +10,7 @@ class AuthService {
   ) {
     const resultado = await this.repo.autenticar(entrada, tipoEntrada);
 
-    const erroAutenticacao = new Error(
-      "Credenciais inválidas. Verifique seu usuário e senha.",
-    );
+    const erroAutenticacao = new Error("CREDENCIAIS_INVALIDAS");
 
     if (!resultado) {
       throw erroAutenticacao;

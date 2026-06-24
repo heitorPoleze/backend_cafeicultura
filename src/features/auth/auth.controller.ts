@@ -27,9 +27,14 @@ class AuthController {
       const resposta: LoginResponseDTO = { mensagem: "Login efetuado com sucesso!"};
       res.status(200).json(resposta);
     } catch (error: unknown) {
-      const mensagem = error instanceof Error ? error.message : "Erro de autenticação";
-      res.status(401).json({ error:mensagem });
-    }
+      if (error instanceof Error) {
+        if (error.message === "CREDENCIAIS_INVALIDAS") {
+          return res.status(401).json({ error: "O usuário ou senha estão incorretos. Tente novamente" });
+        } else {
+          return res.status(500).json({ error: "Erro ao efetuar login. Tente novamente" });
+        };
+      };
+    };
   }
 
   public logout(req: Request, res: Response) {

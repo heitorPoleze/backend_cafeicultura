@@ -43,14 +43,14 @@ class PessoaService {
         dados.cpf!,
       );
       if (cpfExistente) {
-        throw new Error(`Já existe um ${entidade} cadastrado com o CPF.`);
+        throw new Error(`CPF_EXISTENTE`);
       };
     } else if (dados.tipoPessoa === "juridica") {
       const cnpjExistente = await this.pessoaRepo.verificarCnpjExistente(
         dados.cnpj!,
       );
       if (cnpjExistente) {
-        throw new Error(`Já existe um ${entidade} cadastrado com o CNPJ.`);
+        throw new Error(`CNPJ_EXISTENTE`);
       };
     };
   };

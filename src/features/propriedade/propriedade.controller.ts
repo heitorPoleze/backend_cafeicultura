@@ -15,7 +15,9 @@ class PropriedadeController {
       
       res.status(201).json({ mensagem: "Propriedade cadastrada com sucesso" });
     } catch (error: unknown) {
-      res.status(403).json({ error: (error as Error).message }); // 403 Forbidden ou 400
+      if (error instanceof Error) {
+        res.json(500).json({ error: "Erro ao cadastrar propriedade" });
+      }
     };
   };
 
@@ -26,7 +28,14 @@ class PropriedadeController {
       
       res.status(200).json(propriedade);
     } catch (error: unknown) {
-      res.status((error as Error).message.includes("Acesso negado") ? 403 : 404).json({ error: (error as Error).message });
+      if (error instanceof Error) {
+        if (error.message === "NAO_ENCONTRADA") {
+          return res.status(404).json({ error: "Propriedade não encontrada" });
+        } else if (error.message === "ACESSO_NEGADO") {
+          return res.status(403).json({ error: "Acesso negado! Não foi possível buscar a propriedade" });
+        };
+        return res.json(500).json({ error: "Erro ao buscar propriedade" });
+      };
     };
   };
 
@@ -36,9 +45,16 @@ class PropriedadeController {
 
     try {
       await this.service.atualizarNome(Number(req.params.id), req.body, req.session.idUsuario!);
-      res.status(200).json({ mensagem: "Nome da propriedade atualizado com sucesso!" });
+      res.status(200).json({ mensagem: "Nome da propriedade atualizado com sucesso" });
     } catch (error: unknown) {
-      res.status((error as Error).message.includes("Acesso negado") ? 403 : 400).json({ error: (error as Error).message });
+      if (error instanceof Error) {
+        if (error.message === "NAO_ENCONTRADA") {
+          return res.status(404).json({ error: "Propriedade não encontrada" });
+        } else if (error.message === "ACESSO_NEGADO") {
+          return res.status(403).json({ error: "Acesso negado! Não foi possivel atualizar o nome da propriedade" });
+        };
+        return res.status(500).json({ error: "Erro ao atualizar nome da propriedade" });
+      };
     };
   };
 
@@ -50,7 +66,14 @@ class PropriedadeController {
       await this.service.atualizarTamanho(Number(req.params.id), req.body, req.session.idUsuario!);
       res.status(200).json({ mensagem: "Tamanho da propriedade atualizado com sucesso!" });
     } catch (error: unknown) {
-      res.status((error as Error).message.includes("Acesso negado") ? 403 : 400).json({ error: (error as Error).message });
+      if (error instanceof Error) {
+        if (error.message === "NAO_ENCONTRADA") {
+          return res.status(404).json({ error: "Propriedade não encontrada" });
+        } else if (error.message === "ACESSO_NEGADO") {
+          return res.status(403).json({ error: "Acesso negado! Não foi possivel atualizar o tamanho da propriedade" });
+        };
+        return res.status(500).json({ error: "Erro ao atualizar tamanho da propriedade" });
+      };
     };
   };
 
@@ -62,7 +85,14 @@ class PropriedadeController {
       await this.service.atualizarEndereco(Number(req.params.id), req.body, req.session.idUsuario!);
       res.status(200).json({ mensagem: "Endereço da propriedade atualizado com sucesso!" });
     } catch (error: unknown) {
-      res.status((error as Error).message.includes("Acesso negado") ? 403 : 400).json({ error: (error as Error).message });
+      if (error instanceof Error) {
+        if (error.message === "NAO_ENCONTRADA") {
+          return res.status(404).json({ error: "Propriedade não encontrada" });
+        } else if (error.message === "ACESSO_NEGADO") {
+          return res.status(403).json({ error: "Acesso negado! Não foi possivel atualizar o endereço da propriedade" });
+        };
+        return res.status(500).json({ error: "Erro ao atualizar endereço da propriedade" });
+      };
     };
   };
 };

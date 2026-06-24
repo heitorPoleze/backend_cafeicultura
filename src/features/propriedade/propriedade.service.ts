@@ -35,7 +35,7 @@ class PropriedadeService {
       endereco,
     );
     return await this.repo.salvar(propriedade);
-  }
+  };
 
   public async buscarPorId(
     idPropriedade: number,
@@ -44,13 +44,11 @@ class PropriedadeService {
     const propriedade = await this.repo.buscarPorId(idPropriedade);
 
     if (!propriedade) {
-      throw new Error("Propriedade não encontrada.");
+      throw new Error("NAO_ENCONTRADA");
     };
 
     if (propriedade.idProprietario !== idUsuarioSessao) {
-      throw new Error(
-        "Acesso negado: Você não tem permissão para acessar esta propriedade.",
-      );
+      throw new Error("ACESSO_NEGADO");
     };
 
     return propriedade;
