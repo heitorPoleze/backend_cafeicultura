@@ -17,6 +17,7 @@ class ProprietarioService {
     private usuarioRepo: UsuarioRepository
   ) {}
 
+  //REVISÃO: HEITOR 23/06/2026-> aqui é uma decisão arquitetural que não posso tomar sozinho. Você está fazendo múltiplas consultas ao Banco, porém mantém o código limpo. Uma outra decisão poderia ser verificar essas duplicatas no próprio repositório na função criar. O código P2002 do Prisma ocorre quando ele identifica uma duplicata. Poderíamos trabalhar nisso caso o sistema cresça para milhares de usuários.
   public async cadastrar(dados: CreateProprietarioDTO): Promise<number> {
     
     if (dados.tipoPessoa === "fisica") {
@@ -84,12 +85,14 @@ class ProprietarioService {
     );
     await this.pessoaRepo.atualizarEndereco(endereco, pessoaId);
   };
-  //revisar
+   
   public async atualizarSenha(senha: string,pessoaId:number){
     const salt = await bcrypt.genSalt(10);
     const novaSenhaCriptografada = await bcrypt.hash(senha, salt);
     this.repo.updateSenhaProprietario(novaSenhaCriptografada,pessoaId)
   }
+  
+  //Precisa verificar se o e-mail/telefone já está em uso e retornar uma mensagem de erro compatível para retornarmos a mensagem para a api, assim como o método cadastrar dessa mesma classe.
   public async atualizarEmail(email:string,pessoaId:number){
     this.repo.updateEmailProprietario(email,pessoaId)
   }
