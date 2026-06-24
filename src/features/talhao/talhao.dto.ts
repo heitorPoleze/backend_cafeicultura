@@ -15,6 +15,10 @@ export type CadastrarTalhaoDTO = {
 };
 
 export type EncerrarTalhaoDTO = {
-  idTalhao: number;
+  id: number;
   dataFim: Date;
+};
+
+export type ExcluirTalhaoDTO = {
+  id: number;
 };

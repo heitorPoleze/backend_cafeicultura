@@ -356,9 +356,9 @@ model renovacoesplantios {
 model safras {
   idSafra_PK       Int          @id @unique(map: "idSafra_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
   idPropriedade_FK Int          @db.UnsignedInt
-  dataInicio       DateTime     @db.DateTime(0)
-  dataFim          DateTime?    @db.DateTime(0)
-  arquivado        Int          @db.TinyInt
+  dataInicio       DateTime     @db.Date
+  dataFim          DateTime?    @db.Date
+  arquivada        Boolean
   eventos          eventos[]
   propriedades     propriedades @relation(fields: [idPropriedade_FK], references: [idPropriedade_PK], onDelete: NoAction, onUpdate: NoAction, map: "safra_propriedade")
 
@@ -511,7 +511,7 @@ model vendasarmazenagens {
   idArmazenagem_PFK Int          @db.UnsignedInt
   idVenda_PFK       Int          @db.UnsignedInt
   quantidade        Float        @db.Float
-  valor             Decimal      @db.Decimal(5, 2)
+  valor             Decimal      @db.Decimal(10, 2)
   armazenagens      armazenagens @relation(fields: [idArmazenagem_PFK], references: [idEventoAgricola_PFK], onDelete: NoAction, onUpdate: NoAction, map: "armazegem_armazenagem")
   vendas            vendas       @relation(fields: [idVenda_PFK], references: [idEvento_PFK], onDelete: NoAction, onUpdate: NoAction, map: "vendas_vendas")
 

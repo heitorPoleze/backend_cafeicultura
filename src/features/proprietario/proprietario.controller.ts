@@ -12,7 +12,7 @@ class ProprietarioController {
       await this.service.cadastrar(req.body);
       res.status(201).json({ mensagem: "Proprietário cadastrado com sucesso"});
     } catch (error: unknown) {
-      res.status(400).json({ mensagem: (error as Error).message });
+      res.status(400).json({ error: (error as Error).message });
     };
   };
   
@@ -21,11 +21,10 @@ class ProprietarioController {
     if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
     try {
       const pessoaId = Number(req.params.id);
-      // O corpo da requisição deve ser validado antes de passar ao service
       await this.service.criarEndereco(req.body, pessoaId);
       res.status(201).json({ mensagem: "Endereço adicionado com sucesso" });
     } catch (error: unknown) {
-      res.status(400).json({ mensagem: (error as Error).message });
+      res.status(400).json({ error: (error as Error).message });
     };
   };
 
@@ -35,7 +34,7 @@ class ProprietarioController {
       await this.service.atualizarEndereco(id, req.body);
       res.status(200).json({ mensagem: "Endereço atualizado com sucesso." });
     } catch (error: unknown) {
-      res.status(400).json({ mensagem: (error as Error).message });
+      res.status(400).json({ error: (error as Error).message });
     };
   };
 
@@ -45,7 +44,7 @@ class ProprietarioController {
       await this.service.removerEndereco(pessoaId);
       res.status(200).json({ mensagem: "Endereço removido com sucesso" });
     } catch (error: unknown) {
-      res.status(400).json({ mensagem: (error as Error).message });
+      res.status(400).json({ error: (error as Error).message });
     };
   };
 

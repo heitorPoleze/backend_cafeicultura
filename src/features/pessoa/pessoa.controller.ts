@@ -16,7 +16,7 @@ class PessoaController {
 
       res.status(201).json({ mensagem: "Cliente cadastrado com sucesso" });
     } catch (error: unknown) {
-      res.status(403).json({ mensagem: (error as Error).message });
+      res.status(403).json({ error: (error as Error).message });
     };
   };
 
@@ -30,7 +30,7 @@ class PessoaController {
 
       res.status(201).json({ mensagem: "Fornecedor cadastrado com sucesso" });
     } catch (error: unknown) {
-      res.status(403).json({ mensagem: (error as Error).message });
+      res.status(403).json({ error: (error as Error).message });
     };
   };
 
@@ -44,7 +44,7 @@ class PessoaController {
 
       res.status(201).json({ mensagem: "Funcionário cadastrado com sucesso" });
     } catch (error: unknown) {
-      res.status(403).json({ mensagem: (error as Error).message });
+      res.status(403).json({ error: (error as Error).message });
     };
   };
 
@@ -64,9 +64,9 @@ class PessoaController {
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "NAO_ENCONTRADO") {
-          res.status(404).json({ mensagem: "Funcionário não encontrado" });
+          return res.status(404).json({ error: "Funcionário não encontrado" });
         } else if (error.message === "NAO_ATUALIZADO") {
-          res.status(400).json({ mensagem: "Erro ao atualizar salário" });
+          return res.status(400).json({ error: "Erro ao atualizar salário" });
         };
       };
     };
@@ -82,7 +82,7 @@ class PessoaController {
 
       res.status(201).json({ mensagem: "Meeiro cadastrado com sucesso" });
     } catch (error: unknown) {
-      res.status(403).json({ mensagem: (error as Error).message });
+      res.status(403).json({ error: (error as Error).message });
     };
   };
 
@@ -96,7 +96,7 @@ class PessoaController {
 
       res.status(201).json({ mensagem: "Prestador de Serviço cadastrado com sucesso" });
     } catch (error: unknown) {
-      res.status(403).json({ mensagem: (error as Error).message });
+      res.status(403).json({ error: (error as Error).message });
     };
   };
 
@@ -107,7 +107,9 @@ class PessoaController {
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "NAO_ENCONTRADO") {
-          res.status(404).json({ mensagem: "Cliente não encontrado" });
+          return res.status(404).json({ error: "Cliente não encontrado" });
+        } else if (error.message === "ERRO_AO_BUSCAR") {
+          return res.status(403).json({ error: "Erro ao buscar cliente" });
         };
       }
     };
@@ -120,9 +122,9 @@ class PessoaController {
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "NAO_ENCONTRADO") {
-          res.status(404).json({ mensagem: "Fornecedor não encontrado" });
+          return res.status(404).json({ error: "Fornecedor não encontrado" });
         } else if (error.message === "ERRO_AO_BUSCAR") {
-          res.status(403).json({ mensagem: "Erro ao buscar fornecedor" });
+          return res.status(403).json({ error: "Erro ao buscar fornecedor" });
         };
       }
     };
@@ -135,9 +137,9 @@ class PessoaController {
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "NAO_ENCONTRADO") {
-          res.status(404).json({ mensagem: "Funcionário não encontrado" });
+          return res.status(404).json({ error: "Funcionário não encontrado" });
         } else if (error.message === "ERRO_AO_BUSCAR") {
-          res.status(403).json({ mensagem: "Erro ao buscar funcionário" });
+          return res.status(403).json({ error: "Erro ao buscar funcionário" });
         };
       }
     };
@@ -150,9 +152,9 @@ class PessoaController {
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "NAO_ENCONTRADO") {
-          res.status(404).json({ mensagem: "Meeiro não encontrado" });
+          return res.status(404).json({ error: "Meeiro não encontrado" });
         } else if (error.message === "ERRO_AO_BUSCAR") {
-          res.status(403).json({ mensagem: "Erro ao buscar meeiro" });
+          return res.status(403).json({ error: "Erro ao buscar meeiro" });
         };
       };
     };
@@ -165,9 +167,9 @@ class PessoaController {
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "NAO_ENCONTRADO") {
-          res.status(404).json({ mensagem: "Prestador de Serviço não encontrado" });
+          return res.status(404).json({ error: "Prestador de Serviço não encontrado" });
         } else if (error.message === "ERRO_AO_BUSCAR") {
-          res.status(403).json({ mensagem: "Erro ao buscar prestador de serviço" });
+          return res.status(403).json({ error: "Erro ao buscar prestador de serviço" });
         };
       };
     };

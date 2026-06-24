@@ -15,7 +15,7 @@ class PropriedadeController {
       
       res.status(201).json({ mensagem: "Propriedade cadastrada com sucesso" });
     } catch (error: unknown) {
-      res.status(403).json({ mensagem: (error as Error).message }); // 403 Forbidden ou 400
+      res.status(403).json({ error: (error as Error).message }); // 403 Forbidden ou 400
     };
   };
 
@@ -26,7 +26,7 @@ class PropriedadeController {
       
       res.status(200).json(propriedade);
     } catch (error: unknown) {
-      res.status((error as Error).message.includes("Acesso negado") ? 403 : 404).json({ mensagem: (error as Error).message });
+      res.status((error as Error).message.includes("Acesso negado") ? 403 : 404).json({ error: (error as Error).message });
     };
   };
 
@@ -38,7 +38,7 @@ class PropriedadeController {
       await this.service.atualizarNome(Number(req.params.id), req.body, req.session.idUsuario!);
       res.status(200).json({ mensagem: "Nome da propriedade atualizado com sucesso!" });
     } catch (error: unknown) {
-      res.status((error as Error).message.includes("Acesso negado") ? 403 : 400).json({ mensagem: (error as Error).message });
+      res.status((error as Error).message.includes("Acesso negado") ? 403 : 400).json({ error: (error as Error).message });
     };
   };
 
@@ -50,7 +50,7 @@ class PropriedadeController {
       await this.service.atualizarTamanho(Number(req.params.id), req.body, req.session.idUsuario!);
       res.status(200).json({ mensagem: "Tamanho da propriedade atualizado com sucesso!" });
     } catch (error: unknown) {
-      res.status((error as Error).message.includes("Acesso negado") ? 403 : 400).json({ mensagem: (error as Error).message });
+      res.status((error as Error).message.includes("Acesso negado") ? 403 : 400).json({ error: (error as Error).message });
     };
   };
 
@@ -62,7 +62,7 @@ class PropriedadeController {
       await this.service.atualizarEndereco(Number(req.params.id), req.body, req.session.idUsuario!);
       res.status(200).json({ mensagem: "Endereço da propriedade atualizado com sucesso!" });
     } catch (error: unknown) {
-      res.status((error as Error).message.includes("Acesso negado") ? 403 : 400).json({ mensagem: (error as Error).message });
+      res.status((error as Error).message.includes("Acesso negado") ? 403 : 400).json({ error: (error as Error).message });
     };
   };
 };

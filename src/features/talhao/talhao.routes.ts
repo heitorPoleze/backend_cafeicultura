@@ -41,4 +41,13 @@ router.patch(
   talhaoController.encerrar.bind(talhaoController)
 );
 
+router.delete(
+  '/:id',
+  exigeLogin(),
+  [
+    param('id').isInt({ gt: 0 }).withMessage('O ID do talhão informado na URL é inválido.')
+  ],
+  talhaoController.excluir.bind(talhaoController)
+);
+
 export default router;

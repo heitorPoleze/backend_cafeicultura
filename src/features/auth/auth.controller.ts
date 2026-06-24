@@ -28,20 +28,18 @@ class AuthController {
       res.status(200).json(resposta);
     } catch (error: unknown) {
       const mensagem = error instanceof Error ? error.message : "Erro de autenticação";
-      res.status(401).json({ mensagem });
+      res.status(401).json({ error:mensagem });
     }
   }
 
   public logout(req: Request, res: Response) {
-    let resposta: LogoutResponseDTO;
     req.session.destroy((err) => {
       if (err) {
-        resposta = { mensagem: "Erro ao realizar logout. Tente novamente." };
-        res.status(500).json(resposta);
+        res.status(500).json({ error: "Erro ao realizar logout. Tente novamente." });
         return;
       }
       res.clearCookie("connect.sid");
-      resposta = { mensagem: "Logout realizado com sucesso" };
+      const resposta: LogoutResponseDTO = { mensagem: "Logout realizado com sucesso" };
       res.status(200).json(resposta);
     });
   };

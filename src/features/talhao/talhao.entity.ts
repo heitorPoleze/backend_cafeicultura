@@ -67,7 +67,7 @@ class Talhao {
     this._dataInicio = dataInicio;
     this._dataFim = dataFim;
     this._arquivado = arquivado;
-  }
+  };
 
   public get id(): number | undefined {
     return this._id;
@@ -103,18 +103,23 @@ class Talhao {
     return this._arquivado;
   };
 
-  public encerrarTalhao(dataFim: Date): void {
+  public encerrar(dataFim: Date): void {
     if (dataFim < this._dataInicio) {
-      throw new Error("A data de fim do talhão não pode ser anterior à data de início.");
+      throw new Error(
+        "A data de fim do talhão não pode ser anterior à data de início.",
+      );
     };
     if (dataFim > new Date()) {
       throw new Error("A data de fim do talhão não pode ser no futuro.");
     };
     this._dataFim = dataFim;
+  };
+
+  public arquivar(): void {
     this._arquivado = true;
   };
 
- public toJSON() {
+  public toJSON() {
     return {
       id: this._id,
       nome: this._nome,
@@ -128,6 +133,6 @@ class Talhao {
       dataFim: this._dataFim,
       arquivado: this._arquivado,
     };
-  };
+  }
 }
 export default Talhao;
