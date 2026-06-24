@@ -47,7 +47,7 @@ npm install
 ```
 
 ### 5. Sincronizar o Prisma ORM a partir das alterações no Banco de Dados
-Engenharia reversa (introspecção) do Prisma e gerar o Client para uso no código:
+Caso tenha feito alterações no seu Banco de Dados, use a Engenharia reversa (introspecção) do Prisma e gerar o Client para uso no código:
 
 ```bash
 # Atualiza o arquivo schema.prisma com as tabelas do banco de dados
