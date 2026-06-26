@@ -93,12 +93,19 @@ class PessoaRepository {
       }
     });
   }
-  public async atualizarRazaoSocialOuInscrEstadualPessoaJuridica(cnpj:string, razaoSocial:string, inscrEstadual:string){
+  public async atualizarInscricaoEstadual(cnpj:string, inscrEstadual:string){
+    await this.prisma.pessoasjuridicas.update({
+      where: { cnpj: cnpj },
+      data: {
+        inscEstadual: inscrEstadual
+      }
+    })
+  }
+  public async atualizarRazaoSocial(cnpj:string, razaoSocial:string,){
     await this.prisma.pessoasjuridicas.update({
       where: { cnpj: cnpj },
       data: {
         razaoSocial: razaoSocial,
-        inscEstadual: inscrEstadual
       }
     })
   }

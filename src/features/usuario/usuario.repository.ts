@@ -49,6 +49,18 @@ class UsuarioRepository {
       data: { senha: novaSenha }
     });
   }
+  public async updateNomeUser(novoNome:string,id:number){
+    await this.prisma.pessoasfisicas.update({
+      where: {idPeFisica_PFK: id },
+      data: {nome: novoNome}
+    })
+  }
+  public async updateRazaoSocialUser(novaRazao:string,id:number){
+    await this.prisma.pessoasjuridicas.update({
+      where: {idPeJuridica_PFK: id},
+      data: {razaoSocial: novaRazao}
+    })
+  }
 }
 
 

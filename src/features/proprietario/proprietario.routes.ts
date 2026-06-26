@@ -114,5 +114,38 @@ router.put(
   ],
   proprietarioController.atualizarTelefone.bind(proprietarioController)
 );
+router.put(
+  "/:id/identificacao",
+  exigeLogin(),
+  [
+    body("nome")
+      .optional()
+      .isString().withMessage("Nome deve ser uma string"),
+    body("razaoSocial")
+      .optional()
+      .isString().withMessage("Razão Social deve ser uma string"),
+  ],
+  proprietarioController.atualizarNomeOuRazaoSocial.bind(proprietarioController)
+);
+
+router.put(
+  "/:id/inscricao-estadual",
+  exigeLogin(),
+  [
+    body("cnpj")
+      .optional()
+      .custom((value) => validarCNPJ.isValid(value))
+      .withMessage("O CNPJ informado é inválido"),
+    body("inscricaoEstadual")
+      .notEmpty().withMessage("A Inscrição Estadual é obrigatória")
+  ],
+  proprietarioController.atualizarInscricaoEstadual.bind(proprietarioController)
+);
+
+router.get(
+  "/:id/",
+  exigeLogin(),
+  proprietarioController.getProprietarioEEndereco.bind(proprietarioController)
+);
 
 export default router;

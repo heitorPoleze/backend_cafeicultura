@@ -86,6 +86,15 @@ class ProprietarioRepository {
   public async updateTelefoneProprietario(telefone: string, id: number){
     await this.usuarioRepo.updateTelefone(telefone, id);
   }
+  public async updateNome(novoNome:string,id:number){
+    await this.usuarioRepo.updateNomeUser(novoNome,id)
+  }
+  public async updateRazaoSocial(novaRazao:string,id:number){
+    await this.usuarioRepo.updateRazaoSocialUser(novaRazao,id)
+  }
+  public async updateInscricaoEstadual(novaInscricao:string, cnpj:string){
+    await this.pessoaRepo.atualizarInscricaoEstadual(novaInscricao, cnpj)
+  }
 };
 
 export default ProprietarioRepository;

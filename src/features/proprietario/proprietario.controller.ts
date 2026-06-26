@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
-import ProprietarioService from "./proprietario.service";
-
+import ProprietarioService from "./proprietario.service"
 //Cadê o getter de proprietário para que ele consiga visualizar seus dados cadastrais? O interessante é retornar inclusive junto a um getter de endereço, já que estamos permitindo que ele possa atualizá-lo.
 
 //O frontend precisa que as mensagens de sucesso de getters(obviamente), posts e puts sejam enviados com o domínio mapeado. Mais informações em https://trello.com/c/BBERi2sS/312-issue-backend-n%C3%A3o-est%C3%A1-retornando-dados-do-dom%C3%ADnio-em-post-e-put.
@@ -83,6 +82,37 @@ class ProprietarioController {
       res.status(400).json({ mensagem: (error as Error).message })
     }
   }
+  public async atualizarNomeOuRazaoSocial(req: Request, res: Response) {
+    try {
+      const pessoaId = Number(req.params.id);
+      await this.service.atualizarNomeOuRazaoSocial(req.body, pessoaId);
+      res.status(200).json({ mensagem: "Nome ou Razão Social atualizadas com sucesso." })
+    } catch (error: unknown) {
+      res.status(400).json({ mensagem: (error as Error).message })
+    }
+  }
+  public async atualizarInscricaoEstadual(req: Request, res: Response) {
+    try {
+      const pessoaId = Number(req.params.id);
+      const { inscricaoEstadual, cnpj } = req.body;
+      await this.service.atualizarInscricaoEstadual(inscricaoEstadual, cnpj, pessoaId);
+      res.status(200).json({ mensagem: "Atualização de Inscrição Estadual feita com sucesso." });
+    } catch (error: unknown) {
+      res.status(400).json({ mensagem: (error as Error).message });
+    }
+  }
+public async getProprietarioEEndereco(req: Request, res: Response) {
+  try {
+    const pessoaId = Number(req.params.id);
+    if (Number.isNaN(pessoaId)) {
+      return res.status(400).json({ mensagem: "ID de pessoa inválido." });
+    }
+    const resultado = await this.service.getProprietarioEEndereco(pessoaId);
+    res.status(200).json(resultado);
+  } catch (error: unknown) {
+    res.status(400).json({ mensagem: (error as Error).message });
+  }
+}
 }
 
 export default ProprietarioController;
