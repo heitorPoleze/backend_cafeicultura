@@ -20,8 +20,7 @@ Certifique-se de ter instalado em sua máquina:
 Faça o clone do projeto para a sua máquina local e acesse o diretório do backend:
 
 ```bash
-git clone <URL_DO_SEU_REPOSITORIO>
-cd <NOME_DA_PASTA_DO_BACKEND>
+git clone -b develop https://github.com/heitorPoleze/backend_cafeicultura.git
 ```
 
 ### 2. Configurar o Banco de Dados
