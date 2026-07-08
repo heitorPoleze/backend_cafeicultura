@@ -28,7 +28,10 @@ export class SafraRepository {
 
   public async buscarPorId(id: number): Promise<Safra | null> {
     const data = await this.prisma.safras.findUnique({
-      where: { idSafra_PK: id },
+      where: { 
+        idSafra_PK: id,
+        arquivada: false
+      },
     });
 
     if (!data) return null;

@@ -39,7 +39,7 @@ paths:
         '404':
           description: Propriedade da safra não encontrada
         '422':
-          description: Propriedade possui duas safras ativas (limite atingido)
+          description: Erro de processamento nos campos (ex. data de inicio superior ao dia atual)
         '500':
           description: Erro interno inesperado ao cadastrar safra
 
@@ -132,5 +132,7 @@ paths:
           description: Acesso negado ou Propriedade da safra não encontrada
         '404':
           description: Safra não encontrada
+        '422':
+          description: Erro de processamento nos campos (ex. data de fim inferior a data de início)
         '500':
           description: Erro interno inesperado ao finalizar safra

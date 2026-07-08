@@ -15,7 +15,11 @@ import {
   CreatePrestadorDTO,
   FornecedorResponseDTO,
   FuncionarioResponseDTO,
+  ListarPessoasDTO,
   MeeiroResponseDTO,
+  PessoaFisicaResponseDTO,
+  PessoaJuridicaResponseDTO,
+  PessoaResponseDTO,
   PrestadorResponseDTO,
   updateSalarioFuncionarioDTO,
 } from "./pessoa.dto";
@@ -37,7 +41,7 @@ class PessoaService {
     private readonly pessoaRepo: PessoaRepo,
   ) {}
 
-  private async verificarCadastro(dados: CreatePessoaDTO, entidade: string) {
+  private async verificarCadastro(dados: CreatePessoaDTO) {
     if (dados.tipoPessoa === "fisica") {
       const cpfExistente = await this.pessoaRepo.verificarCpfExistente(
         dados.cpf!,
@@ -56,13 +60,13 @@ class PessoaService {
   };
 
   public async cadastrarCliente(c: CreateClienteDTO) {
-    await this.verificarCadastro(c, "cliente");
+    await this.verificarCadastro(c);
     const cliente = new Cliente(PessoaFactory.criarPessoa(c.tipoPessoa, c));
     return await this.clienteRepo.salvarComTransacao(cliente);
   };
 
   public async cadastrarFornecedor(f: CreateFornecedorDTO) {
-    await this.verificarCadastro(f, "fornecedor");
+    await this.verificarCadastro(f);
     const fornecedor = new Fornecedor(
       PessoaFactory.criarPessoa(f.tipoPessoa, f),
     );
@@ -70,7 +74,7 @@ class PessoaService {
   };
 
   public async cadastrarFuncionario(f: CreateFuncionarioDTO) {
-    await this.verificarCadastro(f, "funcionário");
+    await this.verificarCadastro(f);
     const funcionario = new Funcionario(
       PessoaFactory.criarPessoa(f.tipoPessoa, f),
       f.ctps,
@@ -79,11 +83,17 @@ class PessoaService {
     return await this.funcionarioRepo.salvarComTransacao(funcionario);
   };
 
-  public async atualizarFuncionarioSalario(dto: updateSalarioFuncionarioDTO) {
+  public async atualizarFuncionarioSalario(dto: updateSalarioFuncionarioDTO, idUsuarioSessao: number) {
+
     const f = await this.funcionarioRepo.buscarPorId(dto.id);
     if (!f) {
       throw new Error("NAO_ENCONTRADO");
     };
+
+    if (f.pessoa.idAdministrador !== idUsuarioSessao) {
+      throw new Error("ACESSO_NEGADO");
+    };
+
     f.salario = dto.salario;
     const resultado = await this.funcionarioRepo.atualizarSalario(dto.id, f.salario);
     if (!resultado) {
@@ -93,26 +103,31 @@ class PessoaService {
   };
 
   public async cadastrarMeeiro(m: CreateMeeiroDTO) {
-    await this.verificarCadastro(m, "meeiro");
+    await this.verificarCadastro(m);
     const meeiro = new Meeiro(PessoaFactory.criarPessoa(m.tipoPessoa, m));
     return await this.meeiroRepo.salvarComTransacao(meeiro);
   };
 
   public async cadastrarPrestador(p: CreatePrestadorDTO) {
-    await this.verificarCadastro(p, "prestador de serviço");
+    await this.verificarCadastro(p);
     const prestador = new Prestador(PessoaFactory.criarPessoa(p.tipoPessoa, p));
     return await this.prestadorRepo.salvarComTransacao(prestador);
   };
 
-  public async buscarClientePorId(idCliente: number): Promise<ClienteResponseDTO> {
+  public async buscarClientePorId(idCliente: number, idUsuarioSessao: number): Promise<ClienteResponseDTO> {
     const c = await this.clienteRepo.buscarPorId(idCliente);
     if (!c) {
       throw new Error("NAO_ENCONTRADO");
     };
 
+    if (c.pessoa.idAdministrador !== idUsuarioSessao) {
+      throw new Error("ACESSO_NEGADO");
+    };
+
     if (c.pessoa instanceof PessoaFisica) {
       return {
         id: c.pessoa.id!,
+        idAdministrador: c.pessoa.idAdministrador,
         dataCadastro: c.pessoa.dataCadastro,
         nome: c.pessoa.nome,
         cpf: c.pessoa.cpf,
@@ -121,6 +136,7 @@ class PessoaService {
     } else if (c.pessoa instanceof PessoaJuridica) {
       return {
         id: c.pessoa.id!,
+        idAdministrador: c.pessoa.idAdministrador,
         dataCadastro: c.pessoa.dataCadastro,
         razaoSocial: c.pessoa.razaoSocial,
         cnpj: c.pessoa.cnpj,
@@ -134,15 +150,21 @@ class PessoaService {
 
   public async buscarFornecedorPorId(
     idFornecedor: number,
+    idUsuarioSessao: number
   ): Promise<FornecedorResponseDTO> {
     const f = await this.fornecedorRepo.buscarPorId(idFornecedor);
     if (!f) {
       throw new Error("NAO_ENCONTRADO");
     };
 
+    if (f.pessoa.idAdministrador !== idUsuarioSessao) {
+      throw new Error("ACESSO_NEGADO");
+    };
+
     if (f.pessoa instanceof PessoaFisica) {
       return {
         id: f.pessoa.id!,
+        idAdministrador: f.pessoa.idAdministrador,
         dataCadastro: f.pessoa.dataCadastro,
         nome: f.pessoa.nome,
         cpf: f.pessoa.cpf,
@@ -151,6 +173,7 @@ class PessoaService {
     } else if (f.pessoa instanceof PessoaJuridica) {
       return {
         id: f.pessoa.id!,
+        idAdministrador: f.pessoa.idAdministrador,
         dataCadastro: f.pessoa.dataCadastro,
         razaoSocial: f.pessoa.razaoSocial,
         cnpj: f.pessoa.cnpj,
@@ -164,15 +187,21 @@ class PessoaService {
 
   public async buscarFuncionarioPorId(
     idFuncionario: number,
+    idUsuarioSessao: number
   ): Promise<FuncionarioResponseDTO> {
     const f = await this.funcionarioRepo.buscarPorId(idFuncionario);
     if (!f) {
       throw new Error("NAO_ENCONTRADO");
     };
 
+    if (f.pessoa.idAdministrador !== idUsuarioSessao) {
+      throw new Error("ACESSO_NEGADO");
+    };
+
     if (f.pessoa instanceof PessoaFisica) {
       return {
         id: f.pessoa.id!,
+        idAdministrador: f.pessoa.idAdministrador,
         dataCadastro: f.pessoa.dataCadastro,
         nome: f.pessoa.nome,
         cpf: f.pessoa.cpf,
@@ -185,14 +214,18 @@ class PessoaService {
     };
   };
 
-  public async buscarMeeiroPorId(idMeeiro: number): Promise<MeeiroResponseDTO> {
+  public async buscarMeeiroPorId(idMeeiro: number, idUsuarioSessao: number): Promise<MeeiroResponseDTO> {
     const m = await this.meeiroRepo.buscarPorId(idMeeiro);
     if (!m) {
       throw new Error("NAO_ENCONTRADO");
     };
+    if (m.pessoa.idAdministrador !== idUsuarioSessao) {
+      throw new Error("ACESSO_NEGADO");
+    };
     if (m.pessoa instanceof PessoaFisica) {
       return {
         id: m.pessoa.id!,
+        idAdministrador: m.pessoa.idAdministrador,
         dataCadastro: m.pessoa.dataCadastro,
         nome: m.pessoa.nome,
         cpf: m.pessoa.cpf,
@@ -203,14 +236,19 @@ class PessoaService {
     };
   };
 
-  public async buscarPrestadorPorId(idPrestador: number): Promise<PrestadorResponseDTO> {
+  public async buscarPrestadorPorId(idPrestador: number, idUsuarioSessao: number): Promise<PrestadorResponseDTO> {
     const p = await this.prestadorRepo.buscarPorId(idPrestador);
     if (!p) {
       throw new Error("NAO_ENCONTRADO");
     };
+
+    if (p.pessoa.idAdministrador !== idUsuarioSessao) {
+      throw new Error("ACESSO_NEGADO");
+    };
     if (p.pessoa instanceof PessoaFisica) {
       return {
         id: p.pessoa.id!,
+        idAdministrador: p.pessoa.idAdministrador,
         dataCadastro: p.pessoa.dataCadastro,
         nome: p.pessoa.nome,
         cpf: p.pessoa.cpf,
@@ -219,6 +257,45 @@ class PessoaService {
     } else {
         throw new Error("ERRO_AO_BUSCAR");
     };
+  };
+
+  public async listarPessoas(dto: ListarPessoasDTO): Promise<PessoaResponseDTO[]> {
+    const pessoas = await this.pessoaRepo.listarPessoas(dto.idAdministrador);
+    if (!pessoas) {
+      throw new Error("ERRO_AO_BUSCAR");
+    };
+
+    const pessoasDTO: (PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO)[] = [];
+    for (const p of pessoas) {
+      if (p instanceof PessoaFisica) {
+        pessoasDTO.push({
+          id: p.id!,
+          idAdministrador: p.idAdministrador,
+          dataCadastro: p.dataCadastro,
+          nome: p.nome,
+          cpf: p.cpf,
+          endereco: p.endereco,
+        });
+      } else if (p instanceof PessoaJuridica) {
+        pessoasDTO.push({
+          id: p.id!,
+          idAdministrador: p.idAdministrador,
+          dataCadastro: p.dataCadastro,
+          razaoSocial: p.razaoSocial,
+          cnpj: p.cnpj,
+          inscrEstadual: p.inscrEstadual,
+          endereco: p.endereco,
+        });
+      } else {
+        throw new Error("ERRO_AO_BUSCAR");
+      };
+    }
+
+    if (pessoas && pessoas.length === 0) {
+      throw new Error("SEM_REGISTROS");
+    };
+
+    return pessoasDTO;
   };
 };
 

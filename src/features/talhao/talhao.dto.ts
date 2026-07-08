@@ -22,3 +22,8 @@ export type EncerrarTalhaoDTO = {
 export type ExcluirTalhaoDTO = {
   id: number;
 };
+
+export type VariedadesDTO = {
+  id: number;
+  descricao: string;
+};

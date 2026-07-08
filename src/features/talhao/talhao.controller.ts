@@ -30,6 +30,15 @@ export class TalhaoController {
     };
   };
 
+  public async buscarVariedades(req: Request, res: Response) {
+    try {
+      const variedades = await this.talhaoService.buscarVariedades();
+      res.status(200).json(variedades);
+    } catch (error) {
+      return res.status(500).json({ error: 'Erro ao buscar variedades' });
+    };
+  };  
+
   public async encerrar(req: Request, res: Response) {
     const erros = validationResult(req);
     if (!erros.isEmpty()) {

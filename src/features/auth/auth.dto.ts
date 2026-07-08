@@ -6,6 +6,7 @@ export type LoginRequestDTO = {
 
 export type LoginResponseDTO = {
   mensagem: string;
+  dadosSessao: { id: number; nome: string };
 };
 
 export type LogoutResponseDTO = {

@@ -63,6 +63,7 @@ class ProprietarioRepository {
 
     const dados = {
       id: u.idUsuario_PFK, 
+      idAdministrador: p.idAdministrador_FK,
       dataCadastro: p.dataCadastro,
       endereco: endereco,
       nome: p.pessoasfisicas?.nome,
@@ -72,7 +73,6 @@ class ProprietarioRepository {
       inscEstadual: p.pessoasjuridicas?.inscEstadual
     };
 
-    // 4. Delega a criação para a Factory
     const perfil = PessoaFactory.criarPessoa(tipoPessoa, dados);
 
     return new Proprietario(perfil, u.email, u.telefone, u.senha);

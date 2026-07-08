@@ -31,6 +31,12 @@ router.post(
   talhaoController.cadastrar.bind(talhaoController)
 );
 
+router.get(
+  '/variedades',
+  exigeLogin(),
+  talhaoController.buscarVariedades.bind(talhaoController)
+);
+
 router.patch(
   '/:id/encerrar',
   exigeLogin(),

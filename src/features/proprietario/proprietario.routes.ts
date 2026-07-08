@@ -37,11 +37,11 @@ router.post(
 
     // Validações Condicionais (Pessoa Física)
     body("nome").if(body("tipoPessoa").equals("fisica")).notEmpty().withMessage("O nome é obrigatório para Pessoa Física"),
-    body("cpf").if(body("tipoPessoa").equals("fisica")).custom((value) => validarCPF.isValid(value)).withMessage("O CPF informado é inválido"),
+    body("cpf").if(body("tipoPessoa").equals("fisica")).custom((value) => validarCPF.isValid(value, true)).withMessage("O CPF informado deve estar formatado corretamente. Ex: 000.000.000-00"),
 
     // Validações Condicionais (Pessoa Jurídica)
     body("razaoSocial").if(body("tipoPessoa").equals("juridica")).notEmpty().withMessage("A Razão Social é obrigatória para Pessoa Jurídica"),
-    body("cnpj").if(body("tipoPessoa").equals("juridica")).custom((value) => validarCNPJ.isValid(value)).withMessage("O CNPJ informado é inválido"),
+    body("cnpj").if(body("tipoPessoa").equals("juridica")).custom((value) => validarCNPJ.isValid(value, true)).withMessage("O CNPJ informado deve estar formatado corretamente. Ex: 00.000.000/0000-00"),
     body("inscrEstadual").if(body("tipoPessoa").equals("juridica")).optional()
   ],
   proprietarioController.cadastrar.bind(proprietarioController)
@@ -52,7 +52,7 @@ router.put(
   exigeLogin(),
   [
     body("cidade").notEmpty().withMessage("Cidade é obrigatória"),
-    body("cep").matches(/^\d{5}-\d{3}$/).withMessage("CEP inválido"),
+    body("cep").matches(/^\d{5}-\d{3}$/).withMessage("CEP deve estar no formato 00000-000"),
     body("uf").isLength({ min: 2, max: 2 }).withMessage("UF deve ter 2 caracteres"),
     body("logradouro").notEmpty().withMessage("Logradouro é obrigatório")
   ],

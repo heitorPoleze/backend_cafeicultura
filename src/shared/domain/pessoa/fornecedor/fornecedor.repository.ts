@@ -61,6 +61,7 @@ class FornecedorRepository {
 
     const dados = {
       id: f.idFornecedor_PFK,
+      idAdministrador: p.idAdministrador_FK,
       dataCadastro: p.dataCadastro,
       endereco: endereco,
       nome: p.pessoasfisicas?.nome,

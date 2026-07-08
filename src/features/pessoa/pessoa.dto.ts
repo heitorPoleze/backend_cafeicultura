@@ -2,6 +2,7 @@ import Endereco from "../../shared/domain/endereco/endereco.vo";
 
 export type CreatePessoaDTO = {
     tipoPessoa: "fisica" | "juridica";
+    idAdministrador: number | null;
     nome?: string;
     cpf?: string;
     razaoSocial?: string;
@@ -28,6 +29,7 @@ export type updateSalarioFuncionarioDTO = {
 
 export type PessoaResponseDTO = {
     id: number;
+    idAdministrador: number | null;
     endereco: Endereco | null;
     dataCadastro: Date;
 };
@@ -53,3 +55,7 @@ export type PrestadorResponseDTO = PessoaFisicaResponseDTO;
 
 export type ClienteResponseDTO = PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO;
 export type FornecedorResponseDTO = PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO;
+
+export type ListarPessoasDTO = {
+    idAdministrador: number;
+};

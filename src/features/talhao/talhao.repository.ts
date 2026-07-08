@@ -1,19 +1,18 @@
-  import { PrismaClient, Prisma } from "@prisma/client";
-  import Talhao, { Especie } from "./talhao.entity";
-  import Tamanho from "../../shared/domain/tamanho/tamanho.entity";
+import { PrismaClient, Prisma } from "@prisma/client";
+import Talhao, { Especie } from "./talhao.entity";
+import Tamanho from "../../shared/domain/tamanho/tamanho.entity";
 
-  // Define a tipagem exata do retorno do banco de dados incluindo os relacionamentos
-  type TalhaoCompleto = Prisma.talhoesGetPayload<{
-    include: {
-      tamanhos: true;
-      variedadestalhoes: {
-        include: { variedades: true };
-      };
+type TalhaoCompleto = Prisma.talhoesGetPayload<{
+  include: {
+    tamanhos: true;
+    variedadestalhoes: {
+      include: { variedades: true };
     };
-  }>;
+  };
+}>;
 
-  class TalhaoRepository {
-    constructor(private prisma: PrismaClient) {}
+class TalhaoRepository {
+  constructor(private prisma: PrismaClient) {};
 
   async cadastrar(talhao: Talhao, variedadesIds: number[]): Promise<number> {
     const talhaoDb = await this.prisma.talhoes.create({
@@ -98,16 +97,27 @@
         arquivado: talhao.arquivado ? 1 : 0,
       },
     });
-  };
+  }
 
   async excluir(talhao: Talhao): Promise<void> {
     if (!talhao.id) throw new Error("ID do talhão é obrigatório.");
 
     await this.prisma.talhoes.update({
-      data: { arquivado: talhao.arquivado ? 1 : 0},
+      data: { arquivado: talhao.arquivado ? 1 : 0 },
       where: { idTalhao_PK: talhao.id },
     });
-  };
+  }
+
+  public async buscarVariedades(): Promise<
+    { id: number; descricao: string }[]
+  > {
+    const variedades = await this.prisma.variedades.findMany();
+
+    return variedades.map((variedade) => ({
+      id: variedade.idVariedade_PK,
+      descricao: variedade.descricao,
+    }));
+  }
 
   private mapToDomain(db: TalhaoCompleto): Talhao {
     const tamanhoDomain = new Tamanho(
@@ -132,7 +142,7 @@
       db.dataFim,
       db.arquivado === 1,
     );
-  };
+  }
 }
 
 export default TalhaoRepository;

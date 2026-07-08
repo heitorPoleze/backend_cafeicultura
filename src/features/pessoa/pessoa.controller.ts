@@ -9,8 +9,9 @@ class PessoaController {
     const erros = validationResult(req);
     if (!erros.isEmpty()) {
       return res.status(400).json({ erros: erros.array() });
-    };
+    }
     try {
+      req.body.idAdministrador = req.session.idUsuario!;
       await this.service.cadastrarCliente(req.body);
 
       res.status(201).json({ mensagem: "Cliente cadastrado com sucesso" });
@@ -30,8 +31,9 @@ class PessoaController {
     const erros = validationResult(req);
     if (!erros.isEmpty()) {
       return res.status(400).json({ erros: erros.array() });
-    };
+    }
     try {
+      req.body.idAdministrador = req.session.idUsuario!;
       await this.service.cadastrarFornecedor(req.body);
 
       res.status(201).json({ mensagem: "Fornecedor cadastrado com sucesso" });
@@ -39,10 +41,10 @@ class PessoaController {
       if (error instanceof Error) {
         if (error.message === "CPF_EXISTENTE") {
           return res.status(409).json({ error: "CPF já cadastrado" });
-        };
+        }
         return res.status(500).json({ error: error.message });
       };
-    };
+    }
   };
 
   public async cadastrarFuncionario(req: Request, res: Response) {
@@ -51,6 +53,7 @@ class PessoaController {
       return res.status(400).json({ erros: erros.array() });
     };
     try {
+      req.body.idAdministrador = req.session.idUsuario!;
       await this.service.cadastrarFuncionario(req.body);
 
       res.status(201).json({ mensagem: "Funcionário cadastrado com sucesso" });
@@ -70,17 +73,23 @@ class PessoaController {
       return res.status(400).json({ erros: erros.array() });
     };
     try {
+      await this.service.atualizarFuncionarioSalario(
+        {
+          id: Number(req.params.id),
+          salario: req.body.salario,
+        },
+        req.session.idUsuario!,
+      );
 
-      await this.service.atualizarFuncionarioSalario({
-        id: Number(req.params.id),
-        salario: req.body.salario,
-      });
-    
       res.status(200).json({ mensagem: "Salário atualizado com sucesso" });
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "NAO_ENCONTRADO") {
           return res.status(404).json({ error: "Funcionário não encontrado" });
+        } else if (error.message === "ACESSO_NEGADO") {
+          return res
+            .status(403)
+            .json({ error: "Acesso negado! Não pode atualizar salário" });
         } else if (error.message === "NAO_ATUALIZADO") {
           return res.status(500).json({ error: "Erro ao atualizar salário" });
         };
@@ -94,6 +103,7 @@ class PessoaController {
       return res.status(400).json({ erros: erros.array() });
     };
     try {
+      req.body.idAdministrador = req.session.idUsuario!;
       await this.service.cadastrarMeeiro(req.body);
 
       res.status(201).json({ mensagem: "Meeiro cadastrado com sucesso" });
@@ -101,7 +111,7 @@ class PessoaController {
       if (error instanceof Error) {
         if (error.message === "CPF_EXISTENTE") {
           return res.status(409).json({ error: "CPF já cadastrado" });
-        };
+        }
         return res.status(500).json({ error: error.message });
       };
     };
@@ -111,11 +121,14 @@ class PessoaController {
     const erros = validationResult(req);
     if (!erros.isEmpty()) {
       return res.status(400).json({ erros: erros.array() });
-    };
+    }
     try {
+      req.body.idAdministrador = req.session.idUsuario!;
       await this.service.cadastrarPrestador(req.body);
 
-      res.status(201).json({ mensagem: "Prestador de Serviço cadastrado com sucesso" });
+      res
+        .status(201)
+        .json({ mensagem: "Prestador de Serviço cadastrado com sucesso" });
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "CPF_EXISTENTE") {
@@ -128,57 +141,85 @@ class PessoaController {
 
   public async buscarClientePorId(req: Request, res: Response) {
     try {
-      const cliente = await this.service.buscarClientePorId(Number(req.params.id));
+      const cliente = await this.service.buscarClientePorId(
+        Number(req.params.id),
+        req.session.idUsuario!,
+      );
       res.status(200).json(cliente);
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "NAO_ENCONTRADO") {
           return res.status(404).json({ error: "Cliente não encontrado" });
+        } else if (error.message === "ACESSO_NEGADO") {
+          return res
+            .status(403)
+            .json({ error: "Acesso negado! Não pode visualizar cliente" });
         } else if (error.message === "ERRO_AO_BUSCAR") {
           return res.status(500).json({ error: "Erro ao buscar cliente" });
         };
-      }
+      };
     };
   };
 
   public async buscarFornecedorPorId(req: Request, res: Response) {
     try {
-      const fornecedor = await this.service.buscarFornecedorPorId(Number(req.params.id));
+      const fornecedor = await this.service.buscarFornecedorPorId(
+        Number(req.params.id),
+        req.session.idUsuario!,
+      );
       res.status(200).json(fornecedor);
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "NAO_ENCONTRADO") {
           return res.status(404).json({ error: "Fornecedor não encontrado" });
+        } else if (error.message === "ACESSO_NEGADO") {
+          return res
+            .status(403)
+            .json({ error: "Acesso negado! Não pode visualizar fornecedor" });
         } else if (error.message === "ERRO_AO_BUSCAR") {
           return res.status(500).json({ error: "Erro ao buscar fornecedor" });
         };
-      }
+      };
     };
   };
 
   public async buscarFuncionarioPorId(req: Request, res: Response) {
     try {
-      const funcionario = await this.service.buscarFuncionarioPorId(Number(req.params.id));
+      const funcionario = await this.service.buscarFuncionarioPorId(
+        Number(req.params.id),
+        req.session.idUsuario!,
+      );
       res.status(200).json(funcionario);
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "NAO_ENCONTRADO") {
           return res.status(404).json({ error: "Funcionário não encontrado" });
+        } else if (error.message === "ACESSO_NEGADO") {
+          return res
+            .status(403)
+            .json({ error: "Acesso negado! Não pode visualizar funcionário" });
         } else if (error.message === "ERRO_AO_BUSCAR") {
           return res.status(500).json({ error: "Erro ao buscar funcionário" });
         };
-      }
+      };
     };
   };
 
   public async buscarMeeiroPorId(req: Request, res: Response) {
     try {
-      const meeiro = await this.service.buscarMeeiroPorId(Number(req.params.id));
+      const meeiro = await this.service.buscarMeeiroPorId(
+        Number(req.params.id),
+        req.session.idUsuario!,
+      );
       res.status(200).json(meeiro);
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "NAO_ENCONTRADO") {
           return res.status(404).json({ error: "Meeiro não encontrado" });
+        } else if (error.message === "ACESSO_NEGADO") {
+          return res
+            .status(403)
+            .json({ error: "Acesso negado! Não pode visualizar meeiro" });
         } else if (error.message === "ERRO_AO_BUSCAR") {
           return res.status(500).json({ error: "Erro ao buscar meeiro" });
         };
@@ -188,18 +229,46 @@ class PessoaController {
 
   public async buscarPrestadorPorId(req: Request, res: Response) {
     try {
-      const prestador = await this.service.buscarPrestadorPorId(Number(req.params.id));
+      const prestador = await this.service.buscarPrestadorPorId(
+        Number(req.params.id),
+        req.session.idUsuario!,
+      );
       res.status(200).json(prestador);
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "NAO_ENCONTRADO") {
-          return res.status(404).json({ error: "Prestador de Serviço não encontrado" });
+          return res
+            .status(404)
+            .json({ error: "Prestador de Serviço não encontrado" });
+        } else if (error.message === "ACESSO_NEGADO") {
+          return res
+            .status(403)
+            .json({
+              error: "Acesso negado! Não pode visualizar prestador de serviço",
+            });
         } else if (error.message === "ERRO_AO_BUSCAR") {
-          return res.status(500).json({ error: "Erro ao buscar prestador de serviço" });
+          return res
+            .status(500)
+            .json({ error: "Erro ao buscar prestador de serviço" });
         };
       };
     };
   };
+
+  public async listarPessoas(req: Request, res: Response) {
+    try {
+      const pessoas = await this.service.listarPessoas({idAdministrador: req.session.idUsuario!});
+      res.status(200).json(pessoas);
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === "SEM_REGISTROS") {
+          return res.status(404).json({ error: "Nenhuma pessoa cadastrada" });
+        }
+        return res.status(400).json({ error: error.message });
+      };
+      res.status(500).json({ error: "Erro ao listar pessoas" });
+    };
+  }
 };
 
 export default PessoaController;

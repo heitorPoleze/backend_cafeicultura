@@ -55,6 +55,7 @@ class ClienteRepository {
 
     const dados = {
       id: c.idCliente_PFK, 
+      idAdministrador: p.idAdministrador_FK,
       dataCadastro: p.dataCadastro,
       endereco: endereco,
       nome: p.pessoasfisicas?.nome,

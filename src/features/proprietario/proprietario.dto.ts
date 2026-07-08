@@ -3,6 +3,7 @@ import Endereco from "../../shared/domain/endereco/endereco.vo";
 
 export type CreateProprietarioDTO = {
   tipoPessoa: "fisica" | "juridica";
+  idAdministrador: number | null;
 
   // Campos para Pessoa Física
   nome?: string;

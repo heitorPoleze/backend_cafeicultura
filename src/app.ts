@@ -16,6 +16,8 @@ import proprietarioRotas from "./features/proprietario/proprietario.routes";
 import propriedadeRotas from "./features/propriedade/propriedade.routes";
 import talhoesRotas from "./features/talhao/talhao.routes";
 import safraRotas from "./features/safra/safra.routes";
+import tratosCulturaisRotas from "./features/tratocultural/tratocultural.routes";
+import insumosRotas from "./features/insumo/insumo.routes";
 dotenv.config(); // Carrega as variáveis de ambiente do .env
 
 const app = express();
@@ -96,5 +98,7 @@ app.use(`${API_VERSION}/propriedades`, propriedadeRotas);
 // app.use(`${API_VERSION}/consultores-tecnicos`, consultorTecnicoRotas);
 app.use(`${API_VERSION}/talhoes`, talhoesRotas);
 app.use(`${API_VERSION}/safras`, safraRotas);
+app.use(`${API_VERSION}/tratosculturais`, tratosCulturaisRotas);
+app.use(`${API_VERSION}/insumos`, insumosRotas);
 
 export default app;

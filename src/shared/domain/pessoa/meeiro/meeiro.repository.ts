@@ -58,6 +58,7 @@ class MeeiroRepository {
 
     const dados = {
       id: m.idPeFisica_PFK,
+      idAdministrador: p.idAdministrador_FK,
       dataCadastro: p.dataCadastro,
       endereco: endereco,
       nome: p.pessoasfisicas?.nome,

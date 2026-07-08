@@ -8,6 +8,7 @@ class PessoaFactory {
     if (tipo === 'fisica') {
       return new PessoaFisica(
         dados.id,
+        dados.idAdministrador,
         dados.nome!,
         dados.cpf!,
         dados.endereco,
@@ -16,6 +17,7 @@ class PessoaFactory {
     } else if (tipo === 'juridica') {
       return new PessoaJuridica(
         dados.id,
+        dados.idAdministrador,
         dados.cnpj!,
         dados.razaoSocial!,
         dados.inscrEstadual!,

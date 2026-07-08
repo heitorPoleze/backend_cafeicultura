@@ -14,7 +14,18 @@ class Safra {
   }) {
     this._id = props.id;
     this._idPropriedade = props.idPropriedade;
+
+    if (props.dataInicio > new Date()) {
+      throw new Error("DATA_INICIO_FUTURA");
+    };
     this._dataInicio = new Date(props.dataInicio);
+
+    if (props.dataFim && props.dataFim < this._dataInicio) {
+      throw new Error("DATA_FIM_ANTERIOR");
+    };
+    if (props.dataFim && props.dataFim > new Date()) {
+      throw new Error("DATA_FIM_SUPERIOR");
+    };
     this._dataFim = props.dataFim ? new Date(props.dataFim) : null;
     this._arquivada = props.arquivada ?? false;
   };
@@ -43,10 +54,10 @@ class Safra {
     const dataEncerramento = new Date(dataFim);
     const hoje = new Date();
     if (dataEncerramento > hoje) {
-      throw new Error("A data de fim da safra não pode ser uma data futura.");
+      throw new Error("DATA_FIM_SUPERIOR");
     };
     if (dataEncerramento < this._dataInicio) {
-      throw new Error("A data de fim não pode ser anterior à data de início.");
+      throw new Error("DATA_FIM_ANTERIOR");
     };
 
     this._dataFim = dataEncerramento;
@@ -55,10 +66,6 @@ class Safra {
   public arquivar(): void {
     this._arquivada = true;
   };
-
-  // Lógica para calcular o custo baseado nos eventos
-  //   public calculaCusto(): number {
-  //   }
 
   public toJSON() {
     return {

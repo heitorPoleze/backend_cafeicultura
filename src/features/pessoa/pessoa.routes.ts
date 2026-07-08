@@ -39,11 +39,11 @@ const validacaoPessoaMista = [
   
   // Condicionais Física
   body("nome").if(body("tipoPessoa").equals("fisica")).notEmpty().withMessage("O nome é obrigatório para Pessoa Física"),
-  body("cpf").if(body("tipoPessoa").equals("fisica")).custom((value) => validarCPF.isValid(value)).withMessage("O CPF informado é inválido"),
+  body("cpf").if(body("tipoPessoa").equals("fisica")).custom((value) => validarCPF.isValid(value, true)).withMessage("O CPF informado deve estar formatado corretamente. Ex: 000.000.000-00"),
   
   // Condicionais Jurídica
   body("razaoSocial").if(body("tipoPessoa").equals("juridica")).notEmpty().withMessage("A Razão Social é obrigatória para Pessoa Jurídica"),
-  body("cnpj").if(body("tipoPessoa").equals("juridica")).custom((value) => validarCNPJ.isValid(value)).withMessage("O CNPJ informado é inválido"),
+  body("cnpj").if(body("tipoPessoa").equals("juridica")).custom((value) => validarCNPJ.isValid(value, true)).withMessage("O CNPJ informado deve estar formatado corretamente. Ex: 00.000.000/0000-00"),
   body("inscrEstadual").optional()
 ];
 
@@ -51,7 +51,7 @@ const validacaoPessoaMista = [
 const validacaoPessoaFisicaEstrita = [
   body("tipoPessoa").equals("fisica").withMessage("Este cadastro aceita apenas Pessoa Física ('fisica')"),
   body("nome").notEmpty().withMessage("O nome é obrigatório"),
-  body("cpf").custom((value) => validarCPF.isValid(value)).withMessage("O CPF informado é inválido")
+  body("cpf").custom((value) => validarCPF.isValid(value, true)).withMessage("O CPF informado deve estar formatado corretamente. Ex: 000.000.000-00")
 ];
 
 
@@ -137,6 +137,12 @@ router.get(
   exigeLogin(),
   [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
   pessoaController.buscarPrestadorPorId.bind(pessoaController)
+);
+
+router.get(
+  "/pessoas",
+  exigeLogin(),
+  pessoaController.listarPessoas.bind(pessoaController)
 );
 
 export default router;

@@ -24,7 +24,13 @@ class SafraController {
           return res.status(404).json({ error: 'Propriedade da safra não encontrada' });
         } else if (error.message === 'DUAS_ATIVAS') {
           return res.status(422).json({ error: 'Propriedade possui duas safras ativas' });
-        };
+        } else if (error.message === 'DATA_INICIO_FUTURA') {
+          return res.status(422).json({ error: 'Data de inicio superior ao dia atual' });
+        } else if (error.message === 'DATA_FIM_INFERIOR') {
+          return res.status(422).json({ error: 'Data de fim inferior ao dia de início' });
+        } else if (error.message === 'DATA_FIM_SUPERIOR') {
+          return res.status(422).json({ error: 'Data de fim superior ao dia atual' });
+        }
         return res.status(500).json({ error: 'Erro interno inesperado ao cadastrar talhão' });
       };
     };
@@ -74,7 +80,11 @@ class SafraController {
           return res.status(404).json({ error: 'Safra não encontrada' });
         } else if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
           return res.status(403).json({ error: 'Propriedade da safra não encontrada' });
-        };
+        } else if (error.message === 'DATA_FIM_SUPERIOR') {
+          return res.status(422).json({ error: 'Data fim superior ao dia atual' });
+        } else if (error.message === 'DATA_FIM_ANTERIOR') {
+          return res.status(422).json({ error: 'Data fim anterior a data inicio' });
+        }
         return res.status(500).json({ error: 'Erro interno inesperado ao finalizar safra' });
       };
     };

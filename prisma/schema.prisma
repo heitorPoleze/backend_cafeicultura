@@ -143,6 +143,7 @@ model eventos {
   confirmado            Int                     @db.TinyInt
   safras                safras                  @relation(fields: [idSafra_FK], references: [idSafra_PK], onDelete: NoAction, onUpdate: NoAction, map: "evento_safra")
   eventosagricolas      eventosagricolas?
+  pessoaseventos        pessoaseventos[]
   transacoesfinanceiras transacoesfinanceiras[]
   vendas                vendas?
 
@@ -183,9 +184,11 @@ model fermentacoes {
 }
 
 model formaspgto {
-  idFormaPgto_PK        Int                     @id @unique(map: "idFormaPgto_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
-  descricao             String                  @unique(map: "descricao_UNIQUE") @db.VarChar(7)
+  idFormaPgto_PK        Int                     @unique(map: "idFormaPgto_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
+  descricao             String                  @unique(map: "descricao_UNIQUE") @db.VarChar(17)
   transacoesfinanceiras transacoesfinanceiras[]
+
+  @@id([idFormaPgto_PK, descricao])
 }
 
 model fornecedores {
@@ -208,7 +211,7 @@ model geolocalizacoes {
 model insumos {
   idInsumo_PK         Int                   @id @unique(map: "idInsumo_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
   descricao           String                @db.VarChar(25)
-  medida              String                @db.VarChar(10)
+  medida              String                @db.VarChar(3)
   comprasinsumos      comprasinsumos[]
   insumosfermentacoes insumosfermentacoes[]
   tratosinsumos       tratosinsumos[]
@@ -260,15 +263,19 @@ model metodossecagens {
 
 model pessoas {
   idPessoa_PK           Int                     @id @unique(map: "idPessoa_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
+  idAdministrador_FK    Int?                    @db.UnsignedInt
   idEndereco_FK         Int?                    @db.UnsignedInt
   dataCadastro          DateTime                @unique(map: "dataCadastro_UNIQUE") @db.DateTime(0)
+  proprietarios         proprietarios?          @relation(fields: [idAdministrador_FK], references: [idProprietario_PFK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_administrador")
   enderecos             enderecos?              @relation(fields: [idEndereco_FK], references: [idEndereco_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_endereco")
+  pessoaseventos        pessoaseventos[]
   pessoasfisicas        pessoasfisicas?
   pessoasjuridicas      pessoasjuridicas?
   transacoesfinanceiras transacoesfinanceiras[]
   usuarios              usuarios?
 
   @@index([idEndereco_FK], map: "pessoa_endereco_idx")
+  @@index([idAdministrador_FK], map: "pessoa_administrador_idx")
 }
 
 model pessoasfisicas {
@@ -338,6 +345,7 @@ model propriedades {
 
 model proprietarios {
   idProprietario_PFK Int            @id @unique(map: "idProprietario_PFK_UNIQUE") @db.UnsignedInt
+  pessoas            pessoas[]
   propriedades       propriedades[]
   usuarios           usuarios       @relation(fields: [idProprietario_PFK], references: [idUsuario_PFK], onDelete: NoAction, onUpdate: NoAction, map: "proprietario_usuario")
 }
@@ -430,7 +438,7 @@ model tipostratos {
 
 model transacoesfinanceiras {
   idTransacaoFinanceira_PK Int          @id @unique(map: "idTransacaoFinanceira_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
-  idEvento_FK              Int          @db.UnsignedInt
+  idEvento_FK              Int?         @db.UnsignedInt
   idPropriedade_FK         Int          @db.UnsignedInt
   idFormaPgto_FK           Int          @db.UnsignedInt
   idPessoa_FK              Int          @db.UnsignedInt
@@ -439,7 +447,7 @@ model transacoesfinanceiras {
   tipoOperacao             String       @db.VarChar(9)
   despesas                 despesas?
   receitas                 receitas?
-  eventos                  eventos      @relation(fields: [idEvento_FK], references: [idEvento_PK], onDelete: NoAction, onUpdate: NoAction, map: "transacao_evento")
+  eventos                  eventos?     @relation(fields: [idEvento_FK], references: [idEvento_PK], onDelete: NoAction, onUpdate: NoAction, map: "transacao_evento")
   formaspgto               formaspgto   @relation(fields: [idFormaPgto_FK], references: [idFormaPgto_PK], onDelete: NoAction, onUpdate: NoAction, map: "transacao_forma")
   pessoas                  pessoas      @relation(fields: [idPessoa_FK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "transacao_pessoa")
   propriedades             propriedades @relation(fields: [idPropriedade_FK], references: [idPropriedade_PK], onDelete: NoAction, onUpdate: NoAction, map: "transacao_propriedade")
@@ -524,4 +532,14 @@ model session {
   sid       String   @unique(map: "sid_UNIQUE")
   data      String   @db.Text
   expiresAt DateTime
+}
+
+model pessoaseventos {
+  idPessoa_PFK Int     @db.UnsignedInt
+  idEvento_PFK Int     @db.UnsignedInt
+  eventos      eventos @relation(fields: [idEvento_PFK], references: [idEvento_PK], onDelete: NoAction, onUpdate: NoAction, map: "evento_evento")
+  pessoas      pessoas @relation(fields: [idPessoa_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_pessoa")
+
+  @@id([idPessoa_PFK, idEvento_PFK])
+  @@index([idEvento_PFK], map: "evento_evento_idx")
 }

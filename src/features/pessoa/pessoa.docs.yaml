@@ -323,3 +323,20 @@ paths:
           description: Prestador de Serviço não encontrado
         '500':
           description: Erro ao buscar prestador
+
+  /api/v1/pessoas:
+    get:
+      summary: Lista todas as Pessoas
+      tags: 
+        - Pessoas
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista de pessoas retornada com sucesso
+        '400':
+          description: Erro de validação
+        '404':
+          description: Nenhuma pessoa encontrada
+        '500':
+          description: Erro interno ao listar pessoas

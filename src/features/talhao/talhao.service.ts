@@ -1,6 +1,6 @@
 import TalhaoRepository from './talhao.repository';
 import PropriedadeRepository from '../propriedade/propriedade.repository'; 
-import { CadastrarTalhaoDTO, EncerrarTalhaoDTO, ExcluirTalhaoDTO } from './talhao.dto';
+import { CadastrarTalhaoDTO, EncerrarTalhaoDTO, ExcluirTalhaoDTO, VariedadesDTO } from './talhao.dto';
 import Talhao from './talhao.entity';
 import Tamanho from '../../shared/domain/tamanho/tamanho.entity';
 
@@ -58,6 +58,10 @@ class TalhaoService {
     return await this.repository.cadastrar(novoTalhao, dto.variedadesIds);
   };
 
+  public async buscarVariedades(): Promise<VariedadesDTO[]> {
+    return await this.repository.buscarVariedades();
+  };
+
   async encerrarTalhao(dto: EncerrarTalhaoDTO, idUsuarioSessao: number): Promise<void> {
     const talhao = await this.repository.buscarPorId(dto.id);
     if (!talhao) {
@@ -104,6 +108,7 @@ class TalhaoService {
     };
     return tamanho.valor;
   };
+
 };
 
 export default TalhaoService;
