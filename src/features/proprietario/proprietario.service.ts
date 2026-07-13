@@ -11,6 +11,7 @@ import Usuario from "../usuario/usuario.entity";
 import PessoaFisica from "../../shared/domain/pessoa/pessoafisica.entity";
 import PessoaJuridica from "../../shared/domain/pessoa/pessoajuridica.entity";
 import bcrypt from "bcryptjs";
+import PessoaDTO from "../../shared/domain/pessoa/pessoa.dto";
 
 export default class ProprietarioService {
   constructor(
@@ -20,7 +21,7 @@ export default class ProprietarioService {
   ) { }
 
   //REVISÃO: HEITOR 23/06/2026-> aqui é uma decisão arquitetural que não posso tomar sozinho. Você está fazendo múltiplas consultas ao Banco, porém mantém o código limpo. Uma outra decisão poderia ser verificar essas duplicatas no próprio repositório na função criar. O código P2002 do Prisma ocorre quando ele identifica uma duplicata. Poderíamos trabalhar nisso caso o sistema cresça para milhares de usuários.
-  public async cadastrar(dados: CreateProprietarioDTO): Promise<number> {
+  public async cadastrar(dados: CreateProprietarioDTO):Promise<PessoaDTO>{
 
     if (dados.tipoPessoa === "fisica") {
       const cpfExistente = await this.pessoaRepo.verificarCpfExistente(dados.cpf!);
@@ -55,10 +56,31 @@ export default class ProprietarioService {
       credencial.telefone,
       credencial.senha
     );
-    return await this.repo.salvarComTransacao(proprietario);
-  };
+   const idProprietario = await this.repo.salvarComTransacao(proprietario);
+  let pessoaDTO: PessoaDTO;
 
-  public async criarEndereco(dados: Record<string, unknown>, pessoaId: number): Promise<number> {
+  if (dados.tipoPessoa === "fisica") {
+    pessoaDTO = {
+      id: idProprietario,
+      nome: dados.nome,
+      cpf: dados.cpf,
+      endereco: dados.endereco,
+      dataCadastro: dados.dataCadastro
+    };
+  } else {
+    pessoaDTO = {
+      id: idProprietario,
+      razaoSocial: dados.razaoSocial,
+      cnpj: dados.cnpj,
+      inscrEstadual: dados.inscrEstadual,
+      endereco: dados.endereco,
+      dataCadastro: dados.dataCadastro
+    };
+  }
+  return pessoaDTO
+  }
+
+  public async criarEndereco(dados: Record<string, unknown>, pessoaId: number): Promise<Endereco> {
     const endereco = new Endereco(
       dados.cidade as string,
       dados.bairro as string,
@@ -96,12 +118,17 @@ export default class ProprietarioService {
 
   //Precisa verificar se o e-mail/telefone já está em uso e retornar uma mensagem de erro compatível para retornarmos a mensagem para a api, assim como o método cadastrar dessa mesma classe.
   public async atualizarEmail(email: string, pessoaId: number) {
+    if(await this.usuarioRepo.verificarEmailExistente(email)){
+      throw new Error(`O e-mail ${email} já está em uso.`);
+    }
     this.repo.updateEmailProprietario(email, pessoaId)
   }
   public async atualizarTelefone(telefone: string, pessoaId: number) {
+    if(await this.usuarioRepo.verificarTelefoneExistente(telefone)){
+      throw new Error(`O telefone ${telefone} já está em uso.`);
+    }
     this.repo.updateTelefoneProprietario(telefone, pessoaId)
   }
-
   public async atualizarNomeOuRazaoSocial(dados: Record<string, unknown>, pessoaId: number): Promise<void> {
     const proprietario = await this.repo.buscarPorId(pessoaId);
 

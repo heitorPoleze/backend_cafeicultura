@@ -3,10 +3,11 @@ import PessoaBase from "./pessoabase.entity";
 import PessoaFisica from "./pessoafisica.entity";
 import PessoaJuridica from "./pessoajuridica.entity";
 import Endereco from "../endereco/endereco.vo";
+import PessoaDTO from "./pessoa.dto";
 
 class PessoaRepository {
-  constructor(private readonly prisma: PrismaClient) {}
-
+  constructor(private readonly prisma: PrismaClient) { }
+  //retornar pessoa construida
   public async salvar(
     perfil: PessoaBase,
     tx: Prisma.TransactionClient,
@@ -36,10 +37,10 @@ class PessoaRepository {
         },
       });
     };
-    return id;
+    return id
   };
-
-  public async cadastrarEndereco(enderecoData: Endereco, pessoaId: number): Promise<number> {
+  //retorna endereco 
+  public async cadastrarEndereco(enderecoData: Endereco, pessoaId: number): Promise<Endereco> {
     await this.prisma.enderecos.create({
       data: {
         idEndereco_PK: pessoaId,
@@ -51,10 +52,10 @@ class PessoaRepository {
         logradouro: enderecoData.logradouro
       }
     });
-    return pessoaId;
+    return enderecoData;
   }
 
-  public async atualizarEndereco(enderecoData: Endereco, pessoaId: number): Promise<void> {
+  public async atualizarEndereco(enderecoData: Endereco, pessoaId: number): Promise<Endereco> {
     await this.prisma.enderecos.update({
       where: { idEndereco_PK: pessoaId },
       data: {
@@ -66,11 +67,16 @@ class PessoaRepository {
         logradouro: enderecoData.logradouro
       }
     });
+    return enderecoData;
   };
-
-  public async removerEndereco(pessoaId: number): Promise<void> {
-    await this.prisma.enderecos.delete({ where: { idEndereco_PK: pessoaId } });
-  };
+  //retorna pessoa sem endereco
+  public async removerEndereco(pessoaId: number): Promise<PessoaDTO|null>{
+    await this.prisma.enderecos.delete({
+      where: { idEndereco_PK: pessoaId },
+    });
+    let resultado = await this.buscarPessoaPorId(pessoaId)
+    return resultado
+  }
 
   public async verificarCpfExistente(cpf: string): Promise<boolean> {
     const existe = await this.prisma.pessoasfisicas.findUnique({
@@ -85,30 +91,104 @@ class PessoaRepository {
     });
     return !!existe;
   };
-  public async atualizarNomePessoaFisica(cpf:string, nome?:string){
+
+  //retornam pessoa atualizada depois da alteração 
+  public async atualizarNomePessoaFisica(cpf: string, nome?: string): Promise<PessoaDTO|null> {
     await this.prisma.pessoasfisicas.update({
       where: { cpf: cpf },
       data: {
         nome: nome
       }
     });
+    let resultado = await this.buscarPessoaPorCpf(cpf)
+    return resultado
   }
-  public async atualizarInscricaoEstadual(cnpj:string, inscrEstadual:string){
+  public async atualizarInscricaoEstadual(cnpj: string, inscrEstadual: string): Promise<PessoaDTO|null> {
     await this.prisma.pessoasjuridicas.update({
       where: { cnpj: cnpj },
       data: {
         inscEstadual: inscrEstadual
       }
     })
+    let resultado = await this.buscarPessoaPorCnpj(cnpj)
+    return resultado
   }
-  public async atualizarRazaoSocial(cnpj:string, razaoSocial:string,){
+  public async atualizarRazaoSocial(cnpj: string, razaoSocial: string,): Promise<PessoaDTO|null> {
     await this.prisma.pessoasjuridicas.update({
       where: { cnpj: cnpj },
       data: {
         razaoSocial: razaoSocial,
       }
     })
+    let resultado = await this.buscarPessoaPorCnpj(cnpj)
+    return resultado
   }
+  //buscadores de pessoa
+public async buscarPessoaPorCnpj(cnpj: string): Promise<PessoaDTO | null> {
+  const pessoa = await this.prisma.pessoasjuridicas.findUnique({ where: { cnpj } });
+  if (!pessoa) return null;
+
+  const pessoaBase = await this.prisma.pessoas.findUnique({ 
+    where: { idPessoa_PK: pessoa.idPeJuridica_PFK } 
+  });
+  
+  const endereco = await this.prisma.enderecos.findUnique({
+    where: { idEndereco_PK: pessoaBase?.idEndereco_FK || 0 }, // Usando FK da tabela base
+  });
+
+  return this.mapToPessoaDTO(pessoa, pessoaBase, endereco, 'PJ');
+}
+
+public async buscarPessoaPorCpf(cpf: string): Promise<PessoaDTO | null> {
+  const pessoa = await this.prisma.pessoasfisicas.findUnique({ where: { cpf } });
+  if (!pessoa) return null;
+
+  const pessoaBase = await this.prisma.pessoas.findUnique({ 
+    where: { idPessoa_PK: pessoa.idPeFisica_PFK } 
+  });
+
+  const endereco = await this.prisma.enderecos.findUnique({
+    where: { idEndereco_PK: pessoaBase?.idEndereco_FK || 0 },
+  });
+
+  return this.mapToPessoaDTO(pessoa, pessoaBase, endereco, 'PF');
+}
+
+public async buscarPessoaPorId(pessoaId: number): Promise<PessoaDTO | null> {
+  const pessoaBase = await this.prisma.pessoas.findUnique({ 
+    where: { idPessoa_PK: pessoaId },
+    include: { pessoasfisicas: true, pessoasjuridicas: true } 
+  });
+
+  if (!pessoaBase) return null;
+
+  const endereco = await this.prisma.enderecos.findUnique({
+    where: { idEndereco_PK: pessoaBase.idEndereco_FK || 0 },
+  });
+
+  if (pessoaBase.pessoasfisicas) {
+    return this.mapToPessoaDTO(pessoaBase.pessoasfisicas, pessoaBase, endereco, 'PF');
+  }
+
+  if (pessoaBase.pessoasjuridicas) {
+    return this.mapToPessoaDTO(pessoaBase.pessoasjuridicas, pessoaBase, endereco, 'PJ');
+  }
+
+  return null;
+}
+
+private mapToPessoaDTO(pessoa: any, pessoaBase: any, endereco: any | null, tipo: 'PF' | 'PJ'): PessoaDTO {
+  return {
+    id: tipo === 'PF' ? pessoa.idPeFisica_PFK : pessoa.idPeJuridica_PFK,
+    nome: tipo === 'PF' ? pessoa.nome : pessoa.nomeFantasia,
+    cpf: tipo === 'PF' ? pessoa.cpf : undefined,
+    razaoSocial: tipo === 'PJ' ? pessoa.razaoSocial : undefined,
+    cnpj: tipo === 'PJ' ? pessoa.cnpj : undefined,
+    inscrEstadual: tipo === 'PJ' ? pessoa.inscrEstadual : null,
+    endereco: endereco,
+    dataCadastro: pessoaBase.dataCadastro, 
+  };
+}
 }
 
 
