@@ -75,4 +75,4 @@ npx nodemon
 
 Ao rodar o servidor com sucesso, a interface interativa da documentação da API estará disponível. Você pode visualizar todos os endpoints, schemas esperados e realizar testes diretamente pelo navegador acessando:
 
-**http://localhost:3001/api-docs**
+**http://localhost:3333/api-docs**
