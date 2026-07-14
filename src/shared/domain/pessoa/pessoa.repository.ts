@@ -24,7 +24,7 @@ class PessoaRepository {
   ): Promise<number> {
     // 1. Salva a tabela base (pessoas)
     const pessoa = await tx.pessoas.create({
-      data: { dataCadastro: perfil.dataCadastro, idAdministrador: perfil.idAdministrador ? perfil.idAdministrador : null},
+      data: { dataCadastro: perfil.dataCadastro, idAdministrador_FK: perfil.idAdministrador ? perfil.idAdministrador : null},
     });
     const id = pessoa.idPessoa_PK;
 
