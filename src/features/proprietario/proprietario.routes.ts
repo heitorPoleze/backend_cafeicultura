@@ -177,4 +177,10 @@ router.get(
   proprietarioController.getProprietarioEEndereco.bind(proprietarioController)
 );
 
+router.delete(
+  "/:id/",
+  exigeLogin(),
+  proprietarioController.deletarProprietario.bind(proprietarioController)
+);
+
 export default router;

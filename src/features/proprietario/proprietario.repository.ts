@@ -95,6 +95,54 @@ class ProprietarioRepository {
   public async updateInscricaoEstadual(novaInscricao:string, cnpj:string){
     await this.pessoaRepo.atualizarInscricaoEstadual(novaInscricao, cnpj)
   }
-};
+public async deletarProprietario(pessoaId: number): Promise<void> {
+  await this.prisma.$transaction(async (tx) => {
+    const pessoa = await tx.pessoas.findUnique({
+      where: { idPessoa_PK: pessoaId },
+      include: {
+        pessoasfisicas: true,
+        pessoasjuridicas: true,
+        enderecos: true,
+        usuarios: true
+      }
+    });
+
+    if (!pessoa) return;
+    await tx.propriedades.deleteMany({
+      where: { idProprietario_FK: pessoaId }
+    });
+    await tx.proprietarios.delete({
+      where: { idProprietario_PFK: pessoaId }
+    });
+
+    if (pessoa.pessoasfisicas) {
+      await tx.pessoasfisicas.delete({ where: { idPeFisica_PFK: pessoaId } });
+    }
+
+    if (pessoa.pessoasjuridicas) {
+      await tx.pessoasjuridicas.delete({ where: { idPeJuridica_PFK: pessoaId } });
+    }
+
+    if (pessoa.usuarios) {
+      await tx.usuarios.delete({ where: { idUsuario_PFK: pessoaId } });
+    }
+
+    if (pessoa.enderecos) {
+      await tx.pessoas.update({
+        where: { idPessoa_PK: pessoaId },
+        data: { idEndereco_FK: null }
+      });
+
+      await tx.enderecos.delete({
+        where: { idEndereco_PK: pessoa.enderecos.idEndereco_PK }
+      });
+    }
+
+    await tx.pessoas.delete({
+      where: { idPessoa_PK: pessoaId }
+    });
+  });
+}
+}
 
 export default ProprietarioRepository;

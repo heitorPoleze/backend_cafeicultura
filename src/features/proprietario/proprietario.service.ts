@@ -206,4 +206,11 @@ public async getProprietarioEEndereco(pessoaId: number) {
      }
   return proprietario;
 }
+public async deletarProprietario(pessoaId: number) {
+  const proprietario = await this.repo.buscarPorId(pessoaId);
+  if (!proprietario) {
+    throw new Error(`Proprietário com ID ${pessoaId} não encontrado.`);
+  }
+  await this.repo.deletarProprietario(pessoaId);
+}
 }

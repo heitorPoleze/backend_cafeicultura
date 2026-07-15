@@ -147,6 +147,18 @@ public async getProprietarioEEndereco(req: Request, res: Response) {
     res.status(400).json({ mensagem: (error as Error).message });
   }
 }
+public async deletarProprietario(req: Request, res: Response) {
+  try {
+    const pessoaId = Number(req.params.id);
+    if (Number.isNaN(pessoaId)) {
+      return res.status(400).json({ mensagem: "ID de pessoa inválido." });
+    }
+    await this.service.deletarProprietario(pessoaId);
+    res.status(200).json({ mensagem: "Proprietário deletado com sucesso." });
+  } catch (error: unknown) {
+    res.status(400).json({ mensagem: (error as Error).message });
+  }
+}
 }
 
 export default ProprietarioController;
