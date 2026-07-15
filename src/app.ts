@@ -8,12 +8,16 @@ import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import { prisma } from "./shared/config/database";
 
 // Rotas
+import pessoaRotas from "./features/pessoa/pessoa.routes";
 import authRotas from "./features/auth/auth.routes";
 import proprietarioRotas from "./features/proprietario/proprietario.routes";
 // import usuarioRotas from "./features/usuario/usuario.routes";
 // import consultorTecnicoRotas from "./features/consultortecnico/consultor.routes";
 import propriedadeRotas from "./features/propriedade/propriedade.routes";
 import talhoesRotas from "./features/talhao/talhao.routes";
+import safraRotas from "./features/safra/safra.routes";
+import tratosCulturaisRotas from "./features/tratocultural/tratocultural.routes";
+import insumosRotas from "./features/insumo/insumo.routes";
 dotenv.config(); // Carrega as variáveis de ambiente do .env
 
 const app = express();
@@ -86,11 +90,15 @@ app.use(sessMiddleware); // Aplica o middleware de sessão
 
 // --- Registra as rotas da API ---
 const API_VERSION = "/api/v1";
+app.use(`${API_VERSION}`, pessoaRotas);
 app.use(`${API_VERSION}/auth`, authRotas);
 app.use(`${API_VERSION}/proprietarios`, proprietarioRotas);
 app.use(`${API_VERSION}/propriedades`, propriedadeRotas);
 // app.use(`${API_VERSION}/usuarios`, usuarioRotas);
 // app.use(`${API_VERSION}/consultores-tecnicos`, consultorTecnicoRotas);
 app.use(`${API_VERSION}/talhoes`, talhoesRotas);
+app.use(`${API_VERSION}/safras`, safraRotas);
+app.use(`${API_VERSION}/tratosculturais`, tratosCulturaisRotas);
+app.use(`${API_VERSION}/insumos`, insumosRotas);
 
 export default app;

@@ -31,6 +31,12 @@ router.post(
   talhaoController.cadastrar.bind(talhaoController)
 );
 
+router.get(
+  '/variedades',
+  exigeLogin(),
+  talhaoController.buscarVariedades.bind(talhaoController)
+);
+
 router.patch(
   '/:id/encerrar',
   exigeLogin(),
@@ -39,6 +45,15 @@ router.patch(
     body('dataFim').notEmpty().withMessage('A data de fim é obrigatória.').isISO8601().withMessage('A data de fim deve estar em um formato válido (ex: YYYY-MM-DD).')
   ],
   talhaoController.encerrar.bind(talhaoController)
+);
+
+router.delete(
+  '/:id',
+  exigeLogin(),
+  [
+    param('id').isInt({ gt: 0 }).withMessage('O ID do talhão informado na URL é inválido.')
+  ],
+  talhaoController.excluir.bind(talhaoController)
 );
 
 export default router;

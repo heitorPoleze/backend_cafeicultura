@@ -1,0 +1,75 @@
+import { Prisma, PrismaClient } from "@prisma/client";
+import Meeiro from "./meeiro.entity";
+import PessoaRepository from "../pessoa.repository";
+import Endereco from "../../endereco/endereco.vo";
+import PessoaFactory from "../pessoafactory.entity";
+
+class MeeiroRepository {
+  constructor(
+    private prisma: PrismaClient,
+    private pessoaRepo: PessoaRepository,
+  ) {}
+
+  public async salvarComTransacao(m: Meeiro): Promise<number> {
+    // Inicia a transação (Unit of Work)
+    return await this.prisma.$transaction(async (tx) => {
+      // 1. Delega a criação da Pessoa (Física) passando o 'tx'
+      const id = await this.pessoaRepo.salvar(m.pessoa, tx);
+
+      // 2. O próprio repositório salva sua entidade principal
+      await tx.meeiros.create({
+        data: { idPeFisica_PFK: id },
+      });
+
+      return id;
+    });
+  };
+
+  public async buscarPorId(id: number): Promise<Meeiro | null> {
+    const m = await this.prisma.meeiros.findUnique({
+      where: { idPeFisica_PFK: id },
+    });
+
+    if (!m) return null;
+
+    const p = await this.prisma.pessoas.findUnique({
+      where: { idPessoa_PK: id },
+      include: {
+        pessoasfisicas: true,
+        enderecos: true
+      },
+    });
+
+    if (!p) return null;
+
+    const e = p.enderecos;
+
+    const endereco = e
+      ? new Endereco(
+          e.logradouro,
+          e.bairro,
+          e.cidade,
+          e.uf,
+          e.pais,
+          e.cep,
+          e.idEndereco_PK,
+        )
+      : null;
+
+    const dados = {
+      id: m.idPeFisica_PFK,
+      idAdministrador: p.idAdministrador_FK,
+      dataCadastro: p.dataCadastro,
+      endereco: endereco,
+      nome: p.pessoasfisicas?.nome,
+      cpf: p.pessoasfisicas?.cpf
+    };
+
+    // 4. Delega a criação para a Factory
+    const pessoa = PessoaFactory.criarPessoa("fisica", dados);
+
+    return new Meeiro(pessoa);
+  };
+}
+
+export default MeeiroRepository;

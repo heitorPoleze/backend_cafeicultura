@@ -16,6 +16,8 @@
     "@types/express-mysql-session": "^3.0.8",
     "@types/express-session": "^1.19.0",
     "@types/node": "^25.9.1",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "eslint": "^10.4.0",
     "nodemon": "^3.1.14",
     "prisma": "^7.8.0",
@@ -36,6 +38,11 @@
     "express-mysql-session": "^3.0.3",
     "express-session": "^1.19.0",
     "express-validator": "^7.3.2",
-    "mysql2": "^3.22.2"
+    "mysql2": "^3.22.2",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "overrides": {
+    "@hono/node-server": "^1.19.13"
   }
 }

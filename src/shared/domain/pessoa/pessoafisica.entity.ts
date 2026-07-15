@@ -7,8 +7,8 @@ class PessoaFisica extends PessoaBase {
   private _nome: string;
   private _cpf: string;
 
-  constructor(id: number | undefined, nome: string, cpf: string, endereco: Endereco | null = null, dataCadastro: Date) {
-    super(id, endereco, dataCadastro);
+  constructor(id: number | undefined, idAdministrador: number | null, nome: string, cpf: string, endereco: Endereco | null = null, dataCadastro: Date) {
+    super(id, idAdministrador, endereco, dataCadastro);
     this.validarNome(nome);
     this._nome = nome;
 
@@ -33,7 +33,7 @@ class PessoaFisica extends PessoaBase {
     };
   };
 
-  public toJSON(filhos?: object): object {
+  public toJSON(filhos?: object) {
     return super.toJSON({
       nome: this._nome,
       cpf: this._cpf,

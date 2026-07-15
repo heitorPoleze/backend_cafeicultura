@@ -1,6 +1,6 @@
 import TalhaoRepository from './talhao.repository';
 import PropriedadeRepository from '../propriedade/propriedade.repository'; 
-import { CadastrarTalhaoDTO, EncerrarTalhaoDTO } from './talhao.dto';
+import { CadastrarTalhaoDTO, EncerrarTalhaoDTO, ExcluirTalhaoDTO, VariedadesDTO } from './talhao.dto';
 import Talhao from './talhao.entity';
 import Tamanho from '../../shared/domain/tamanho/tamanho.entity';
 
@@ -11,14 +11,13 @@ class TalhaoService {
   ) {}
 
   async cadastrarTalhao(dto: CadastrarTalhaoDTO, idUsuarioSessao: number): Promise<number> {
-
     const propriedade = await this.propriedadeRepo.buscarPorId(dto.idPropriedade);
     if (!propriedade) {
-      throw new Error('Propriedade não encontrada.');
+      throw new Error('NAO_ENCONTRADA');
     };
 
     if (propriedade.idProprietario !== idUsuarioSessao) {
-      throw new Error('Acesso negado: Vocês não tem permissão para acessar esta propriedade.');
+      throw new Error('ACESSO_NEGADO');
     };
 
     const talhoesExistentes = await this.repository.buscarAtivosPorPropriedade(dto.idPropriedade);
@@ -59,24 +58,48 @@ class TalhaoService {
     return await this.repository.cadastrar(novoTalhao, dto.variedadesIds);
   };
 
+  public async buscarVariedades(): Promise<VariedadesDTO[]> {
+    return await this.repository.buscarVariedades();
+  };
+
   async encerrarTalhao(dto: EncerrarTalhaoDTO, idUsuarioSessao: number): Promise<void> {
-    const talhao = await this.repository.buscarPorId(dto.idTalhao);
+    const talhao = await this.repository.buscarPorId(dto.id);
     if (!talhao) {
-      throw new Error('Talhão não encontrado.');
+      throw new Error('NAO_ENCONTRADO');
     };
 
     const propriedade = await this.propriedadeRepo.buscarPorId(talhao.idPropriedade);
     if (!propriedade) {
-      throw new Error('Propriedade do talhão não encontrada.');
+      throw new Error('PROPRIEDADE_NAO_ENCONTRADA');
     };
 
     if (propriedade.idProprietario !== idUsuarioSessao) {
-      throw new Error('Acesso negado: Você não tem permissão para acessar esta propriedade/talhão.');
+      throw new Error('ACESSO_NEGADO');
     };
 
-    talhao.encerrarTalhao(dto.dataFim);
+    talhao.encerrar(dto.dataFim);
     
-    await this.repository.atualizarEncerramento(talhao);
+    await this.repository.encerrar(talhao);
+  };
+
+  async excluir(dto: ExcluirTalhaoDTO, idUsuarioSessao: number): Promise<void> {
+    const talhao = await this.repository.buscarPorId(dto.id);
+    if (!talhao) {
+      throw new Error('NAO_ENCONTRADO');
+    };
+
+    const propriedade = await this.propriedadeRepo.buscarPorId(talhao.idPropriedade);
+    if (!propriedade) {
+      throw new Error('PROPRIEDADE_NAO_ENCONTRADA');
+    };
+
+    if (propriedade.idProprietario !== idUsuarioSessao) {
+      throw new Error('ACESSO_NEGADO');
+    };
+
+    talhao.arquivar();
+
+    await this.repository.excluir(talhao);
   };
 
   private calcularAreaEmM2(tamanho: Tamanho): number {
@@ -85,6 +108,7 @@ class TalhaoService {
     };
     return tamanho.valor;
   };
+
 };
 
 export default TalhaoService;

@@ -24,24 +24,30 @@ class AuthController {
       req.session.idUsuario = dadosSessao.idUsuario;
       req.session.nome = dadosSessao.nome;
 
-      const resposta: LoginResponseDTO = { mensagem: "Login efetuado com sucesso!"};
+      const resposta: LoginResponseDTO = { mensagem: "Login efetuado com sucesso", dadosSessao: {
+        id: dadosSessao.idUsuario!,
+        nome: dadosSessao.nome,
+      }};
       res.status(200).json(resposta);
     } catch (error: unknown) {
-      const mensagem = error instanceof Error ? error.message : "Erro de autenticação";
-      res.status(401).json({ mensagem });
-    }
+      if (error instanceof Error) {
+        if (error.message === "CREDENCIAIS_INVALIDAS") {
+          return res.status(401).json({ error: "O usuário ou senha estão incorretos. Tente novamente" });
+        } else {
+          return res.status(500).json({ error: "Erro ao efetuar login. Tente novamente" });
+        };
+      };
+    };
   }
 
   public logout(req: Request, res: Response) {
-    let resposta: LogoutResponseDTO;
     req.session.destroy((err) => {
       if (err) {
-        resposta = { mensagem: "Erro ao realizar logout. Tente novamente." };
-        res.status(500).json(resposta);
+        res.status(500).json({ error: "Erro ao realizar logout. Tente novamente." });
         return;
       }
       res.clearCookie("connect.sid");
-      resposta = { mensagem: "Logout realizado com sucesso" };
+      const resposta: LogoutResponseDTO = { mensagem: "Logout realizado com sucesso" };
       res.status(200).json(resposta);
     });
   };

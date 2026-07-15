@@ -1,0 +1,202 @@
+tags:
+  - name: Proprietários
+    description: Gerenciamento de proprietários (cadastro base de usuários) e seus endereços
+
+components:
+  schemas:
+    ProprietarioInput:
+      type: object
+      required:
+        - email
+        - telefone
+        - senha
+        - tipoPessoa
+      properties:
+        email:
+          type: string
+          format: email
+          example: "joao.silva@email.com"
+        telefone:
+          type: string
+          pattern: '^(\d{10,11}|\(\d{2}\) \s?\d{4,5}-\d{4})$'
+          description: Pode conter 10 ou 11 dígitos, com ou sem máscara.
+          example: "(27) 99999-9999"
+        senha:
+          type: string
+          format: password
+          minLength: 8
+          description: Deve conter maiúscula, minúscula, número e símbolo.
+          example: "SenhaForte@123"
+        tipoPessoa:
+          type: string
+          enum: [fisica, juridica]
+          description: Se 'fisica', exige nome e cpf. Se 'juridica', exige razaoSocial e cnpj.
+        nome:
+          type: string
+          description: Obrigatório para Pessoa Física.
+          example: "João da Silva"
+        cpf:
+          type: string
+          description: Obrigatório para Pessoa Física.
+          example: "123.456.789-00"
+        razaoSocial:
+          type: string
+          description: Obrigatório para Pessoa Jurídica.
+          example: "Fazenda Silva Agropecuária LTDA"
+        cnpj:
+          type: string
+          description: Obrigatório para Pessoa Jurídica.
+          example: "12.345.678/0001-90"
+        inscrEstadual:
+          type: string
+          description: Opcional para Pessoa Jurídica.
+
+    EnderecoProprietarioInput:
+      type: object
+      required:
+        - cidade
+        - bairro
+        - cep
+        - uf
+        - logradouro
+      properties:
+        cidade:
+          type: string
+          example: "Santa Teresa"
+        bairro:
+          type: string
+          example: "Centro"
+        cep:
+          type: string
+          pattern: '^\d{5}-\d{3}$'
+          example: "29650-000"
+        uf:
+          type: string
+          minLength: 2
+          maxLength: 2
+          example: "ES"
+        logradouro:
+          type: string
+          example: "Rua das Flores, 123"
+
+    AtualizarEnderecoProprietarioInput:
+      type: object
+      required:
+        - cidade
+        - cep
+        - uf
+        - logradouro
+      properties:
+        cidade:
+          type: string
+          example: "Santa Teresa"
+        cep:
+          type: string
+          pattern: '^\d{5}-\d{3}$'
+          example: "29650-000"
+        uf:
+          type: string
+          minLength: 2
+          maxLength: 2
+          example: "ES"
+        logradouro:
+          type: string
+          example: "Rua das Flores, 123"
+
+paths:
+  /api/v1/proprietarios:
+    post:
+      summary: Cadastra um novo Proprietário
+      description: Rota pública para registro inicial do usuário no sistema. Pode ser Pessoa Física ou Jurídica.
+      tags: 
+        - Proprietários
+      security: [] # Rota pública, não exige cookie
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProprietarioInput'
+      responses:
+        '201':
+          description: Proprietário cadastrado com sucesso
+        '400':
+          description: Erro de validação nos dados enviados (ex. senha fraca, formato de email inválido)
+        '409':
+          description: Conflito. CPF, CNPJ, Email ou Telefone já cadastrado no sistema.
+        '500':
+          description: Erro interno ao cadastrar proprietário
+
+  /api/v1/proprietarios/{id}/endereco:
+    post:
+      summary: Adiciona um endereço a um Proprietário
+      tags: 
+        - Proprietários
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico do proprietário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnderecoProprietarioInput'
+      responses:
+        '201':
+          description: Endereço adicionado com sucesso
+        '400':
+          description: Erro de validação nos campos do endereço
+        '500':
+          description: Erro interno ao adicionar endereço
+
+    put:
+      summary: Atualiza o endereço de um Proprietário
+      tags: 
+        - Proprietários
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico do proprietário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtualizarEnderecoProprietarioInput'
+      responses:
+        '200':
+          description: Endereço atualizado com sucesso
+        '400':
+          description: Erro de validação nos campos de atualização
+        '500':
+          description: Erro interno ao atualizar endereço
+
+    delete:
+      summary: Remove o endereço de um Proprietário
+      tags: 
+        - Proprietários
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico do proprietário
+      responses:
+        '200':
+          description: Endereço removido com sucesso
+        '500':
+          description: Erro interno ao remover endereço

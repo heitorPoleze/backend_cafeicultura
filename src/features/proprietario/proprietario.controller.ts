@@ -18,7 +18,18 @@ class ProprietarioController {
       res.status(201).json({ mensagem: "Proprietário cadastrado com sucesso", dados: result });
       
     } catch (error: unknown) {
-      res.status(400).json({ mensagem: (error as Error).message });
+      if (error instanceof Error) {
+        if (error.message === "CPF_EXISTENTE") {
+          return res.status(409).json({ error: "CPF já cadastrado" });
+        } else if (error.message === "CNPJ_EXISTENTE") {
+          return res.status(409).json({ error: "CNPJ já cadastrado" });
+        }  else if (error.message === "EMAIL_EXISTENTE") {
+          return res.status(409).json({ error: "Email já cadastrado" });
+        } else if (error.message === "TELEFONE_EXISTENTE") {
+          return res.status(409).json({ error: "Telefone já cadastrado" });
+        };
+        return res.status(500).json({ error: "Erro ao cadastrar proprietário" });
+      }
     };
   };
 
@@ -31,7 +42,10 @@ class ProprietarioController {
       let endereco = await this.service.criarEndereco(req.body, pessoaId);
       res.status(201).json({ mensagem: "Endereço adicionado com sucesso", Endereco: endereco});
     } catch (error: unknown) {
-      res.status(400).json({ mensagem: (error as Error).message });
+      if (error instanceof Error) {
+        console.log(error)
+        return res.status(500).json({ error: "Erro ao adicionar endereço" });
+      };
     };
   };
 
@@ -41,7 +55,9 @@ class ProprietarioController {
       let endereco = await this.service.atualizarEndereco(id, req.body);
       res.status(200).json({ mensagem: "Endereço atualizado com sucesso.", Endereco: endereco });
     } catch (error: unknown) {
-      res.status(400).json({ mensagem: (error as Error).message });
+      if (error instanceof Error) {
+        return res.status(500).json({ error: "Erro ao atualizar endereço" });
+      };
     };
   };
 
@@ -51,7 +67,9 @@ class ProprietarioController {
       await this.service.removerEndereco(pessoaId);
       res.status(200).json({ mensagem: "Endereço removido com sucesso" });
     } catch (error: unknown) {
-      res.status(400).json({ mensagem: (error as Error).message });
+      if (error instanceof Error) {
+        return res.status(500).json({ error: "Erro ao remover endereço" });
+      };
     };
   };
   

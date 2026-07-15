@@ -10,13 +10,14 @@ class PessoaJuridica extends PessoaBase {
 
   constructor(
     id: number | undefined,
+    idAdministrador: number | null,
     cnpj: string,
     razaoSocial: string,
     inscrEstadual: string | null = null,
     endereco: Endereco | null = null,
     dataCadastro: Date
   ) {
-    super(id, endereco, dataCadastro);
+    super(id, idAdministrador, endereco, dataCadastro);
 
     if (!cnpjValidator.isValid(cnpj)) {
       throw new Error("CNPJ inválido. O CNPJ deve conter 18 caracteres. Formato: XX.XXX.XXX/XXXX-XX");
@@ -44,7 +45,7 @@ class PessoaJuridica extends PessoaBase {
     };
   };
 
-  public toJSON(filhos?: object): object {
+  public toJSON(filhos?: object) {
     return super.toJSON({
       cnpj: this.cnpj,
       razaoSocial: this.razaoSocial,

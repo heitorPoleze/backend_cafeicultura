@@ -1,9 +1,10 @@
+import PessoaFisica from "../../shared/domain/pessoa/pessoafisica.entity";
+import PessoaJuridica from "../../shared/domain/pessoa/pessoajuridica.entity";
 import Usuario from "../usuario/usuario.entity";
-import Pessoa from "../../shared/domain/pessoa/pessoabase.entity";
 
 class Proprietario extends Usuario {
   constructor(
-    perfil: Pessoa,
+    perfil: PessoaFisica | PessoaJuridica,
     email: string,
     telefone: string,
     senha: string
@@ -15,6 +16,6 @@ class Proprietario extends Usuario {
       perfil
     );
   };
-}
+};
 
 export default Proprietario;

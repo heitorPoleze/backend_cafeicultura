@@ -12,6 +12,7 @@ class ProprietarioRepository {
     private usuarioRepo: UsuarioRepository
   ) {}
 
+
   public async salvarComTransacao(prop: Proprietario): Promise<number> {
     
     // Inicia a transação (Unit of Work)
@@ -62,6 +63,7 @@ class ProprietarioRepository {
 
     const dados = {
       id: u.idUsuario_PFK, 
+      idAdministrador: p.idAdministrador_FK,
       dataCadastro: p.dataCadastro,
       endereco: endereco,
       nome: p.pessoasfisicas?.nome,
@@ -71,7 +73,6 @@ class ProprietarioRepository {
       inscrEstadual: p.pessoasjuridicas?.inscEstadual ?? null,
     };
 
-    // 4. Delega a criação para a Factory
     const perfil = PessoaFactory.criarPessoa(tipoPessoa, dados);
 
     return new Proprietario(perfil, u.email, u.telefone, u.senha);

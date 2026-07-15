@@ -1,13 +1,14 @@
-import PessoaDTO from './pessoa.dto';
+import Pessoa from './pessoa.type';
 import PessoaBase from './pessoabase.entity';
 import PessoaFisica from './pessoafisica.entity';
 import PessoaJuridica from './pessoajuridica.entity';
 
 class PessoaFactory {
-  public static criarPessoa(tipo: 'fisica' | 'juridica', dados: PessoaDTO): PessoaBase {
+  public static criarPessoa(tipo: 'fisica' | 'juridica', dados: Pessoa) {
     if (tipo === 'fisica') {
       return new PessoaFisica(
         dados.id,
+        dados.idAdministrador,
         dados.nome!,
         dados.cpf!,
         dados.endereco,
@@ -16,16 +17,23 @@ class PessoaFactory {
     } else if (tipo === 'juridica') {
       return new PessoaJuridica(
         dados.id,
+<<<<<<< HEAD
         dados.cnpj ?? "",
         dados.razaoSocial ?? "",
         dados.inscrEstadual ?? null,
+=======
+        dados.idAdministrador,
+        dados.cnpj!,
+        dados.razaoSocial!,
+        dados.inscrEstadual!,
+>>>>>>> develop
         dados.endereco,
         dados.dataCadastro
       );
     };
 
     throw new Error(`Tipo de pessoa inválido: ${tipo}`);
-  }
+  };
 };
 
 export default PessoaFactory;

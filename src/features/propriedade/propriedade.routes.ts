@@ -16,7 +16,7 @@ const propriedadeController = new PropriedadeController(propriedadeService);
 
 router.post(
   "/",
-  exigeLogin(), // Protege a rota: Apenas usuários logados podem cadastrar
+  exigeLogin(),
   [
     // Validação da Propriedade (Raiz)
     body("nome").notEmpty().withMessage("O nome da propriedade é obrigatório"),

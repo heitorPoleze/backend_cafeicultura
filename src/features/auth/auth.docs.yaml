@@ -1,0 +1,78 @@
+tags:
+  - name: Autenticação
+    description: Endpoints para login e logout do sistema
+
+paths:
+  /api/v1/auth/autenticar:
+    post:
+      summary: Realiza o login do usuário
+      description: Autentica um usuário usando email, cpf ou cnpj e retorna o cookie de sessão. Rota PÚBLICA (não requer autenticação prévia).
+      tags: 
+        - Autenticação
+      security: [] # Array vazio indica que a rota não precisa do cookie global
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tipoEntrada
+                - entrada
+                - senha
+              properties:
+                tipoEntrada:
+                  type: string
+                  enum: [email, cpf, cnpj]
+                  description: O tipo de credencial que está sendo enviada.
+                  example: "email"
+                entrada:
+                  type: string
+                  description: O valor do email, CPF ou CNPJ.
+                  example: "usuario@email.com"
+                senha:
+                  type: string
+                  format: password
+                  description: A senha do usuário.
+                  example: "senhaSegura123"
+      responses:
+        '200':
+          description: Login efetuado com sucesso O cookie `connect.sid` será definido no navegador.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Login efetuado com sucesso"
+        '400':
+          description: Erro de validação nos campos enviados (ex. tipoEntrada inválido ou campos vazios).
+        '401':
+          description: Credenciais inválidas (usuário ou senha incorretos).
+        '500':
+          description: Erro interno do servidor ao efetuar login.
+
+  /api/v1/auth/logout:
+    post:
+      summary: Realiza o logout do usuário
+      description: Destrói a sessão no banco e limpa o cookie no navegador. Rota PRIVADA (requer o cookie de sessão).
+      tags: 
+        - Autenticação
+      security:
+        - cookieAuth: [] # Indica que precisa do cookie configurado no swagger.ts
+      responses:
+        '200':
+          description: Logout realizado com sucesso. O cookie será limpo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Logout realizado com sucesso"
+        '401':
+          description: Acesso negado. Usuário já não estava logado ou cookie inválido.
+        '500':
+          description: Erro interno ao tentar destruir a sessão.
