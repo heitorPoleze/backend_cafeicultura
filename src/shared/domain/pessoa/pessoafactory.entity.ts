@@ -17,16 +17,10 @@ class PessoaFactory {
     } else if (tipo === 'juridica') {
       return new PessoaJuridica(
         dados.id,
-<<<<<<< HEAD
+        dados.idAdministrador,
         dados.cnpj ?? "",
         dados.razaoSocial ?? "",
         dados.inscrEstadual ?? null,
-=======
-        dados.idAdministrador,
-        dados.cnpj!,
-        dados.razaoSocial!,
-        dados.inscrEstadual!,
->>>>>>> develop
         dados.endereco,
         dados.dataCadastro
       );

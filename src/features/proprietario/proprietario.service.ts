@@ -1,7 +1,6 @@
 import ProprietarioRepository from "./proprietario.repository";
 import Proprietario from "./proprietario.entity";
 import PessoaFactory from "../../shared/domain/pessoa/pessoafactory.entity";
-import Pessoa from "../../shared/domain/pessoa/pessoabase.entity";
 import { CreateProprietarioDTO } from "./proprietario.dto";
 import Endereco from "../../shared/domain/endereco/endereco.vo";
 import PessoaRepository from "../../shared/domain/pessoa/pessoa.repository";
@@ -11,10 +10,8 @@ import PessoaFisica from "../../shared/domain/pessoa/pessoafisica.entity";
 import PessoaJuridica from "../../shared/domain/pessoa/pessoajuridica.entity";
 import bcrypt from "bcryptjs";
 import PessoaDTO from "../../shared/domain/pessoa/pessoa.dto";
-
 export default class ProprietarioService {
   constructor(
-<<<<<<< HEAD
     private repo: ProprietarioRepository,
     private pessoaRepo: PessoaRepository,
     private usuarioRepo: UsuarioRepository
@@ -23,14 +20,6 @@ export default class ProprietarioService {
   //REVISÃO: HEITOR 23/06/2026-> aqui é uma decisão arquitetural que não posso tomar sozinho. Você está fazendo múltiplas consultas ao Banco, porém mantém o código limpo. Uma outra decisão poderia ser verificar essas duplicatas no próprio repositório na função criar. O código P2002 do Prisma ocorre quando ele identifica uma duplicata. Poderíamos trabalhar nisso caso o sistema cresça para milhares de usuários.
   public async cadastrar(dados: CreateProprietarioDTO):Promise<PessoaDTO>{
 
-=======
-    private readonly repo: ProprietarioRepository,
-    private readonly pessoaRepo: PessoaRepository,
-    private readonly usuarioRepo: UsuarioRepository,
-  ) {};
-
-  public async cadastrar(dados: CreateProprietarioDTO): Promise<number> {
->>>>>>> develop
     if (dados.tipoPessoa === "fisica") {
       const cpfExistente = await this.pessoaRepo.verificarCpfExistente(
         dados.cpf!,
@@ -80,7 +69,6 @@ export default class ProprietarioService {
    const idProprietario = await this.repo.salvarComTransacao(proprietario);
   let pessoaDTO: PessoaDTO;
 
-<<<<<<< HEAD
   if (dados.tipoPessoa === "fisica") {
     pessoaDTO = {
       id: idProprietario,
@@ -103,12 +91,6 @@ export default class ProprietarioService {
   }
 
   public async criarEndereco(dados: Record<string, unknown>, pessoaId: number): Promise<Endereco> {
-=======
-  public async criarEndereco(
-    dados: Record<string, unknown>,
-    pessoaId: number,
-  ): Promise<number> {
->>>>>>> develop
     const endereco = new Endereco(
       dados.cidade as string,
       dados.bairro as string,
@@ -116,11 +98,7 @@ export default class ProprietarioService {
       dados.uf as string,
       (dados.pais as string) || "Brasil",
       dados.logradouro as string,
-<<<<<<< HEAD
       pessoaId
-=======
-      pessoaId,
->>>>>>> develop
     );
     return await this.pessoaRepo.cadastrarEndereco(endereco, pessoaId);
   };
@@ -144,10 +122,6 @@ export default class ProprietarioService {
     );
     await this.pessoaRepo.atualizarEndereco(endereco, pessoaId);
   };
-<<<<<<< HEAD
-=======
-};
->>>>>>> develop
 
   public async atualizarSenha(senha: string, pessoaId: number) {
     if (typeof senha !== "string" || senha.trim() === "") {

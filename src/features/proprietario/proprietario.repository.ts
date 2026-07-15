@@ -1,9 +1,9 @@
 import PessoaFactory from "../../shared/domain/pessoa/pessoafactory.entity";
 import Proprietario from "./proprietario.entity";
-import { PrismaClient, Prisma } from "@prisma/client";
 import PessoaRepository from "../../shared/domain/pessoa/pessoa.repository";
 import UsuarioRepository from "../usuario/usuario.repository";
 import Endereco from "../../shared/domain/endereco/endereco.vo";
+import { Prisma, PrismaClient } from "@prisma/client/extension";
 
 class ProprietarioRepository {
   constructor(
@@ -16,7 +16,7 @@ class ProprietarioRepository {
   public async salvarComTransacao(prop: Proprietario): Promise<number> {
     
     // Inicia a transação (Unit of Work)
-    return await this.prisma.$transaction(async (tx) => {
+    return await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       
       // 1. Delega a criação da Pessoa (Física/Jurídica) passando o 'tx'
       const id = await this.pessoaRepo.salvar(prop.perfil, tx);
@@ -97,7 +97,7 @@ class ProprietarioRepository {
     await this.pessoaRepo.atualizarInscricaoEstadual(novaInscricao, cnpj)
   }
 public async deletarProprietario(pessoaId: number): Promise<void> {
-  await this.prisma.$transaction(async (tx) => {
+  await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const pessoa = await tx.pessoas.findUnique({
       where: { idPessoa_PK: pessoaId },
       include: {

@@ -1,10 +1,10 @@
-import { Prisma, PrismaClient } from "@prisma/client";
 import PessoaFisica from "./pessoafisica.entity";
 import PessoaJuridica from "./pessoajuridica.entity";
 import Endereco from "../endereco/endereco.vo";
 import PessoaFactory from "./pessoafactory.entity";
 import PessoaBase from "./pessoabase.entity";
-
+import PessoaDTO from "./pessoa.dto";
+import { Prisma, PrismaClient } from "@prisma/client";
 const pessoaInclude = {
   pessoasfisicas: true,
   pessoasjuridicas: true,
@@ -14,7 +14,6 @@ const pessoaInclude = {
 type PessoaPayload = Prisma.pessoasGetPayload<{
   include: typeof pessoaInclude;
 }>;
-import PessoaDTO from "./pessoa.dto";
 
 class PessoaRepository {
   constructor(private readonly prisma: PrismaClient) { }
@@ -69,7 +68,7 @@ class PessoaRepository {
 
   //retorna endereco 
   public async cadastrarEndereco(enderecoData: Endereco, pessoaId: number): Promise<Endereco> {
-    return await this.prisma.$transaction(async (tx) => {
+    return await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const enderecoExistenteId = await this.resolverIdEnderecoDaPessoaEmTransacao(tx, pessoaId);
 
       if (enderecoExistenteId) {
@@ -153,7 +152,7 @@ class PessoaRepository {
       return await this.cadastrarEndereco(enderecoData, pessoaId);
     }
 
-    const enderecoAtualizado = await this.prisma.$transaction(async (tx) => {
+    const enderecoAtualizado = await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const endereco = await tx.enderecos.update({
         where: { idEndereco_PK: enderecoId },
         data: {
@@ -215,7 +214,7 @@ class PessoaRepository {
       },
     });
 
-    return pessoasJuridicas.find((pessoa) => this.normalizarCnpj(pessoa.cnpj) === cnpjNormalizado) ?? null;
+    return pessoasJuridicas.find((pessoa: any) => this.normalizarCnpj(pessoa.cnpj) === cnpjNormalizado) ?? null;
   }
 
   public async verificarCnpjExistente(cnpj: string): Promise<boolean> {
