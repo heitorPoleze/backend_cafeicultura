@@ -39,35 +39,139 @@ class PessoaRepository {
     };
     return id
   };
+  private async resolverIdEnderecoDaPessoa(pessoaId: number): Promise<number | null> {
+    const pessoa = await this.prisma.pessoas.findUnique({
+      where: { idPessoa_PK: pessoaId },
+      select: { idEndereco_FK: true },
+    });
+
+    if (pessoa?.idEndereco_FK) {
+      return pessoa.idEndereco_FK;
+    }
+
+    const enderecoExistente = await this.prisma.enderecos.findUnique({
+      where: { idEndereco_PK: pessoaId },
+    });
+
+    return enderecoExistente ? pessoaId : null;
+  }
+
   //retorna endereco 
   public async cadastrarEndereco(enderecoData: Endereco, pessoaId: number): Promise<Endereco> {
-    await this.prisma.enderecos.create({
-      data: {
-        idEndereco_PK: pessoaId,
-        cidade: enderecoData.cidade,
-        bairro: enderecoData.bairro,
-        cep: enderecoData.cep,
-        uf: enderecoData.uf,
-        pais: enderecoData.pais,
-        logradouro: enderecoData.logradouro
+    return await this.prisma.$transaction(async (tx) => {
+      const enderecoExistenteId = await this.resolverIdEnderecoDaPessoaEmTransacao(tx, pessoaId);
+
+      if (enderecoExistenteId) {
+        const enderecoAtualizado = await tx.enderecos.update({
+          where: { idEndereco_PK: enderecoExistenteId },
+          data: {
+            cidade: enderecoData.cidade,
+            bairro: enderecoData.bairro,
+            cep: enderecoData.cep,
+            uf: enderecoData.uf,
+            pais: enderecoData.pais,
+            logradouro: enderecoData.logradouro,
+          },
+        });
+
+        await tx.pessoas.update({
+          where: { idPessoa_PK: pessoaId },
+          data: { idEndereco_FK: enderecoAtualizado.idEndereco_PK },
+        });
+
+        return new Endereco(
+          enderecoAtualizado.cidade,
+          enderecoAtualizado.bairro,
+          enderecoAtualizado.cep,
+          enderecoAtualizado.uf,
+          enderecoAtualizado.pais,
+          enderecoAtualizado.logradouro,
+          enderecoAtualizado.idEndereco_PK,
+        );
       }
+
+      const enderecoCriado = await tx.enderecos.create({
+        data: {
+          cidade: enderecoData.cidade,
+          bairro: enderecoData.bairro,
+          cep: enderecoData.cep,
+          uf: enderecoData.uf,
+          pais: enderecoData.pais,
+          logradouro: enderecoData.logradouro,
+        },
+      });
+
+      await tx.pessoas.update({
+        where: { idPessoa_PK: pessoaId },
+        data: { idEndereco_FK: enderecoCriado.idEndereco_PK },
+      });
+
+      return new Endereco(
+        enderecoCriado.cidade,
+        enderecoCriado.bairro,
+        enderecoCriado.cep,
+        enderecoCriado.uf,
+        enderecoCriado.pais,
+        enderecoCriado.logradouro,
+        enderecoCriado.idEndereco_PK,
+      );
     });
-    return enderecoData;
+  }
+
+  private async resolverIdEnderecoDaPessoaEmTransacao(tx: Prisma.TransactionClient, pessoaId: number): Promise<number | null> {
+    const pessoa = await tx.pessoas.findUnique({
+      where: { idPessoa_PK: pessoaId },
+      select: { idEndereco_FK: true },
+    });
+
+    if (pessoa?.idEndereco_FK) {
+      return pessoa.idEndereco_FK;
+    }
+
+    const enderecoExistente = await tx.enderecos.findUnique({
+      where: { idEndereco_PK: pessoaId },
+    });
+
+    return enderecoExistente ? pessoaId : null;
   }
 
   public async atualizarEndereco(enderecoData: Endereco, pessoaId: number): Promise<Endereco> {
-    await this.prisma.enderecos.update({
-      where: { idEndereco_PK: pessoaId },
-      data: {
-        cidade: enderecoData.cidade,
-        bairro: enderecoData.bairro,
-        cep: enderecoData.cep,
-        uf: enderecoData.uf,
-        pais: enderecoData.pais,
-        logradouro: enderecoData.logradouro
-      }
+    const enderecoId = await this.resolverIdEnderecoDaPessoa(pessoaId);
+
+    if (!enderecoId) {
+      return await this.cadastrarEndereco(enderecoData, pessoaId);
+    }
+
+    const enderecoAtualizado = await this.prisma.$transaction(async (tx) => {
+      const endereco = await tx.enderecos.update({
+        where: { idEndereco_PK: enderecoId },
+        data: {
+          cidade: enderecoData.cidade,
+          bairro: enderecoData.bairro,
+          cep: enderecoData.cep,
+          uf: enderecoData.uf,
+          pais: enderecoData.pais,
+          logradouro: enderecoData.logradouro,
+        },
+      });
+
+      await tx.pessoas.update({
+        where: { idPessoa_PK: pessoaId },
+        data: { idEndereco_FK: endereco.idEndereco_PK },
+      });
+
+      return endereco;
     });
-    return enderecoData;
+
+    return new Endereco(
+      enderecoAtualizado.cidade,
+      enderecoAtualizado.bairro,
+      enderecoAtualizado.cep,
+      enderecoAtualizado.uf,
+      enderecoAtualizado.pais,
+      enderecoAtualizado.logradouro,
+      enderecoAtualizado.idEndereco_PK,
+    );
   };
   //retorna pessoa sem endereco
   public async removerEndereco(pessoaId: number): Promise<PessoaDTO|null>{
@@ -85,10 +189,26 @@ class PessoaRepository {
     return !!existe;
   };
 
-  public async verificarCnpjExistente(cnpj: string): Promise<boolean> {
-    const existe = await this.prisma.pessoasjuridicas.findUnique({
-      where: { cnpj },
+  private normalizarCnpj(cnpj: string): string {
+    return cnpj.replace(/\D/g, "");
+  }
+
+  private async buscarPessoaJuridicaPorCnpj(cnpj: string) {
+    const cnpjNormalizado = this.normalizarCnpj(cnpj);
+    const pessoasJuridicas = await this.prisma.pessoasjuridicas.findMany({
+      select: {
+        idPeJuridica_PFK: true,
+        cnpj: true,
+        razaoSocial: true,
+        inscEstadual: true,
+      },
     });
+
+    return pessoasJuridicas.find((pessoa) => this.normalizarCnpj(pessoa.cnpj) === cnpjNormalizado) ?? null;
+  }
+
+  public async verificarCnpjExistente(cnpj: string): Promise<boolean> {
+    const existe = await this.buscarPessoaJuridicaPorCnpj(cnpj);
     return !!existe;
   };
 
@@ -104,14 +224,40 @@ class PessoaRepository {
     return resultado
   }
   public async atualizarInscricaoEstadual(cnpj: string, inscrEstadual: string): Promise<PessoaDTO|null> {
+    const pessoaJuridica = await this.buscarPessoaJuridicaPorCnpj(cnpj);
+
+    if (!pessoaJuridica) {
+      throw new Error("Pessoa jurídica não encontrada para o CNPJ informado.");
+    }
+
     await this.prisma.pessoasjuridicas.update({
-      where: { cnpj: cnpj },
+      where: { idPeJuridica_PFK: pessoaJuridica.idPeJuridica_PFK },
       data: {
-        inscEstadual: inscrEstadual
-      }
-    })
-    let resultado = await this.buscarPessoaPorCnpj(cnpj)
-    return resultado
+        inscEstadual: inscrEstadual,
+      },
+    });
+
+    return await this.buscarPessoaPorCnpj(cnpj);
+  }
+
+  public async atualizarInscricaoEstadualPorPessoaId(pessoaId: number, inscrEstadual: string): Promise<PessoaDTO | null> {
+    const pessoaBase = await this.prisma.pessoas.findUnique({
+      where: { idPessoa_PK: pessoaId },
+      include: { pessoasjuridicas: true },
+    });
+
+    if (!pessoaBase?.pessoasjuridicas) {
+      throw new Error("Pessoa jurídica não encontrada para o ID informado.");
+    }
+
+    await this.prisma.pessoasjuridicas.update({
+      where: { idPeJuridica_PFK: pessoaBase.pessoasjuridicas.idPeJuridica_PFK },
+      data: {
+        inscEstadual: inscrEstadual,
+      },
+    });
+
+    return await this.buscarPessoaPorId(pessoaId);
   }
   public async atualizarRazaoSocial(cnpj: string, razaoSocial: string,): Promise<PessoaDTO|null> {
     await this.prisma.pessoasjuridicas.update({
@@ -125,7 +271,7 @@ class PessoaRepository {
   }
   //buscadores de pessoa
 public async buscarPessoaPorCnpj(cnpj: string): Promise<PessoaDTO | null> {
-  const pessoa = await this.prisma.pessoasjuridicas.findUnique({ where: { cnpj } });
+  const pessoa = await this.buscarPessoaJuridicaPorCnpj(cnpj);
   if (!pessoa) return null;
 
   const pessoaBase = await this.prisma.pessoas.findUnique({ 

@@ -55,34 +55,63 @@ class ProprietarioController {
     };
   };
   
-  public async atualizarSenha(req: Request, res: Response) {
-    try {
-      const pessoaId = Number(req.params.id)
-      await this.service.atualizarSenha(req.body, pessoaId)
-      res.status(200).json({ mensagem: "Senha atualizada com sucesso" })
-    } catch (error: unknown) {
-      res.status(400).json({ mensagem: (error as Error).message });
-    }
+public async atualizarSenha(req: Request, res: Response) {
+  const erros = validationResult(req);
+  if (!erros.isEmpty()) {
+    return res.status(400).json({ erros: erros.array() });
   }
 
-  public async atualizarEmail(req: Request, res: Response) {
-    try {
-      let email = await this.service.atualizarEmail(req.body, Number(req.params.id))
-      res.status(200).json({ mensagem: "Email atualizado com sucesso", email})
-    } catch (error: unknown) {
-      res.status(400).json({ mensagem: (error as Error).message })
-    }
+  try {
+    const pessoaId = Number(req.params.id);
+    const { senha } = req.body; 
+    await this.service.atualizarSenha(senha, pessoaId);
+
+    res.status(200).json({ mensagem: "Senha atualizada com sucesso" });
+  } catch (error: unknown) {
+    res.status(400).json({ mensagem: (error as Error).message });
+  }
+}
+
+public async atualizarEmail(req: Request, res: Response) {
+  const erros = validationResult(req);
+  if (!erros.isEmpty()) {
+    return res.status(400).json({ erros: erros.array() });
   }
 
-  public async atualizarTelefone(req: Request, res: Response) {
-    try {
-      await this.service.atualizarTelefone(req.body, Number(req.params.id))
-      res.status(200).json({ mensagem: "Telefone atualizado com sucesso", telefone: req.body.telefone })
-    } catch (error: unknown) {
-      res.status(400).json({ mensagem: (error as Error).message })
-    }
+  try {
+    const pessoaId = Number(req.params.id);
+    const { email } = req.body; 
+    const emailAtualizado = await this.service.atualizarEmail(email, pessoaId);
+
+    res.status(200).json({ 
+      mensagem: "Email atualizado com sucesso", 
+      email: emailAtualizado 
+    });
+  } catch (error: unknown) {
+    res.status(400).json({ mensagem: (error as Error).message });
   }
+}
+
+ public async atualizarTelefone(req: Request, res: Response) {
+  const erros = validationResult(req);
+  if (!erros.isEmpty()) {
+    return res.status(400).json({ erros: erros.array() });
+  }
+
+  try {
+    const { telefone } = req.body; 
+    await this.service.atualizarTelefone(telefone, Number(req.params.id));
+    res.status(200).json({ mensagem: "Telefone atualizado com sucesso", telefone });
+  } catch (error: unknown) {
+    res.status(400).json({ mensagem: (error as Error).message });
+  }
+}
   public async atualizarNomeOuRazaoSocial(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) {
+      return res.status(400).json({ erros: erros.array() });
+    }
+
     try {
       const pessoaId = Number(req.params.id);
       await this.service.atualizarNomeOuRazaoSocial(req.body, pessoaId);
@@ -92,11 +121,16 @@ class ProprietarioController {
     }
   }
   public async atualizarInscricaoEstadual(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) {
+      return res.status(400).json({ erros: erros.array() });
+    }
+
     try {
       const pessoaId = Number(req.params.id);
       const { inscricaoEstadual, cnpj } = req.body;
       await this.service.atualizarInscricaoEstadual(inscricaoEstadual, cnpj, pessoaId);
-      res.status(200).json({ mensagem: "Atualização de Inscrição Estadual feita com sucesso.",novaInscricaoEstadual: inscricaoEstadual });
+      res.status(200).json({ mensagem: "Atualização de Inscrição Estadual feita com sucesso.", novaInscricaoEstadual: inscricaoEstadual });
     } catch (error: unknown) {
       res.status(400).json({ mensagem: (error as Error).message });
     }

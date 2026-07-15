@@ -68,7 +68,7 @@ class ProprietarioRepository {
       cpf: p.pessoasfisicas?.cpf,
       razaoSocial: p.pessoasjuridicas?.razaoSocial,
       cnpj: p.pessoasjuridicas?.cnpj,
-      inscEstadual: p.pessoasjuridicas?.inscEstadual
+      inscrEstadual: p.pessoasjuridicas?.inscEstadual ?? null,
     };
 
     // 4. Delega a criação para a Factory

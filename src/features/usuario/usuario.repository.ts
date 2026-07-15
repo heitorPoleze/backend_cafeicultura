@@ -22,9 +22,11 @@ class UsuarioRepository {
   };
 
   public async verificarTelefoneExistente(telefone: string): Promise<boolean> {
-    const existe = await this.prisma.usuarios.findUnique({
-      where: { telefone }
-    });
+   const existe = await this.prisma.usuarios.findFirst({
+  where: {
+    telefone: telefone // Ou apenas { telefone } se o nome da variável for igual ao do campo
+  }
+});
     return !!existe;
   };
 

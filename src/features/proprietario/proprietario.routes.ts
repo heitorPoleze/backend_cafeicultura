@@ -51,10 +51,22 @@ router.put(
   "/:id/endereco",
   exigeLogin(),
   [
-    body("cidade").notEmpty().withMessage("Cidade é obrigatória"),
-    body("CEP").matches(/^\d{5}-\d{3}$/).withMessage("CEP inválido"),
-    body("UF").isLength({ min: 2, max: 2 }).withMessage("UF deve ter 2 caracteres"),
-    body("logradouro").notEmpty().withMessage("Logradouro é obrigatório")
+    body(["cidade", "Cidade"]).custom((value, { req }) => {
+      const cidade = value ?? req.body.cidade ?? req.body.Cidade;
+      return typeof cidade === "string" && cidade.trim() !== "";
+    }).withMessage("Cidade é obrigatória"),
+    body(["CEP", "cep", "Cep"]).custom((value, { req }) => {
+      const cep = value ?? req.body.CEP ?? req.body.cep ?? req.body.Cep;
+      return typeof cep === "string" && /^\d{5}-\d{3}$/.test(cep);
+    }).withMessage("CEP inválido"),
+    body(["UF", "uf", "Uf"]).custom((value, { req }) => {
+      const uf = value ?? req.body.UF ?? req.body.uf ?? req.body.Uf;
+      return typeof uf === "string" && uf.length === 2;
+    }).withMessage("UF deve ter 2 caracteres"),
+    body(["logradouro", "Logradouro"]).custom((value, { req }) => {
+      const logradouro = value ?? req.body.logradouro ?? req.body.Logradouro;
+      return typeof logradouro === "string" && logradouro.trim() !== "";
+    }).withMessage("Logradouro é obrigatório")
   ],
   proprietarioController.atualizarEndereco.bind(proprietarioController)
 );
@@ -64,11 +76,26 @@ router.post(
   "/:id/endereco",
   exigeLogin(),
   [
-    body("cidade").notEmpty().withMessage("Cidade é obrigatória"),
-    body("bairro").notEmpty().withMessage("Bairro é obrigatório"),
-    body("CEP").matches(/^\d{5}-\d{3}$/).withMessage("CEP deve estar no formato 00000-000"),
-    body("UF").isLength({ min: 2, max: 2 }).withMessage("UF deve ter 2 caracteres"),
-    body("logradouro").notEmpty().withMessage("Logradouro é obrigatório")
+    body(["cidade", "Cidade"]).custom((value, { req }) => {
+      const cidade = value ?? req.body.cidade ?? req.body.Cidade;
+      return typeof cidade === "string" && cidade.trim() !== "";
+    }).withMessage("Cidade é obrigatória"),
+    body(["bairro", "Bairro"]).custom((value, { req }) => {
+      const bairro = value ?? req.body.bairro ?? req.body.Bairro;
+      return typeof bairro === "string" && bairro.trim() !== "";
+    }).withMessage("Bairro é obrigatório"),
+    body(["CEP", "cep", "Cep"]).custom((value, { req }) => {
+      const cep = value ?? req.body.CEP ?? req.body.cep ?? req.body.Cep;
+      return typeof cep === "string" && /^\d{5}-\d{3}$/.test(cep);
+    }).withMessage("CEP deve estar no formato 00000-000"),
+    body(["UF", "uf", "Uf"]).custom((value, { req }) => {
+      const uf = value ?? req.body.UF ?? req.body.uf ?? req.body.Uf;
+      return typeof uf === "string" && uf.length === 2;
+    }).withMessage("UF deve ter 2 caracteres"),
+    body(["logradouro", "Logradouro"]).custom((value, { req }) => {
+      const logradouro = value ?? req.body.logradouro ?? req.body.Logradouro;
+      return typeof logradouro === "string" && logradouro.trim() !== "";
+    }).withMessage("Logradouro é obrigatório")
   ],
   proprietarioController.criarEndereco.bind(proprietarioController)
 );
@@ -132,12 +159,14 @@ router.put(
   "/:id/inscricao-estadual",
   exigeLogin(),
   [
-    body("cnpj")
-      .optional()
-      .custom((value) => validarCNPJ.isValid(value))
-      .withMessage("O CNPJ informado é inválido"),
     body("inscricaoEstadual")
-      .notEmpty().withMessage("A Inscrição Estadual é obrigatória")
+      .custom((value) => {
+        if (!value || typeof value !== "string" || value.trim() === "") {
+          throw new Error("A Inscrição Estadual deve ser informada");
+        }
+
+        return true;
+      })
   ],
   proprietarioController.atualizarInscricaoEstadual.bind(proprietarioController)
 );

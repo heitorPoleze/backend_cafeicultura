@@ -111,9 +111,21 @@ export default class ProprietarioService {
   };
 
   public async atualizarSenha(senha: string, pessoaId: number) {
+    if (typeof senha !== "string" || senha.trim() === "") {
+      throw new Error("A senha é obrigatória.");
+    }
+
+    if (senha.length < 8) {
+      throw new Error("A senha deve conter pelo menos 8 caracteres.");
+    }
+
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).+$/.test(senha)) {
+      throw new Error("A senha deve conter maiúscula, minúscula, número e símbolo.");
+    }
+
     const salt = await bcrypt.genSalt(10);
     const novaSenhaCriptografada = await bcrypt.hash(senha, salt);
-    this.repo.updateSenhaProprietario(novaSenhaCriptografada, pessoaId)
+    await this.repo.updateSenhaProprietario(novaSenhaCriptografada, pessoaId);
   }
 
   //Precisa verificar se o e-mail/telefone já está em uso e retornar uma mensagem de erro compatível para retornarmos a mensagem para a api, assim como o método cadastrar dessa mesma classe.
@@ -170,24 +182,22 @@ export default class ProprietarioService {
       throw new Error("Tipo de pessoa inválido.");
     }
   }
-  public async atualizarInscricaoEstadual(inscricaoEstadual: string,cnpj?: string,pessoaId?: number) {
-    let _cnpj = cnpj;
-
-    if (!_cnpj && pessoaId) {
-      const proprietario = await this.repo.buscarPorId(pessoaId);
-
-      if (!(proprietario instanceof PessoaJuridica)) {
-        throw new Error(`Proprietário juridico com ID ${pessoaId} não encontrado.`);
-      }
-
-      _cnpj = proprietario.cnpj;
+  public async atualizarInscricaoEstadual(inscricaoEstadual: string, cnpj: string | undefined, pessoaId?: number) {
+    if (!inscricaoEstadual || typeof inscricaoEstadual !== "string" || inscricaoEstadual.trim() === "") {
+      throw new Error("A Inscrição Estadual deve ser informada.");
     }
 
-    if (!_cnpj) {
-      throw new Error('CNPJ não informado nem encontrado a partir do pessoaId.');
+    if (!pessoaId) {
+      throw new Error("O ID do proprietário é obrigatório.");
     }
 
-    await this.repo.updateInscricaoEstadual(inscricaoEstadual, _cnpj);
+    const proprietario = await this.repo.buscarPorId(pessoaId);
+
+    if (!proprietario || !(proprietario.perfil instanceof PessoaJuridica)) {
+      throw new Error(`Proprietário jurídico com ID ${pessoaId} não encontrado.`);
+    }
+
+    await this.pessoaRepo.atualizarInscricaoEstadualPorPessoaId(pessoaId, inscricaoEstadual);
   }
 public async getProprietarioEEndereco(pessoaId: number) {
   const proprietario = await this.repo.buscarPorId(pessoaId);
