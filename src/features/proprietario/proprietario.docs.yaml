@@ -132,6 +132,9 @@ components:
           type: integer
         tipoPessoa:
           type: string
+        tipoConta:
+          type: string
+          enum: [fisica, juridica]
         idAdministrador:
           type: integer
           nullable: true

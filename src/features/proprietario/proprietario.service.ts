@@ -217,7 +217,14 @@ public async getProprietarioEEndereco(pessoaId: number) {
    if (!proprietario) {
        throw new Error(`Proprietário com ID ${pessoaId} não encontrado.`);
      }
-  return proprietario;
+
+  const tipoConta = proprietario.perfil instanceof PessoaJuridica ? "juridica" : "fisica";
+  const dados = proprietario.toJSON();
+
+  return {
+    ...dados,
+    tipoConta,
+  };
 }
 public async deletarProprietario(pessoaId: number) {
   const proprietario = await this.repo.buscarPorId(pessoaId);

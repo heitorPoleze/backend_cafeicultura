@@ -6,7 +6,7 @@ export type LoginRequestDTO = {
 
 export type LoginResponseDTO = {
   mensagem: string;
-  dadosSessao: { id: number; nome: string };
+  dadosSessao: { id: number; nome: string; tipoConta: "fisica" | "juridica" };
 };
 
 export type LogoutResponseDTO = {

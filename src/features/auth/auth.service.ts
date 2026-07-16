@@ -16,7 +16,7 @@ class AuthService {
       throw erroAutenticacao;
     };
 
-    const { credencial, nomeSessao } = resultado;
+    const { credencial, nomeSessao, tipoConta } = resultado;
 
     const senhaValida = await credencial.compararSenha(senha);
 
@@ -27,6 +27,7 @@ class AuthService {
     return {
       idUsuario: credencial.idUsuario,
       nome: nomeSessao,
+      tipoConta,
     };
   }
 }

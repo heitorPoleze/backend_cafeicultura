@@ -7,9 +7,10 @@ class AuthRepository {
   public async autenticar(
     entrada: string, 
     tipo: "email" | "cpf" | "cnpj"
-  ): Promise<{ credencial: Credencial, nomeSessao: string } | null> {
+  ): Promise<{ credencial: Credencial, nomeSessao: string, tipoConta: "fisica" | "juridica" } | null> {
     let usuario = null;
     let nomeSessao = "Usuário";
+    let tipoConta: "fisica" | "juridica" = "fisica";
 
     if (tipo === "email") {
       usuario = await this.db.usuarios.findFirst({
@@ -51,8 +52,10 @@ class AuthRepository {
     if (pessoa) {
       if (pessoa.pessoasfisicas) {
         nomeSessao = pessoa.pessoasfisicas.nome;
+        tipoConta = "fisica";
       } else if (pessoa.pessoasjuridicas) {
         nomeSessao = pessoa.pessoasjuridicas.razaoSocial;
+        tipoConta = "juridica";
       }
     };
     
@@ -63,7 +66,7 @@ class AuthRepository {
       usuario.idUsuario_PFK
     );
 
-    return { credencial, nomeSessao };
+    return { credencial, nomeSessao, tipoConta };
   }
 }
 
