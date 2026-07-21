@@ -85,6 +85,21 @@ paths:
         '500':
           description: Erro interno ao cadastrar propriedade
 
+  /api/v1/propriedades/proprietario:
+    get:
+      summary: Lista Propriedades do Proprietário
+      tags: 
+        - Propriedades
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista de propriedades retornada com sucesso
+        '404':
+          description: Nenhuma propriedade encontrada para este proprietário
+        '500':
+          description: Erro interno ao listar propriedades
+
   /api/v1/propriedades/{id}:
     get:
       summary: Busca uma Propriedade pelo ID

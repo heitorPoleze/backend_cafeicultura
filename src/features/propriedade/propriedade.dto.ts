@@ -25,3 +25,7 @@ export type UpdateTamanhoPropriedadeDTO = {
 export type UpdateEnderecoPropriedadeDTO = {
   endereco: Endereco;
 }
+
+export type ListPropriedadesDTO = {
+  idProprietario: number;
+};

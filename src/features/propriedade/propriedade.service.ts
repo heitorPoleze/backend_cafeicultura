@@ -5,6 +5,7 @@ import {
   UpdateEnderecoPropriedadeDTO,
   UpdateTamanhoPropriedadeDTO,
   PropriedadeResponseDTO,
+  ListPropriedadesDTO,
 } from "./propriedade.dto";
 import Propriedade from "./propriedade.entity";
 import Tamanho from "../../shared/domain/tamanho/tamanho.entity";
@@ -108,6 +109,19 @@ class PropriedadeService {
       propriedade.endereco,
     );
   };
+
+  public async listarPorProprietario(
+    dto: ListPropriedadesDTO,
+  ): Promise<PropriedadeResponseDTO[]> {
+    const propriedades = await this.repo.listarPorProprietario(dto.idProprietario);
+
+    if (!propriedades) {
+      throw new Error("NAO_ENCONTRADA");
+    };
+
+    return propriedades
+  };
+
 };
 
 export default PropriedadeService;

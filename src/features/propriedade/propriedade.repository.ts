@@ -85,7 +85,7 @@ class PropriedadeRepository {
     });
   };
 
-  public async listarPorProprietario(idProprietario: number): Promise<Propriedade[]> {
+  public async listarPorProprietario(idProprietario: number): Promise<Propriedade[] | null> {
     const propriedades = await this.db.propriedades.findMany({
       where: { idProprietario_FK: idProprietario },
       include: {

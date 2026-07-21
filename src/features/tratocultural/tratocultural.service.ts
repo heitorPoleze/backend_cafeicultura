@@ -89,6 +89,7 @@ class TratoCulturalService {
       for (const insumoDto of dto.insumosUtilizados) {
         const insumoDomain = await this.insumoRepo.buscarPorId(
           insumoDto.idInsumo,
+          idUsuarioSessao,
         );
         if (!insumoDomain) throw new Error("INSUMO_NAO_ENCONTRADO");
 

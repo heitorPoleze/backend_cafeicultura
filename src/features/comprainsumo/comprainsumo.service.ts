@@ -26,7 +26,7 @@ class CompraInsumoService {
     const fornecedor = await this.fornecedorRepo.buscarPorId(dto.beneficiado);
     if (!fornecedor) throw new Error("FORNECEDOR_NAO_ENCONTRADO");
 
-    const insumoDomain = await this.insumoRepo.buscarPorId(dto.idInsumo);
+    const insumoDomain = await this.insumoRepo.buscarPorId(dto.idInsumo, idUsuarioSessao);
     if (!insumoDomain) throw new Error("INSUMO_NAO_ENCONTRADO");
 
     const novaDespesa = new Despesa(

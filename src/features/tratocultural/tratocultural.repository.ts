@@ -304,6 +304,7 @@ class TratoCulturalRepository {
       tratoDB.tratosinsumos.forEach((ti: TratoInsumoPayload) => {
         const insumo = new Insumo(
           ti.insumos.idInsumo_PK,
+          ti.insumos.idProprietario_FK,
           ti.insumos.descricao,
           ti.insumos.medida as MedidaInsumo,
         );

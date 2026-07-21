@@ -102,6 +102,7 @@ class CompraInsumoRepository {
   private async mapToEntity(compraDB: CompraInsumoPayload): Promise<CompraInsumo | null> {
     const insumo = new Insumo(
       compraDB.insumos.idInsumo_PK, 
+      compraDB.insumos.idProprietario_FK,
       compraDB.insumos.descricao, 
       compraDB.insumos.medida as MedidaInsumo
     );
