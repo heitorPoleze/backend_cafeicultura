@@ -18,9 +18,9 @@ class PessoaFactory {
       return new PessoaJuridica(
         dados.id,
         dados.idAdministrador,
-        dados.cnpj!,
-        dados.razaoSocial!,
-        dados.inscrEstadual!,
+        dados.cnpj ?? "",
+        dados.razaoSocial ?? "",
+        dados.inscrEstadual ?? null,
         dados.endereco,
         dados.dataCadastro
       );

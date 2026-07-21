@@ -50,6 +50,11 @@ components:
         inscrEstadual:
           type: string
           description: Opcional para Pessoa Jurídica.
+        idAdministrador:
+          type: integer
+          description: ID do administrador que cria o proprietário (opcional).
+        endereco:
+          $ref: '#/components/schemas/EnderecoProprietarioInput'
 
     EnderecoProprietarioInput:
       type: object
@@ -103,6 +108,98 @@ components:
           type: string
           example: "Rua das Flores, 123"
 
+    ProprietarioResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        email:
+          type: string
+        telefone:
+          type: string
+        dataCadastro:
+          type: string
+          format: date-time
+        endereco:
+          $ref: '#/components/schemas/EnderecoProprietarioInput'
+
+    ProprietarioDetalhado:
+      type: object
+      properties:
+        id:
+          type: integer
+        tipoPessoa:
+          type: string
+        tipoConta:
+          type: string
+          enum: [fisica, juridica]
+        idAdministrador:
+          type: integer
+          nullable: true
+        nome:
+          type: string
+        cpf:
+          type: string
+        razaoSocial:
+          type: string
+        cnpj:
+          type: string
+        inscrEstadual:
+          type: string
+        email:
+          type: string
+        telefone:
+          type: string
+        dataCadastro:
+          type: string
+          format: date-time
+        endereco:
+          $ref: '#/components/schemas/EnderecoProprietarioInput'
+
+    AtualizarSenhaInput:
+      type: object
+      required: [senha]
+      properties:
+        senha:
+          type: string
+          minLength: 8
+          description: Deve conter maiúscula, minúscula, número e símbolo.
+
+    AtualizarEmailInput:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+
+    AtualizarTelefoneInput:
+      type: object
+      required: [telefone]
+      properties:
+        telefone:
+          type: string
+          pattern: '^(\\d{10,11}|\\(\\d{2}\\) \\s?\\d{4,5}-\\d{4})$'
+
+    IdentificacaoInput:
+      type: object
+      properties:
+        nome:
+          type: string
+        razaoSocial:
+          type: string
+
+    InscricaoEstadualInput:
+      type: object
+      required: [inscricaoEstadual]
+      properties:
+        inscricaoEstadual:
+          type: string
+        cnpj:
+          type: string
+
 paths:
   /api/v1/proprietarios:
     post:
@@ -120,6 +217,15 @@ paths:
       responses:
         '201':
           description: Proprietário cadastrado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  dados:
+                    $ref: '#/components/schemas/ProprietarioResponse'
         '400':
           description: Erro de validação nos dados enviados (ex. senha fraca, formato de email inválido)
         '409':
@@ -150,6 +256,15 @@ paths:
       responses:
         '201':
           description: Endereço adicionado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  Endereco:
+                    $ref: '#/components/schemas/EnderecoProprietarioInput'
         '400':
           description: Erro de validação nos campos do endereço
         '500':
@@ -177,6 +292,15 @@ paths:
       responses:
         '200':
           description: Endereço atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  Endereco:
+                    $ref: '#/components/schemas/AtualizarEnderecoProprietarioInput'
         '400':
           description: Erro de validação nos campos de atualização
         '500':
@@ -198,5 +322,235 @@ paths:
       responses:
         '200':
           description: Endereço removido com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
         '500':
           description: Erro interno ao remover endereço
+
+  /api/v1/proprietarios/{id}/senha:
+    put:
+      summary: Atualiza a senha de um Proprietário
+      tags:
+        - Proprietários
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtualizarSenhaInput'
+      responses:
+        '200':
+          description: Senha atualizada com sucesso
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  /api/v1/proprietarios/{id}/email:
+    put:
+      summary: Atualiza o email de um Proprietário
+      tags:
+        - Proprietários
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtualizarEmailInput'
+      responses:
+        '200':
+          description: Email atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  email:
+                    type: string
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  /api/v1/proprietarios/{id}/telefone:
+    put:
+      summary: Atualiza o telefone de um Proprietário
+      tags:
+        - Proprietários
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtualizarTelefoneInput'
+      responses:
+        '200':
+          description: Telefone atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  telefone:
+                    type: string
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  /api/v1/proprietarios/{id}/identificacao:
+    put:
+      summary: Atualiza nome ou razão social do Proprietário
+      tags:
+        - Proprietários
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IdentificacaoInput'
+      responses:
+        '200':
+          description: Nome ou Razão Social atualizadas com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  novaInformacao:
+                    type: object
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  /api/v1/proprietarios/{id}/inscricao-estadual:
+    put:
+      summary: Atualiza a Inscrição Estadual do Proprietário
+      tags:
+        - Proprietários
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InscricaoEstadualInput'
+      responses:
+        '200':
+          description: Inscrição Estadual atualizada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  novaInscricaoEstadual:
+                    type: string
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  /api/v1/proprietarios/{id}/:
+    get:
+      summary: Recupera dados do Proprietário junto com endereço
+      tags:
+        - Proprietários
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dados do proprietário retornados com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProprietarioDetalhado'
+        '400':
+          description: ID inválido ou erro de requisição
+        '500':
+          description: Erro interno
+
+    delete:
+      summary: Deleta um Proprietário
+      tags:
+        - Proprietários
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Proprietário deletado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+        '400':
+          description: ID inválido ou erro de requisição
+        '500':
+          description: Erro interno

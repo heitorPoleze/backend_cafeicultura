@@ -9,5 +9,6 @@ declare module 'express-session' {
   interface SessionData {
     idUsuario: number;
     nome: string;
+    tipoConta: "fisica" | "juridica";
   }
 }

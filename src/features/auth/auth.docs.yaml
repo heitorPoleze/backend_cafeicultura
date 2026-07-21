@@ -46,6 +46,16 @@ paths:
                   mensagem:
                     type: string
                     example: "Login efetuado com sucesso"
+                  dadosSessao:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      nome:
+                        type: string
+                      tipoConta:
+                        type: string
+                        enum: [fisica, juridica]
         '400':
           description: Erro de validação nos campos enviados (ex. tipoEntrada inválido ou campos vazios).
         '401':
