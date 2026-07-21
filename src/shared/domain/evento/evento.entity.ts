@@ -68,25 +68,18 @@ abstract class Evento {
 
     public set descricao(descricao: string) { this._descricao = descricao; };
     
-
-    public inserirTransacoes(transacoes: Despesa[]): void {
-        if (!this._transacoesFinanceiras)
-            this._transacoesFinanceiras = [];
-        this._transacoesFinanceiras.push(...transacoes);
-    };
-
-    public excluirTransacoes(idTransacoes: number[]): void {
-        this._transacoesFinanceiras = this._transacoesFinanceiras?.filter(transacao => idTransacoes.includes(transacao.id as number));
-    };
-
     public inserirResponsaveis(responsaveis: Pessoa[]): void {
         if (!this._responsaveis)
             this._responsaveis = [];
-        this._responsaveis.push(...responsaveis);
+        this._responsaveis = responsaveis;
     };
 
     public excluirResponsaveis(idResponsaveis: number[]): void {
         this._responsaveis = this._responsaveis?.filter(responsavel => !idResponsaveis.includes(responsavel.id as number));
+    };
+
+    public excluirTransacoes(idTransacoes: number[]): void {
+        this._transacoesFinanceiras = this._transacoesFinanceiras?.filter(transacao => idTransacoes.includes(transacao.id as number));
     };
 
     public finalizar(dataFim: Date): void {

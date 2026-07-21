@@ -60,7 +60,7 @@ class TratoCultural extends EventoAgricola {
     public inserirInsumos(insumos: TratoInsumo[]): void {
         if (!this._insumosUtilizados) 
             this._insumosUtilizados = [];
-        this._insumosUtilizados.push(...insumos);
+        this._insumosUtilizados = insumos;
     };
 
     public excluirInsumos(idInsumos: number[]): void {

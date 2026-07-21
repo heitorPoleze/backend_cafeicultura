@@ -88,7 +88,7 @@ class TratoCulturalRepository {
       };
       return id;
     });
-  }
+  };
 
   public async buscarPorId(id: number): Promise<TratoCultural | null> {
     const tratoCulturalDB = await this.prisma.tratosculturais.findUnique({
@@ -297,6 +297,74 @@ class TratoCulturalRepository {
     await this.eventoRepo.atualizarDescricao(trato);
   };
 
+  public async inserirInsumos(trato: TratoCultural): Promise<void> {
+    if (!trato.insumosUtilizados || trato.insumosUtilizados.length === 0) {
+      return;
+    }
+
+    const idTrato = trato.id!;
+
+    const insumosNoBanco = await this.prisma.tratosinsumos.findMany({
+      where: { idTrato_PFK: idTrato },
+      select: { idInsumo_PFK: true, qtdUsada: true },
+    });
+
+    const mapaExistentes = new Map<number, number>();
+    for (const item of insumosNoBanco) {
+      mapaExistentes.set(item.idInsumo_PFK, Number(item.qtdUsada));
+    }
+
+    type InsertPayload = { idTrato_PFK: number; idInsumo_PFK: number; qtdUsada: number };
+    type UpdatePayload = { idInsumo_PFK: number; novaQtdTotal: number };
+
+    const novosInsumosParaInserir: InsertPayload[] = [];
+    const insumosParaAtualizar: UpdatePayload[] = [];
+
+    for (const tratoInsumo of trato.insumosUtilizados) {
+      const idInsumo = tratoInsumo.insumo.id!;
+      const qtdSendoAdicionada = tratoInsumo.qtdUsada;
+
+      if (mapaExistentes.has(idInsumo)) {
+        const qtdAnterior = mapaExistentes.get(idInsumo)!;
+        const qtdTotalAtualizada = qtdAnterior + qtdSendoAdicionada;
+
+        insumosParaAtualizar.push({
+          idInsumo_PFK: idInsumo,
+          novaQtdTotal: qtdTotalAtualizada,
+        });
+      } else {
+        novosInsumosParaInserir.push({
+          idTrato_PFK: idTrato,
+          idInsumo_PFK: idInsumo,
+          qtdUsada: qtdSendoAdicionada,
+        });
+      }
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      for (const atualizacao of insumosParaAtualizar) {
+        await tx.tratosinsumos.updateMany({
+          where: {
+            idTrato_PFK: idTrato,
+            idInsumo_PFK: atualizacao.idInsumo_PFK,
+          },
+          data: {
+            qtdUsada: atualizacao.novaQtdTotal,
+          },
+        });
+      }
+      if (novosInsumosParaInserir.length > 0) {
+        await tx.tratosinsumos.createMany({
+          data: novosInsumosParaInserir,
+        });
+      }
+    });
+  };
+
+  public async inserirResponsaveis(trato: TratoCultural): Promise<void> {
+    await this.eventoRepo.inserirResponsaveis(trato);
+  };
+
   public async finalizarTrato(trato: TratoCultural): Promise<void> {
     await this.eventoRepo.finalizar(trato);
   };
@@ -305,9 +373,22 @@ class TratoCulturalRepository {
     await this.eventoRepo.confirmar(trato);
   };
 
+  public async excluirTransacoes(trato: TratoCultural): Promise<void> {
+    await this.eventoRepo.excluirTransacoes(trato);
+  };
+
   public async excluirResponsaveis(trato: TratoCultural): Promise<void> {
     await this.eventoRepo.excluirResponsaveis(trato);
-  }
+  };
+
+  public async excluirInsumos(trato: TratoCultural): Promise<void> {
+    await this.prisma.tratosinsumos.deleteMany({
+      where: {
+        idTrato_PFK: trato.id,
+        idInsumo_PFK: { notIn: trato.insumosUtilizados!.map((tratoInsumo) => tratoInsumo.insumo.id as number) },
+      },
+    });
+  };
 
   private async mapToEntity(
     tratoDB: TratoCulturalPayload,

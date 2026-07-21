@@ -19,12 +19,12 @@ class PropriedadeService {
   ): Promise<number> {
     const tamanho = new Tamanho(dto.tamanho.valor, dto.tamanho.medida);
     const endereco = new Endereco(
-      dto.endereco.logradouro,
-      dto.endereco.bairro,
       dto.endereco.cidade,
+      dto.endereco.bairro,
+      dto.endereco.cep,
       dto.endereco.uf,
       dto.endereco.pais,
-      dto.endereco.cep,
+      dto.endereco.logradouro,
       undefined,
     );
 
@@ -93,12 +93,12 @@ class PropriedadeService {
     const propriedade = await this.buscarPorId(idPropriedade, idUsuarioSessao);
 
     const novoEnd = new Endereco(
-      dto.endereco.logradouro,
-      dto.endereco.bairro,
       dto.endereco.cidade,
+      dto.endereco.bairro,
+      dto.endereco.cep,
       dto.endereco.uf,
       dto.endereco.pais,
-      dto.endereco.cep,
+      dto.endereco.logradouro,
       propriedade.endereco.idEndereco,
     );
 

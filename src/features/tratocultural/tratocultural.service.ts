@@ -2,11 +2,16 @@ import TratoCultural, { TipoTrato } from "./tratocultural.entity";
 import TratoInsumo from "../../shared/domain/insumo/tratoinsumo/tratoinsumo.entity";
 import Pessoa from "../../shared/domain/pessoa/pessoabase.entity";
 import {
-    AtualizarDescricaoDTO,
-    BuscarTratoPorIdDTO,
+  AtualizarDescricaoDTO,
+  BuscarTratoPorIdDTO,
   CadastrarTratoCulturalDTO,
   ConfirmarTratoCulturalDTO,
+  ExcluirInsumosTratoDTO,
+  ExcluirResponsaveisTratoDTO,
+  ExcluirTransacoesTratoDTO,
   FinalizarTratoCulturalDTO,
+  InserirInsumosTratoDTO,
+  InserirResponsaveisTratoDTO,
   ListarTratoPorPropriedadeDTO,
   ListarTratoPorSafraDTO,
   ListarTratoPorTalhaoDTO,
@@ -31,6 +36,19 @@ class TratoCulturalService {
     private talhaoRepo: TalhaoRepository,
     private pessoaRepo: PessoaRepository,
   ) {}
+  
+  private async validarAcessoPropriedade(idPropriedade: number, idUsuarioSessao: number): Promise<void> {
+    const propriedade = await this.propriedadeRepo.buscarPorId(idPropriedade);
+    if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
+    if (propriedade.idProprietario !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
+  }
+
+  private async buscarEValidarTrato(idTrato: number, idUsuarioSessao: number): Promise<TratoCultural> {
+    const trato = await this.tratoCulturalRepo.buscarPorId(idTrato);
+    if (!trato) throw new Error("TRATO_NAO_ENCONTRADO");
+    await this.validarAcessoPropriedade(trato.safra.idPropriedade, idUsuarioSessao);
+    return trato;
+  }
 
   public async cadastrar(
     dto: CadastrarTratoCulturalDTO,
@@ -38,212 +56,141 @@ class TratoCulturalService {
   ): Promise<number> {
     const safra = await this.safraRepo.buscarPorId(dto.idSafra);
     if (!safra) throw new Error("SAFRA_NAO_ENCONTRADA");
-
-    const propriedade = await this.propriedadeRepo.buscarPorId(
-      safra.idPropriedade,
-    );
-    if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
-
-    if (propriedade.idProprietario !== idUsuarioSessao) {
-      throw new Error("ACESSO_NEGADO");
-    };
-
-    if (safra.idPropriedade !== propriedade.id) {
-      throw new Error("ACESSO_NEGADO");
-    };
+    await this.validarAcessoPropriedade(safra.idPropriedade, idUsuarioSessao);
 
     const talhao = await this.talhaoRepo.buscarPorId(dto.idTalhao);
     if (!talhao) throw new Error("TALHAO_NAO_ENCONTRADO");
+    if (talhao.idPropriedade !== safra.idPropriedade) throw new Error("ACESSO_NEGADO");
 
-    if (talhao.idPropriedade !== propriedade.id) {
-      throw new Error("ACESSO_NEGADO");
-    };
+    if (!Object.values(TipoTrato).includes(dto.tipoTrato)) throw new Error("TIPO_TRATO_INVALIDO");
 
-    const tipoTratoValido = Object.values(TipoTrato).includes(dto.tipoTrato);
-    if (!tipoTratoValido) throw new Error("TIPO_TRATO_INVALIDO");
+    const despesasDomain: Despesa[] = (dto.transacoesFinanceiras || []).map(
+      (despesa) => new Despesa(
+        undefined, null, despesa.idPropriedade, new Date(), despesa.valor,
+        despesa.formaPagamento, despesa.tipoOperacao, despesa.beneficiado, despesa.descricao,
+      )
+    );
 
-    const despesasDomain: Despesa[] = [];
+    const responsaveisDomain: Pessoa[] = dto.responsaveisIds && dto.responsaveisIds.length > 0 
+      ? await Promise.all(dto.responsaveisIds.map(async (idPessoa) => {
+          const pessoa = await this.pessoaRepo.buscarPorId(idPessoa);
+          if (!pessoa) throw new Error("RESPONSAVEL_NAO_ENCONTRADO");
+          return pessoa;
+        }))
+      : [];
 
-    if (dto.transacoesFinanceiras && dto.transacoesFinanceiras.length > 0) {
-      dto.transacoesFinanceiras.forEach((despesa) => {
-        const despesaDomain = new Despesa(
-          undefined,
-          null,
-          despesa.idPropriedade,
-          new Date(),
-          despesa.valor,
-          despesa.formaPagamento,
-          despesa.tipoOperacao,
-          despesa.beneficiado,
-          despesa.descricao,
-        );
-        despesasDomain.push(despesaDomain);
-      })
-    };
-
-    const responsaveisDomain: Pessoa[] = [];
-
-    if (dto.responsaveisIds && dto.responsaveisIds.length > 0) {
-      for (const idPessoa of dto.responsaveisIds) {
-        const pessoa = await this.pessoaRepo.buscarPorId(idPessoa);
-        if (!pessoa) throw new Error("RESPONSAVEL_NAO_ENCONTRADO");
-        responsaveisDomain.push(pessoa);
-      };
-    };
+    const insumosDomain: TratoInsumo[] = dto.insumosUtilizados && dto.insumosUtilizados.length > 0
+      ? await Promise.all(dto.insumosUtilizados.map(async (insumoDto) => {
+          const insumoDomain = await this.insumoRepo.buscarPorId(insumoDto.idInsumo, idUsuarioSessao);
+          if (!insumoDomain) throw new Error("INSUMO_NAO_ENCONTRADO");
+          return new TratoInsumo(insumoDomain, insumoDto.qtdUsada);
+        }))
+      : [];
     
     const novoTrato = new TratoCultural(
-      undefined,
-      dto.idTalhao,
-      new Date(dto.dataInicio),
+      undefined, dto.idTalhao, new Date(dto.dataInicio),
       dto.dataFim ? new Date(dto.dataFim) : null,
-      dto.descricao || "",
-      new Date(),
-      safra,
-      despesasDomain,
-      responsaveisDomain,
-      false,
-      dto.tipoTrato,
-      [],
+      dto.descricao || "", new Date(), safra, despesasDomain, responsaveisDomain,
+      false, dto.tipoTrato, insumosDomain
     );
 
-    if (dto.insumosUtilizados && dto.insumosUtilizados.length > 0) {
-      for (const insumoDto of dto.insumosUtilizados) {
-        const insumoDomain = await this.insumoRepo.buscarPorId(
-          insumoDto.idInsumo,
-          idUsuarioSessao,
-        );
-        if (!insumoDomain) throw new Error("INSUMO_NAO_ENCONTRADO");
+    return await this.tratoCulturalRepo.cadastrar(novoTrato, dto.idTipoTrato);
+  }
 
-        const tratoInsumo = new TratoInsumo(insumoDomain, insumoDto.qtdUsada);
-        novoTrato.insumosUtilizados!.push(tratoInsumo);
-      };
-    };
-
-    const idGerado = await this.tratoCulturalRepo.cadastrar(
-      novoTrato,
-      dto.idTipoTrato
-    );
-    return idGerado;
-  };
-
-  public async atualizarDescricao(
-    dto: AtualizarDescricaoDTO,
-    idUsuarioSessao: number,
-  ): Promise<void> {
-    const trato = await this.tratoCulturalRepo.buscarPorId(dto.idTrato);
-    if (!trato) throw new Error("TRATO_NAO_ENCONTRADO");
-
-    const propriedade = await this.propriedadeRepo.buscarPorId(
-      trato.safra.idPropriedade,
-    );
-    if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
-
-    if (propriedade.idProprietario !== idUsuarioSessao) {
-      throw new Error("ACESSO_NEGADO");
-    };
+  public async atualizarDescricao(dto: AtualizarDescricaoDTO, idUsuarioSessao: number): Promise<void> {
+    const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);
     trato.descricao = dto.descricao;
     await this.tratoCulturalRepo.atualizarDescricao(trato);
-  };
+  }
 
-  public async buscarPorId(
-    dto: BuscarTratoPorIdDTO,
-    idUsuarioSessao: number,
-  ): Promise<ResponseTratoCulturalDTO> {
-    const trato = await this.tratoCulturalRepo.buscarPorId(dto.idTrato);
-    if (!trato) throw new Error("TRATO_NAO_ENCONTRADO");
-    const propriedade = await this.propriedadeRepo.buscarPorId(
-      trato.safra.idPropriedade,
+  public async inserirResponsaveis(dto: InserirResponsaveisTratoDTO, idUsuarioSessao: number): Promise<void> {   
+    const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);
+    
+    const responsaveis: Pessoa[] = await Promise.all(
+      dto.responsaveisIds.map(async (item) => {
+        const responsavelDomain = await this.pessoaRepo.buscarPorId(item);
+        if (!responsavelDomain) throw new Error("PESSOA_NAO_ENCONTRADA");
+        return responsavelDomain;
+      })
     );
-    if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
 
-    if (propriedade.idProprietario !== idUsuarioSessao) {
-      throw new Error("ACESSO_NEGADO");
-    };
-    return trato;
-  };
+    trato.inserirResponsaveis(responsaveis);
+    await this.tratoCulturalRepo.inserirResponsaveis(trato);
+  }
+
+  public async inserirInsumos(dto: InserirInsumosTratoDTO, idUsuarioSessao: number): Promise<void> {   
+    const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);
+    
+    const novosInsumos: TratoInsumo[] = await Promise.all(
+      dto.insumos.map(async (item) => {
+        const insumoDomain = await this.insumoRepo.buscarPorId(item.idInsumo, idUsuarioSessao);
+        if (!insumoDomain) throw new Error("INSUMO_NAO_ENCONTRADO");
+        return new TratoInsumo(insumoDomain, item.qtdUsada);
+      })
+    );
+
+    trato.inserirInsumos(novosInsumos);
+    await this.tratoCulturalRepo.inserirInsumos(trato);
+  }
+
+  public async buscarPorId(dto: BuscarTratoPorIdDTO, idUsuarioSessao: number): Promise<ResponseTratoCulturalDTO> {
+    return await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);
+  }
 
   public async listarTodosPropriedade(dto: ListarTratoPorPropriedadeDTO, idUsuarioSessao: number): Promise<ResponseTratoCulturalDTO[]> {
+    await this.validarAcessoPropriedade(dto.idPropriedade, idUsuarioSessao);
     const tratos = await this.tratoCulturalRepo.listarTodosPropriedade(dto.idPropriedade);
     if (!tratos || tratos.length === 0) throw new Error("TRATOS_NAO_ENCONTRADOS");
-
-    const propriedade = await this.propriedadeRepo.buscarPorId(dto.idPropriedade);
-    if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
-
-    if (propriedade.idProprietario !== idUsuarioSessao) {
-      throw new Error("ACESSO_NEGADO");
-    };
-
     return tratos;
-  };
+  }
 
   public async listarTodosSafra(dto: ListarTratoPorSafraDTO, idUsuarioSessao: number): Promise<ResponseTratoCulturalDTO[]> {
+    await this.validarAcessoPropriedade(dto.idPropriedade, idUsuarioSessao);
     const tratos = await this.tratoCulturalRepo.listarTodosSafra(dto.idSafra, dto.idPropriedade);
     if (!tratos || tratos.length === 0) throw new Error("TRATOS_NAO_ENCONTRADOS");
-
-    const propriedade = await this.propriedadeRepo.buscarPorId(dto.idPropriedade);
-    if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
-
-    if (propriedade.idProprietario !== idUsuarioSessao) {
-      throw new Error("ACESSO_NEGADO");
-    };
-
     return tratos;
-  };
+  }
 
   public async listarTodosTalhao(dto: ListarTratoPorTalhaoDTO, idUsuarioSessao: number): Promise<ResponseTratoCulturalDTO[]> {
-    const tratos = await this.tratoCulturalRepo.listarTodosTalhao(dto.idTalhao,dto.idPropriedade);
+    await this.validarAcessoPropriedade(dto.idPropriedade, idUsuarioSessao);
+    const tratos = await this.tratoCulturalRepo.listarTodosTalhao(dto.idTalhao, dto.idPropriedade);
     if (!tratos || tratos.length === 0) throw new Error("TRATOS_NAO_ENCONTRADOS");
-
-    const propriedade = await this.propriedadeRepo.buscarPorId(dto.idPropriedade);
-    if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
-
-    if (propriedade.idProprietario !== idUsuarioSessao) {
-      throw new Error("ACESSO_NEGADO");
-    };
     return tratos;
   }
 
   public async buscarTiposTratos(): Promise<TipoTratoDTO[]> {
     return await this.tratoCulturalRepo.buscarTiposTratos();
-  };
+  }
 
-  public async finalizarTrato(
-    dto: FinalizarTratoCulturalDTO,
-    idUsuarioSessao: number,
-  ): Promise<void> {
-    const trato = await this.tratoCulturalRepo.buscarPorId(dto.idTrato);
-    if (!trato) throw new Error("TRATO_NAO_ENCONTRADO");
-
-    const propriedade = await this.propriedadeRepo.buscarPorId(
-      trato.safra.idPropriedade,
-    );
-    if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
-
-    if (propriedade.idProprietario !== idUsuarioSessao) {
-      throw new Error("ACESSO_NEGADO");
-    };
+  public async finalizarTrato(dto: FinalizarTratoCulturalDTO, idUsuarioSessao: number): Promise<void> {
+    const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);
     trato.finalizar(dto.dataFim);
     await this.tratoCulturalRepo.finalizarTrato(trato);
-  };
+  }
 
-  public async confirmarTrato(
-    dto: ConfirmarTratoCulturalDTO,
-    idUsuarioSessao: number,
-  ): Promise<void> {
-    const trato = await this.tratoCulturalRepo.buscarPorId(dto.idTrato);
-    if (!trato) throw new Error("TRATO_NAO_ENCONTRADO");
-
-    const propriedade = await this.propriedadeRepo.buscarPorId(
-      trato.safra.idPropriedade,
-    );
-    if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
-
-    if (propriedade.idProprietario !== idUsuarioSessao) {
-      throw new Error("ACESSO_NEGADO");
-    };
+  public async confirmarTrato(dto: ConfirmarTratoCulturalDTO, idUsuarioSessao: number): Promise<void> {
+    const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);
     trato.confirmar();
     await this.tratoCulturalRepo.confirmarTrato(trato);
-  };
+  }
+
+  public async excluirTransacoes(dto: ExcluirTransacoesTratoDTO, idUsuarioSessao: number): Promise<void> {
+    const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);
+    trato.excluirTransacoes(dto.idTransacoes);
+    await this.tratoCulturalRepo.excluirTransacoes(trato);
+  }
+
+  public async excluirResponsaveis(dto: ExcluirResponsaveisTratoDTO, idUsuarioSessao: number): Promise<void> {
+    const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);
+    trato.excluirResponsaveis(dto.idResponsaveis);
+    await this.tratoCulturalRepo.excluirResponsaveis(trato);
+  }
+
+  public async excluirInsumos(dto: ExcluirInsumosTratoDTO, idUsuarioSessao: number): Promise<void> {
+    const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);
+    trato.excluirInsumos(dto.idInsumos);
+    await this.tratoCulturalRepo.excluirInsumos(trato);
+  }
 }
 
 export default TratoCulturalService;

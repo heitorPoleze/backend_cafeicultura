@@ -47,6 +47,38 @@ export type AtualizarDescricaoDTO = {
   idTrato: number;
   descricao: string;
 };
+export type AtualizarDescricaoTratoDTO  = {
+  idTrato: number;
+  descricao: string;
+}
+
+export type InserirInsumosTratoDTO = {
+  idTrato: number;
+  insumos: {
+    idInsumo: number;
+    qtdUsada: number;
+  }[];
+}
+
+export type InserirResponsaveisTratoDTO = {
+  idTrato: number;
+  responsaveisIds: number[];
+}
+
+export type ExcluirInsumosTratoDTO = {
+  idTrato: number;
+  idInsumos: number[];
+}
+
+export type ExcluirResponsaveisTratoDTO = {
+  idTrato: number;
+  idResponsaveis: number[];
+}
+
+export type ExcluirTransacoesTratoDTO = {
+  idTrato: number;
+  idTransacoes: number[];
+}
 
 export type BuscarTratoPorIdDTO = { idTrato: number };
 

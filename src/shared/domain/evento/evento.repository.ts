@@ -81,6 +81,19 @@ class EventoRepository {
     });
   };
 
+  public async inserirResponsaveis(evento: Evento): Promise<void> {
+    if (!evento.responsaveis || evento.responsaveis.length === 0) {
+      return;
+    };
+
+    await this.prisma.pessoaseventos.createMany({
+      data: evento.responsaveis.map((resp) => ({
+        idPessoa_PFK: resp.id as number,
+        idEvento_PFK: evento.id as number,
+      })),
+    });
+  };
+
   public async excluirResponsaveis(evento: Evento, tx?: Prisma.TransactionClient): Promise<void> {
     const client = tx || this.prisma;
 

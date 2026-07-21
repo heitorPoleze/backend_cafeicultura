@@ -1,270 +1,212 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import TratoCulturalService from './tratocultural.service';
-import { AtualizarDescricaoDTO, BuscarTratoPorIdDTO, CadastrarTratoCulturalDTO, ConfirmarTratoCulturalDTO, FinalizarTratoCulturalDTO, ListarTratoPorPropriedadeDTO, ListarTratoPorSafraDTO, ListarTratoPorTalhaoDTO } from './tratocultural.dto';
+import {
+  AtualizarDescricaoDTO, BuscarTratoPorIdDTO, CadastrarTratoCulturalDTO,
+  ConfirmarTratoCulturalDTO, ExcluirInsumosTratoDTO, ExcluirResponsaveisTratoDTO,
+  ExcluirTransacoesTratoDTO, FinalizarTratoCulturalDTO, InserirInsumosTratoDTO,
+  InserirResponsaveisTratoDTO, ListarTratoPorPropriedadeDTO, ListarTratoPorSafraDTO,
+  ListarTratoPorTalhaoDTO
+} from './tratocultural.dto';
 import { TipoTrato } from './tratocultural.entity';
 
-export class TratoCulturalController {
-  constructor(private readonly tratoCulturalService: TratoCulturalService) {}
+class TratoCulturalController {
+  constructor(private readonly tratoCulturalService: TratoCulturalService) { }
 
   public async cadastrar(req: Request, res: Response) {
     const erros = validationResult(req);
-    if (!erros.isEmpty()) {
-      return res.status(400).json({ erros: erros.array() });
-    };
+    if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
 
     try {
       const dto: CadastrarTratoCulturalDTO = req.body;
-      const idUsuario = req.session.idUsuario!; 
+      const idUsuario = req.session.idUsuario!;
 
       switch (dto.idTipoTrato) {
-        case 1:
-          dto.tipoTrato = TipoTrato.ADUBACAO;
-        case 2:
-          dto.tipoTrato = TipoTrato.CAPINA;
-        case 3:
-          dto.tipoTrato = TipoTrato.DEFENSIVO;
-        case 4:
-          dto.tipoTrato = TipoTrato.PODA;
-        case 5:
-          dto.tipoTrato = TipoTrato.REPLANTIO;
-      };
+        case 1: dto.tipoTrato = TipoTrato.ADUBACAO; break;
+        case 2: dto.tipoTrato = TipoTrato.CAPINA; break;
+        case 3: dto.tipoTrato = TipoTrato.DEFENSIVO; break;
+        case 4: dto.tipoTrato = TipoTrato.PODA; break;
+        case 5: dto.tipoTrato = TipoTrato.REPLANTIO; break;
+      }
 
       await this.tratoCulturalService.cadastrar(dto, idUsuario);
-      
-      res.status(201).json({mensagem: 'Trato Cultural cadastrado com sucesso'});
+      res.status(201).json({ mensagem: 'Trato Cultural cadastrado com sucesso' });
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        if (
-            error.message === 'SAFRA_NAO_ENCONTRADA'
-        ) {
-          return res.status(404).json({ error: "Safra não encontrada" });
-        } else if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
-            return res.status(404).json({ error: "Propriedade não encontrada" });
-        } else if (error.message === 'TALHAO_NAO_ENCONTRADO') {
-            return res.status(404).json({ error: "Talhão não encontrado" });
-        } else if (error.message === 'RESPONSAVEL_NAO_ENCONTRADO') {
-            return res.status(404).json({ error: "Um dos responsáveis não foi encontrado" });
-        } else if (error.message === 'INSUMO_NAO_ENCONTRADO') {
-            return res.status(404).json({ error: "Insumo não encontrado" });
-        } else if (error.message === 'ACESSO_NEGADO') {
-          return res.status(401).json({ error: 'Acesso negado! Não foi possível cadastrar o trato cultural' });
-        } else if (error.message === 'TIPO_TRATO_INVALIDO') {
-          return res.status(400).json({ error: 'Tipo de trato cultural inválido' });
-        } else if (error.message === 'DATA_INICIO_ANTERIOR') {
-          return res.status(422).json({ error: 'A data de início deve ser maior que a data de início da safra que ele pertence' });
-        } else if (error.message === 'DATA_FIM_ANTERIOR') {
-          return res.status(422).json({ error: 'A data de fim deve ser maior que a data de início do trato cultural' });
-        };
-        return res.status(400).json({ error: error.message });
-      };
-        return res.status(500).json({ error: 'Erro ao cadastrar trato cultural' });
-    };
-  };
+      this.handleError(res, error, 'Erro ao cadastrar trato cultural');
+    }
+  }
 
   public async atualizarDescricao(req: Request, res: Response) {
     const erros = validationResult(req);
-    if (!erros.isEmpty()) {
-      return res.status(400).json({ erros: erros.array() });
-    };
+    if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
 
     try {
-      const dto: AtualizarDescricaoDTO = {
-        idTrato: Number(req.params.id),
-        descricao: req.body.descricao
-      };
-
+      const dto: AtualizarDescricaoDTO = { idTrato: Number(req.params.id), descricao: req.body.descricao };
       await this.tratoCulturalService.atualizarDescricao(dto, req.session.idUsuario!);
-
-      res.status(200).json({ mensagem: 'DEscrição do trato cultural atualizada com sucesso' });
+      res.status(200).json({ mensagem: 'Descrição do trato cultural atualizada com sucesso' });
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        if (error.message === 'TRATO_NAO_ENCONTRADO') { 
-          return res.status(404).json({ error: "Trato Cultural não encontrado" });
-        } 
-        if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
-          return res.status(404).json({ error: "Propriedade do trato cultural não encontrada" });
-        }
-        if (error.message === 'ACESSO_NEGADO') {
-          return res.status(401).json({ error: 'Acesso negado! Não foi possível atualizar o trato cultural' });
-        };
-        return res.status(400).json({ error: error.message });
-      };
-      return res.status(500).json({ error: 'Erro ao atualizar trato cultural' });
-    };  
-        }
+      this.handleError(res, error, 'Erro ao atualizar trato cultural');
+    }
+  }
 
   public async buscarPorId(req: Request, res: Response) {
     try {
-      const dto: BuscarTratoPorIdDTO = {
-        idTrato: Number(req.params.id)
-      };
-      const idUsuario = req.session.idUsuario!;
-      const trato = await this.tratoCulturalService.buscarPorId(dto, idUsuario);
+      const dto: BuscarTratoPorIdDTO = { idTrato: Number(req.params.id) };
+      const trato = await this.tratoCulturalService.buscarPorId(dto, req.session.idUsuario!);
       res.status(200).json(trato);
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message === 'TRATO_NAO_ENCONTRADO') {
-            return res.status(404).json({ error: "Trato Cultural não encontrado" });
-        }
-        if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
-            return res.status(404).json({ error: "Propriedade não encontrada" });
-        }
-        if (error.message === 'ACESSO_NEGADO') {
-            return res.status(401).json({ error: 'Acesso negado! Não foi possível buscar o trato cultural' });
-        };
-        return res.status(400).json({ error: error.message });
-      };
-      return res.status(500).json({ error: 'Erro ao buscar trato cultural' });
-    };
-  };
+    } catch (error: unknown) {
+      this.handleError(res, error, 'Erro ao buscar trato cultural');
+    }
+  }
 
   public async buscarTiposTratos(req: Request, res: Response) {
     try {
       const tipos = await this.tratoCulturalService.buscarTiposTratos();
       res.status(200).json(tipos);
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({ error: 'Erro ao buscar tipos de tratos' });
-    };
-  };
+    }
+  }
 
   public async finalizar(req: Request, res: Response) {
     const erros = validationResult(req);
-    if (!erros.isEmpty()) {
-      return res.status(400).json({ erros: erros.array() });
-    };
+    if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
 
     try {
-      const idUsuario = req.session.idUsuario!;
-      const dto: FinalizarTratoCulturalDTO = {
-          idTrato: Number(req.params.id),
-          dataFim: new Date(req.body.dataFim)
-      };
-
-      await this.tratoCulturalService.finalizarTrato(dto, idUsuario);
-
-      res.status(200).json({ mensagem: 'Trato Cultural recebeu uma data de fim com sucesso' });
+      const dto: FinalizarTratoCulturalDTO = { idTrato: Number(req.params.id), dataFim: new Date(req.body.dataFim) };
+      await this.tratoCulturalService.finalizarTrato(dto, req.session.idUsuario!);
+      res.status(200).json({ mensagem: 'Trato Cultural finalizado com sucesso' });
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        if (error.message === 'TRATO_NAO_ENCONTRADO') {
-            return res.status(404).json({ error: "Trato Cultural não encontrado" });
-        } else if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
-            return res.status(404).json({ error: "Propriedade não encontrada" });
-        } else if (error.message === 'ACESSO_NEGADO') {
-            return res.status(401).json({ error: 'Acesso negado! Não foi possível finalizar o trato cultural' });
-        } else if (error.message === 'DATA_FIM_ANTERIOR') {
-          return res.status(422).json({ error: 'A data de fim deve ser maior que a data de início' });
-        }
-        return res.status(400).json({ error: error.message });
-      };
-      return res.status(500).json({ error: 'Erro ao finalizar trato cultural' });
-    };
-  };
+      this.handleError(res, error, 'Erro ao finalizar trato cultural');
+    }
+  }
 
   public async confirmar(req: Request, res: Response) {
     const erros = validationResult(req);
-    if (!erros.isEmpty()) {
-      return res.status(400).json({ erros: erros.array() });
-    }
+    if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
 
     try {
-      const idUsuario = req.session.idUsuario!;
-      const dto: ConfirmarTratoCulturalDTO = {
-          idTrato: Number(req.params.id)
-      };
-
-      await this.tratoCulturalService.confirmarTrato(dto, idUsuario);
-
+      const dto: ConfirmarTratoCulturalDTO = { idTrato: Number(req.params.id) };
+      await this.tratoCulturalService.confirmarTrato(dto, req.session.idUsuario!);
       res.status(200).json({ mensagem: 'Trato Cultural confirmado com sucesso' });
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        if (error.message === 'TRATO_NAO_ENCONTRADO') {
-            return res.status(404).json({ error: "Trato Cultural não encontrado" });
-        } else if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
-            return res.status(404).json({ error: "Propriedade não encontrada" });
-        } else if (error.message === 'ACESSO_NEGADO') {
-            return res.status(401).json({ error: 'Acesso negado! Não foi possível confirmar o trato cultural' });
-        };
-        return res.status(400).json({ error: error.message });
-      };
-      return res.status(500).json({ error: 'Erro ao confirmar trato cultural' });
-    };
-  };
+      this.handleError(res, error, 'Erro ao confirmar trato cultural');
+    }
+  }
 
   public async listarTodosPropriedade(req: Request, res: Response) {
     try {
-      const dto: ListarTratoPorPropriedadeDTO = {
-        idPropriedade: Number(req.params.id)
-      };
-      const idUsuario = req.session.idUsuario!;
-      const tratos = await this.tratoCulturalService.listarTodosPropriedade(dto, idUsuario);
+      const dto: ListarTratoPorPropriedadeDTO = { idPropriedade: Number(req.params.idPropriedade) };
+      const tratos = await this.tratoCulturalService.listarTodosPropriedade(dto, req.session.idUsuario!);
       res.status(200).json(tratos);
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
-            return res.status(404).json({ error: "Propriedade não encontrada" });
-        } else if (error.message === 'ACESSO_NEGADO') {
-            return res.status(401).json({ error: 'Acesso negado! Não foi possível listar os tratos culturais' });
-        } else if (error.message === 'TRATOS_NAO_ENCONTRADOS') {
-            return res.status(404).json({ error: "Sem tratos culturais cadastrados para esta propriedade" });
-        }
-        return res.status(400).json({ error: error.message });
-      };
-      return res.status(500).json({ error: 'Erro ao listar tratos' });
-    };
-  };
+    } catch (error: unknown) {
+      this.handleError(res, error, 'Erro ao listar tratos');
+    }
+  }
 
   public async listarTodosSafra(req: Request, res: Response) {
     try {
-      const dto: ListarTratoPorSafraDTO = {
-        idSafra: Number(req.params.idSafra),
-        idPropriedade: Number(req.params.id)
-      };
-      const idUsuario = req.session.idUsuario!;
-      const tratos = await this.tratoCulturalService.listarTodosSafra(dto, idUsuario);
+      const dto: ListarTratoPorSafraDTO = { idSafra: Number(req.params.idSafra), idPropriedade: Number(req.params.idPropriedade) };
+      const tratos = await this.tratoCulturalService.listarTodosSafra(dto, req.session.idUsuario!);
       res.status(200).json(tratos);
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message === 'SAFRA_NAO_ENCONTRADA') {
-            return res.status(404).json({ error: "Safra não encontrada" });
-        } else if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
-            return res.status(404).json({ error: "Propriedade não encontrada" });
-        } else if (error.message === 'ACESSO_NEGADO') {
-            return res.status(401).json({ error: 'Acesso negado! Não foi possível listar os tratos culturais' });
-        } else if (error.message === 'TRATOS_NAO_ENCONTRADOS') {
-            return res.status(404).json({ error: "Sem tratos culturais cadastrados esta safra" });
-        }
-        return res.status(400).json({ error: error.message });
-      };
-      return res.status(500).json({ error: 'Erro ao listar tratos' });
-    };
-  };
+    } catch (error: unknown) {
+      this.handleError(res, error, 'Erro ao listar tratos');
+    }
+  }
 
   public async listarTodosTalhao(req: Request, res: Response) {
     try {
-      const dto: ListarTratoPorTalhaoDTO = {
-        idTalhao: Number(req.params.idTalhao),
-        idPropriedade: Number(req.params.id),
-      };
-      const idUsuario = req.session.idUsuario!;
-      const tratos = await this.tratoCulturalService.listarTodosTalhao(dto, idUsuario);
+      const dto: ListarTratoPorTalhaoDTO = { idTalhao: Number(req.params.idTalhao), idPropriedade: Number(req.params.idPropriedade) };
+      const tratos = await this.tratoCulturalService.listarTodosTalhao(dto, req.session.idUsuario!);
       res.status(200).json(tratos);
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
-            return res.status(404).json({ error: "Propriedade não encontrada" });
-        } else if (error.message === 'TALHAO_NAO_ENCONTRADO') {
-            return res.status(404).json({ error: "Talhão não encontrado" });
-        } else if (error.message === 'ACESSO_NEGADO') {
-            return res.status(401).json({ error: 'Acesso negado! Não foi possível listar os tratos culturais' });
-        } else if (error.message === 'TRATOS_NAO_ENCONTRADOS') {
-            return res.status(404).json({ error: "Sem tratos culturais cadastrados para este talhão" });
-        }
-        return res.status(400).json({ error: error.message });
-      };
-      return res.status(500).json({ error: 'Erro ao listar tratos' });
-    };
-  };
+    } catch (error: unknown) {
+      this.handleError(res, error, 'Erro ao listar tratos');
+    }
+  }
+
+  public async inserirResponsaveis(req: Request, res: Response) {
+    try {
+      const dto: InserirResponsaveisTratoDTO = { idTrato: Number(req.params.id), responsaveisIds: req.body.responsaveisIds };
+      await this.tratoCulturalService.inserirResponsaveis(dto, req.session.idUsuario!);
+      res.status(201).json({ mensagem: 'Novos responsáveis inseridos com sucesso' });
+    } catch (error: unknown) {
+      this.handleError(res, error, 'Erro ao inserir responsáveis');
+    }
+  }
+
+  public async inserirInsumos(req: Request, res: Response) {
+    try {
+      const dto: InserirInsumosTratoDTO = { idTrato: Number(req.params.id), insumos: req.body.insumos };
+      await this.tratoCulturalService.inserirInsumos(dto, req.session.idUsuario!);
+      res.status(201).json({ mensagem: 'Novos insumos inseridos com sucesso' });
+    } catch (error: unknown) {
+      this.handleError(res, error, 'Erro ao inserir insumos');
+    }
+  }
+
+  public async excluirTransacoes(req: Request, res: Response) {
+    try {
+      const dto: ExcluirTransacoesTratoDTO = { idTrato: Number(req.params.id), idTransacoes: req.body.idTransacoes };
+      await this.tratoCulturalService.excluirTransacoes(dto, req.session.idUsuario!);
+      res.status(200).json({ mensagem: 'Transações excluídas com sucesso' });
+    } catch (error: unknown) {
+      this.handleError(res, error, 'Erro ao excluir transações');
+    }
+  }
+
+  public async excluirResponsaveis(req: Request, res: Response) {
+    try {
+      const dto: ExcluirResponsaveisTratoDTO = { idTrato: Number(req.params.id), idResponsaveis: req.body.idResponsaveis };
+      await this.tratoCulturalService.excluirResponsaveis(dto, req.session.idUsuario!);
+      res.status(200).json({ mensagem: 'Responsáveis excluídos com sucesso' });
+    } catch (error: unknown) {
+      this.handleError(res, error, 'Erro ao excluir responsáveis');
+    }
+  }
+
+  public async excluirInsumos(req: Request, res: Response) {
+    try {
+      const dto: ExcluirInsumosTratoDTO = { idTrato: Number(req.params.id), idInsumos: req.body.idInsumos };
+      await this.tratoCulturalService.excluirInsumos(dto, req.session.idUsuario!);
+      res.status(200).json({ mensagem: 'Insumos excluídos com sucesso' });
+    } catch (error: unknown) {
+      this.handleError(res, error, 'Erro ao excluir insumos');
+    }
+  }
+
+  private handleError(res: Response, error: unknown, defaultMessage: string) {
+    if (error instanceof Error) {
+      const msg = error.message;
+
+      switch (msg) {
+        case 'SAFRA_NAO_ENCONTRADA':
+          return res.status(404).json({ error: 'Safra não encontrada' });
+        case 'PROPRIEDADE_NAO_ENCONTRADA':
+          return res.status(404).json({ error: 'Propriedade não encontrada' });
+        case 'TALHAO_NAO_ENCONTRADO':
+          return res.status(404).json({ error: 'Talhão não encontrado' });
+        case 'RESPONSAVEL_NAO_ENCONTRADO':
+          return res.status(404).json({ error: 'Responsável não encontrado' });
+        case 'INSUMO_NAO_ENCONTRADO':
+          return res.status(404).json({ error: 'Insumo não encontrado' });
+        case 'TRATO_NAO_ENCONTRADO':
+          return res.status(404).json({ error: 'Trato Cultural não encontrado' });
+        case 'TRATOS_NAO_ENCONTRADOS':
+          return res.status(404).json({ error: 'Nenhum trato encontrado' });
+        case 'PESSOA_NAO_ENCONTRADA':
+          return res.status(404).json();
+        case 'ACESSO_NEGADO':
+          return res.status(401).json({ error: 'Acesso negado! Você não tem permissão para esta ação.' });
+        case 'DATA_INICIO_ANTERIOR':
+          return res.status(422).json({ error: 'A data de início deve ser maior que a data de início da safra correspondente.' });
+        case 'DATA_FIM_ANTERIOR':
+          return res.status(422).json({ error: 'A data de fim deve ser maior que a data de início.' });
+      }
+
+      return res.status(400).json({ error: msg });
+    }
+    return res.status(500).json({ error: defaultMessage });
+  }
 }
 
 export default TratoCulturalController;

@@ -4,7 +4,6 @@ import exigeLogin from "../../shared/middlewares/exigeLogin";
 import TratoCulturalController from './tratocultural.controller';
 import TratoCulturalService from './tratocultural.service';
 
-// Repositories
 import TratoCulturalRepository from './tratocultural.repository';
 import PropriedadeRepository from '../propriedade/propriedade.repository';
 import SafraRepository from '../safra/safra.repository';
@@ -16,10 +15,10 @@ import EventoRepository from '../../shared/domain/evento/evento.repository';
 import EventoAgricolaRepository from '../../shared/domain/evento/eventoagricola/eventoagricola.repository';
 import DespesaRepository from '../despesa/despesa.repository';
 import TransacaoFinanceiraRepository from '../../shared/domain/transacaofinanceira/transacaofinanceira.repository';
+import { FormaPagamento, TipoOperacao } from '../../shared/domain/transacaofinanceira/transacaofinanceira.entity';
 
 const router = Router();
 
-// --- Instantiations ---
 const transacaoRepository = new TransacaoFinanceiraRepository(prisma);
 const pessoaRepository = new PessoaRepository(prisma);
 const despesaRepository = new DespesaRepository(prisma, transacaoRepository, pessoaRepository);
@@ -43,68 +42,12 @@ const tratoCulturalService = new TratoCulturalService(
 const tratoCulturalController = new TratoCulturalController(tratoCulturalService);
 
 
-router.post(
-  '/',
-  exigeLogin(),
-  [
-    body('idTalhao').isInt({ gt: 0 }).withMessage('O ID do talhão é obrigatório e deve ser um número inteiro válido.'),
-    body('idSafra').isInt({ gt: 0 }).withMessage('O ID da safra é obrigatório e deve ser um número inteiro válido.'),
-    body('idTipoTrato').isInt({ gt: 0 }).withMessage('O ID do tipo de trato é obrigatório e deve ser um número inteiro válido.'),
-    body('dataInicio').notEmpty().withMessage('A data de início é obrigatória.').isISO8601().withMessage('A data de início deve estar em um formato válido (ex: YYYY-MM-DD).'),
-    body('dataFim').optional({ nullable: true }).isISO8601().withMessage('A data de fim deve estar em um formato válido (ex: YYYY-MM-DD).'),
-    body('descricao').optional().isString().withMessage('A descrição deve ser um texto.'),
-    body('insumosUtilizados').optional().isArray().withMessage('Os insumos utilizados devem ser enviados em formato de lista (array).'),
-    body('insumosUtilizados.*.idInsumo').optional().isInt({ gt: 0 }).withMessage('O ID do insumo deve ser um número inteiro válido.'),
-    body('insumosUtilizados.*.qtdUsada').optional().isFloat({ gt: 0 }).withMessage('A quantidade usada do insumo deve ser um número maior que zero.'),
-    body('responsaveisIds').optional().isArray().withMessage('Os responsáveis devem ser enviados em formato de lista.'),
-    body('responsaveisIds.*').optional().isInt({ gt: 0 }).withMessage('Todos os IDs dos responsáveis devem ser números inteiros válidos.')
-  ],
-  tratoCulturalController.cadastrar.bind(tratoCulturalController)
-);
-
 router.get(
   '/tipos',
   exigeLogin(),
   tratoCulturalController.buscarTiposTratos.bind(tratoCulturalController)
 );
 
-router.get(
-  '/:id',
-  exigeLogin(),
-  [
-    param('id').isInt({ gt: 0 }).withMessage('O ID do trato cultural informado na URL é inválido.')
-  ],
-  tratoCulturalController.buscarPorId.bind(tratoCulturalController)
-);
-
-router.patch(
-  '/:id/descricao',
-  exigeLogin(),
-  [
-    param('id').isInt({ gt: 0 }).withMessage('O ID do trato cultural informado na URL é inválido.'),
-    body('descricao').notEmpty().withMessage('A descrição é obrigatória.')
-  ],
-  tratoCulturalController.atualizarDescricao.bind(tratoCulturalController)
-)
-
-router.patch(
-  '/:id/finalizar',
-  exigeLogin(),
-  [
-    param('id').isInt({ gt: 0 }).withMessage('O ID do trato cultural informado na URL é inválido.'),
-    body('dataFim').notEmpty().withMessage('A data de fim é obrigatória.').isISO8601().withMessage('A data de fim deve estar em um formato válido (ex: YYYY-MM-DD).')
-  ],
-  tratoCulturalController.finalizar.bind(tratoCulturalController)
-);
-
-router.patch(
-  '/:id/confirmar',
-  exigeLogin(),
-  [
-    param('id').isInt({ gt: 0 }).withMessage('O ID do trato cultural informado na URL é inválido.')
-  ],
-  tratoCulturalController.confirmar.bind(tratoCulturalController)
-);
 router.get(
   '/propriedade/:id',
   exigeLogin(),
@@ -132,6 +75,130 @@ router.get(
     param('idTalhao').isInt({ gt: 0 }).withMessage('O ID do talhão informado na URL é inválido.')
   ],
   tratoCulturalController.listarTodosTalhao.bind(tratoCulturalController)
+);
+
+router.post(
+  '/',
+  exigeLogin(),
+  [
+    body('idTalhao').isInt({ gt: 0 }).withMessage('O ID do talhão é obrigatório e deve ser um número inteiro válido.'),
+    body('idSafra').isInt({ gt: 0 }).withMessage('O ID da safra é obrigatório e deve ser um número inteiro válido.'),
+    body('idTipoTrato').isInt({ gt: 0 }).withMessage('O ID do tipo de trato é obrigatório e deve ser um número inteiro válido.'),
+    body('dataInicio').notEmpty().withMessage('A data de início é obrigatória.').isISO8601().withMessage('A data de início deve estar em formato ISO8601.'),
+    body('dataFim').optional({ nullable: true }).isISO8601().withMessage('A data de fim deve estar em formato ISO8601.'),
+    body('descricao').optional().isString().withMessage('A descrição deve ser um texto.'),
+    
+    body('insumosUtilizados').optional().isArray().withMessage('Os insumos utilizados devem ser uma lista (array).'),
+    body('insumosUtilizados.*.idInsumo').optional().isInt({ gt: 0 }).withMessage('ID do insumo inválido.'),
+    body('insumosUtilizados.*.qtdUsada').optional().isFloat({ gt: 0 }).withMessage('A quantidade deve ser maior que zero.'),
+    
+    body('responsaveisIds').optional().isArray().withMessage('Os responsáveis devem ser enviados em formato de lista.'),
+    body('responsaveisIds.*').optional().isInt({ gt: 0 }).withMessage('ID de responsável inválido.'),
+
+    body('transacoesFinanceiras').optional().isArray().withMessage('As transações devem ser uma lista (array).'),
+    body('transacoesFinanceiras.*.idPropriedade').isInt({ gt: 0 }).withMessage('ID da propriedade inválido na transação.'),
+    body('transacoesFinanceiras.*.valor').isFloat({ gt: 0 }).withMessage('O valor da transação deve ser maior que zero.'),
+    body('transacoesFinanceiras.*.formaPagamento').isIn(Object.values(FormaPagamento)).withMessage('Forma de pagamento inválida.'),
+    body('transacoesFinanceiras.*.tipoOperacao').isIn(Object.values(TipoOperacao)).withMessage('Tipo de operação inválido.'),
+    body('transacoesFinanceiras.*.beneficiado').isInt({ gt: 0 }).withMessage('ID do beneficiado inválido na transação.'),
+    body('transacoesFinanceiras.*.descricao').optional().isString().withMessage('A descrição da transação deve ser um texto.')
+  ],
+  tratoCulturalController.cadastrar.bind(tratoCulturalController)
+);
+
+
+router.get(
+  '/:id',
+  exigeLogin(),
+  [
+    param('id').isInt({ gt: 0 }).withMessage('O ID do trato cultural informado na URL é inválido.')
+  ],
+  tratoCulturalController.buscarPorId.bind(tratoCulturalController)
+);
+
+router.patch(
+  '/:id/descricao',
+  exigeLogin(),
+  [
+    param('id').isInt({ gt: 0 }).withMessage('O ID do trato cultural informado na URL é inválido.'),
+    body('descricao').notEmpty().withMessage('A descrição é obrigatória.')
+  ],
+  tratoCulturalController.atualizarDescricao.bind(tratoCulturalController)
+)
+
+router.patch(
+  '/:id/finalizar',
+  exigeLogin(),
+  [
+    param('id').isInt({ gt: 0 }).withMessage('O ID do trato cultural informado na URL é inválido.'),
+    body('dataFim').notEmpty().withMessage('A data de fim é obrigatória.').isISO8601().withMessage('A data de fim deve estar em formato ISO8601.')
+  ],
+  tratoCulturalController.finalizar.bind(tratoCulturalController)
+);
+
+router.patch(
+  '/:id/confirmar',
+  exigeLogin(),
+  [
+    param('id').isInt({ gt: 0 }).withMessage('O ID do trato cultural informado na URL é inválido.')
+  ],
+  tratoCulturalController.confirmar.bind(tratoCulturalController)
+);
+
+router.patch(
+  '/:id/responsaveis',
+  exigeLogin(),
+  [
+    param('id').isInt({ gt: 0 }),
+    body('responsaveisIds').isArray().withMessage('Os responsáveis devem ser enviados em formato de lista.'),
+    body('responsaveisIds.*').isInt({ gt: 0 }).withMessage('ID de responsável inválido.')
+  ],
+  tratoCulturalController.inserirResponsaveis.bind(tratoCulturalController)
+);
+
+router.patch(
+  '/:id/insumos',
+  exigeLogin(),
+  [
+    param('id').isInt({ gt: 0 }),
+    body('insumos').isArray().withMessage('Insumos devem ser um array.'),
+    body('insumos.*.idInsumo').isInt({ gt: 0 }),
+    body('insumos.*.qtdUsada').isFloat({ gt: 0 })
+  ],
+  tratoCulturalController.inserirInsumos.bind(tratoCulturalController)
+);
+
+router.delete(
+  '/:id/transacoes',
+  exigeLogin(),
+  [
+    param('id').isInt({ gt: 0 }),
+    body('idTransacoes').isArray().withMessage('idTransacoes deve ser um array.'),
+    body('idTransacoes.*').isInt({ gt: 0 })
+  ],
+  tratoCulturalController.excluirTransacoes.bind(tratoCulturalController)
+);
+
+router.delete(
+  '/:id/responsaveis',
+  exigeLogin(),
+  [
+    param('id').isInt({ gt: 0 }),
+    body('idResponsaveis').isArray().withMessage('idResponsaveis deve ser um array.'),
+    body('idResponsaveis.*').isInt({ gt: 0 })
+  ],
+  tratoCulturalController.excluirResponsaveis.bind(tratoCulturalController)
+);
+
+router.delete(
+  '/:id/insumos',
+  exigeLogin(),
+  [
+    param('id').isInt({ gt: 0 }),
+    body('idInsumos').isArray().withMessage('idInsumos deve ser um array.'),
+    body('idInsumos.*').isInt({ gt: 0 })
+  ],
+  tratoCulturalController.excluirInsumos.bind(tratoCulturalController)
 );
 
 export default router;
