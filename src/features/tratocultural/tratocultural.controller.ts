@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import TratoCulturalService from './tratocultural.service';
-import { BuscarTratoPorIdDTO, CadastrarTratoCulturalDTO, ConfirmarTratoCulturalDTO, FinalizarTratoCulturalDTO, ListarTratoPorPropriedadeDTO, ListarTratoPorSafraDTO, ListarTratoPorTalhaoDTO } from './tratocultural.dto';
+import { AtualizarDescricaoDTO, BuscarTratoPorIdDTO, CadastrarTratoCulturalDTO, ConfirmarTratoCulturalDTO, FinalizarTratoCulturalDTO, ListarTratoPorPropriedadeDTO, ListarTratoPorSafraDTO, ListarTratoPorTalhaoDTO } from './tratocultural.dto';
 import { TipoTrato } from './tratocultural.entity';
 
 export class TratoCulturalController {
@@ -62,6 +62,38 @@ export class TratoCulturalController {
     };
   };
 
+  public async atualizarDescricao(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) {
+      return res.status(400).json({ erros: erros.array() });
+    };
+
+    try {
+      const dto: AtualizarDescricaoDTO = {
+        idTrato: Number(req.params.id),
+        descricao: req.body.descricao
+      };
+
+      await this.tratoCulturalService.atualizarDescricao(dto, req.session.idUsuario!);
+
+      res.status(200).json({ mensagem: 'DEscrição do trato cultural atualizada com sucesso' });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === 'TRATO_NAO_ENCONTRADO') { 
+          return res.status(404).json({ error: "Trato Cultural não encontrado" });
+        } 
+        if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
+          return res.status(404).json({ error: "Propriedade do trato cultural não encontrada" });
+        }
+        if (error.message === 'ACESSO_NEGADO') {
+          return res.status(401).json({ error: 'Acesso negado! Não foi possível atualizar o trato cultural' });
+        };
+        return res.status(400).json({ error: error.message });
+      };
+      return res.status(500).json({ error: 'Erro ao atualizar trato cultural' });
+    };  
+        }
+
   public async buscarPorId(req: Request, res: Response) {
     try {
       const dto: BuscarTratoPorIdDTO = {
@@ -74,9 +106,11 @@ export class TratoCulturalController {
       if (error instanceof Error) {
         if (error.message === 'TRATO_NAO_ENCONTRADO') {
             return res.status(404).json({ error: "Trato Cultural não encontrado" });
-        } else if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
+        }
+        if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
             return res.status(404).json({ error: "Propriedade não encontrada" });
-        } else if (error.message === 'ACESSO_NEGADO') {
+        }
+        if (error.message === 'ACESSO_NEGADO') {
             return res.status(401).json({ error: 'Acesso negado! Não foi possível buscar o trato cultural' });
         };
         return res.status(400).json({ error: error.message });

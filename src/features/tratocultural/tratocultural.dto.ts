@@ -1,6 +1,7 @@
 import TratoInsumo from "../../shared/domain/insumo/tratoinsumo/tratoinsumo.entity";
 import Pessoa from "../../shared/domain/pessoa/pessoabase.entity";
-import TransacaoFinanceira from "../../shared/domain/transacaofinanceira/transacaofinanceira.entity";
+import TransacaoFinanceira, { FormaPagamento, TipoOperacao } from "../../shared/domain/transacaofinanceira/transacaofinanceira.entity";
+import Despesa from "../despesa/despesa.entity";
 import Safra from "../safra/safra.entity";
 import { TipoTrato } from "./tratocultural.entity";
 
@@ -22,7 +23,7 @@ export type CadastrarTratoCulturalDTO = {
   descricao: string;
   tipoTrato: TipoTrato;
   idTipoTrato: number;
-
+  transacoesFinanceiras?: Despesa[];
   insumosUtilizados?: InsumoUtilizadoDTO[];
   responsaveisIds?: number[];
 };
@@ -35,11 +36,16 @@ export type ResponseTratoCulturalDTO = {
   descricao: string;
   dataCadastro: Date;
   safra: Safra;
-  transacoesFinanceiras: TransacaoFinanceira[] | undefined;
+  transacoesFinanceiras: Despesa[] | undefined;
   responsaveis: Pessoa[] | undefined;
   confirmado: boolean | undefined;
   tipoTrato: TipoTrato;
   insumosUtilizados: TratoInsumo[] | undefined;
+};
+
+export type AtualizarDescricaoDTO = {
+  idTrato: number;
+  descricao: string;
 };
 
 export type BuscarTratoPorIdDTO = { idTrato: number };

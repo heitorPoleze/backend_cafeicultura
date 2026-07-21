@@ -2,6 +2,7 @@ import TratoCultural, { TipoTrato } from "./tratocultural.entity";
 import TratoInsumo from "../../shared/domain/insumo/tratoinsumo/tratoinsumo.entity";
 import Pessoa from "../../shared/domain/pessoa/pessoabase.entity";
 import {
+    AtualizarDescricaoDTO,
     BuscarTratoPorIdDTO,
   CadastrarTratoCulturalDTO,
   ConfirmarTratoCulturalDTO,
@@ -19,6 +20,7 @@ import PropriedadeRepository from "../propriedade/propriedade.repository";
 import InsumoRepository from "../../shared/domain/insumo/insumo.repository";
 import TalhaoRepository from "../talhao/talhao.repository";
 import PessoaRepository from "../../shared/domain/pessoa/pessoa.repository";
+import Despesa from "../despesa/despesa.entity";
 
 class TratoCulturalService {
   constructor(
@@ -60,6 +62,25 @@ class TratoCulturalService {
     const tipoTratoValido = Object.values(TipoTrato).includes(dto.tipoTrato);
     if (!tipoTratoValido) throw new Error("TIPO_TRATO_INVALIDO");
 
+    const despesasDomain: Despesa[] = [];
+
+    if (dto.transacoesFinanceiras && dto.transacoesFinanceiras.length > 0) {
+      dto.transacoesFinanceiras.forEach((despesa) => {
+        const despesaDomain = new Despesa(
+          undefined,
+          null,
+          despesa.idPropriedade,
+          new Date(),
+          despesa.valor,
+          despesa.formaPagamento,
+          despesa.tipoOperacao,
+          despesa.beneficiado,
+          despesa.descricao,
+        );
+        despesasDomain.push(despesaDomain);
+      })
+    };
+
     const responsaveisDomain: Pessoa[] = [];
 
     if (dto.responsaveisIds && dto.responsaveisIds.length > 0) {
@@ -69,16 +90,16 @@ class TratoCulturalService {
         responsaveisDomain.push(pessoa);
       };
     };
-
+    
     const novoTrato = new TratoCultural(
       undefined,
       dto.idTalhao,
       new Date(dto.dataInicio),
       dto.dataFim ? new Date(dto.dataFim) : null,
-      dto.descricao,
+      dto.descricao || "",
       new Date(),
       safra,
-      [],
+      despesasDomain,
       responsaveisDomain,
       false,
       dto.tipoTrato,
@@ -89,6 +110,7 @@ class TratoCulturalService {
       for (const insumoDto of dto.insumosUtilizados) {
         const insumoDomain = await this.insumoRepo.buscarPorId(
           insumoDto.idInsumo,
+          idUsuarioSessao,
         );
         if (!insumoDomain) throw new Error("INSUMO_NAO_ENCONTRADO");
 
@@ -99,9 +121,28 @@ class TratoCulturalService {
 
     const idGerado = await this.tratoCulturalRepo.cadastrar(
       novoTrato,
-      dto.idTipoTrato,
+      dto.idTipoTrato
     );
     return idGerado;
+  };
+
+  public async atualizarDescricao(
+    dto: AtualizarDescricaoDTO,
+    idUsuarioSessao: number,
+  ): Promise<void> {
+    const trato = await this.tratoCulturalRepo.buscarPorId(dto.idTrato);
+    if (!trato) throw new Error("TRATO_NAO_ENCONTRADO");
+
+    const propriedade = await this.propriedadeRepo.buscarPorId(
+      trato.safra.idPropriedade,
+    );
+    if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
+
+    if (propriedade.idProprietario !== idUsuarioSessao) {
+      throw new Error("ACESSO_NEGADO");
+    };
+    trato.descricao = dto.descricao;
+    await this.tratoCulturalRepo.atualizarDescricao(trato);
   };
 
   public async buscarPorId(

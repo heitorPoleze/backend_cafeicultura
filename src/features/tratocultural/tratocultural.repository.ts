@@ -7,6 +7,8 @@ import Insumo, { MedidaInsumo } from "../../shared/domain/insumo/insumo.entity";
 import TratoInsumo from "../../shared/domain/insumo/tratoinsumo/tratoinsumo.entity";
 import PessoaBaseRepository from "../../shared/domain/pessoa/pessoa.repository";
 import PessoaBase from "../../shared/domain/pessoa/pessoabase.entity";
+import Despesa from "../despesa/despesa.entity";
+import DespesaRepository from "../despesa/despesa.repository";
 
 type TratoCulturalPayload = Prisma.tratosculturaisGetPayload<{
   include: {
@@ -24,6 +26,12 @@ type TratoCulturalPayload = Prisma.tratosculturaisGetPayload<{
             pessoaseventos: {
               include: {
                 pessoas: true;
+              };
+            };
+            transacoesfinanceiras: {
+              include: {
+                formaspgto: true;
+                despesas: true;
               };
             };
           };
@@ -45,11 +53,12 @@ class TratoCulturalRepository {
     private eventoRepo: EventoRepository,
     private eventoAgricolaRepo: EventoAgricolaRepository,
     private pessoaBaseRepo: PessoaBaseRepository,
-  ) {}
+    private despesaRepo: DespesaRepository
+  ) { }
 
   public async cadastrar(
     trato: TratoCultural,
-    idTipoTrato: number,
+    idTipoTrato: number
   ): Promise<number> {
     return await this.prisma.$transaction(async (tx) => {
       const id = await this.eventoRepo.cadastrar(trato, tx);
@@ -61,16 +70,22 @@ class TratoCulturalRepository {
           tratosinsumos:
             trato.insumosUtilizados && trato.insumosUtilizados.length > 0
               ? {
-                  createMany: {
-                    data: trato.insumosUtilizados.map((tratoInsumo) => ({
-                      idInsumo_PFK: tratoInsumo.insumo.id!,
-                      qtdUsada: tratoInsumo.qtdUsada,
-                    })),
-                  },
-                }
+                createMany: {
+                  data: trato.insumosUtilizados.map((tratoInsumo) => ({
+                    idInsumo_PFK: tratoInsumo.insumo.id!,
+                    qtdUsada: tratoInsumo.qtdUsada,
+                  })),
+                },
+              }
               : undefined,
         },
       });
+      if (trato.transacoesFinanceiras && trato.transacoesFinanceiras.length > 0) {
+        trato.transacoesFinanceiras.forEach(async (transacao) => {
+          transacao.idEvento = id;
+          await this.despesaRepo.cadastrar(transacao, tx);
+        });
+      };
       return id;
     });
   }
@@ -95,6 +110,12 @@ class TratoCulturalRepository {
                 pessoaseventos: {
                   include: {
                     pessoas: true,
+                  },
+                },
+                transacoesfinanceiras: {
+                  include: {
+                    formaspgto: true,
+                    despesas: true,
                   },
                 },
               },
@@ -142,6 +163,12 @@ class TratoCulturalRepository {
                     pessoas: true,
                   },
                 },
+                transacoesfinanceiras: {
+                  include: {
+                    formaspgto: true,
+                    despesas: true,
+                  },
+                },
               },
             },
           },
@@ -183,6 +210,12 @@ class TratoCulturalRepository {
                 pessoaseventos: {
                   include: {
                     pessoas: true,
+                  },
+                },
+                transacoesfinanceiras: {
+                  include: {
+                    formaspgto: true,
+                    despesas: true,
                   },
                 },
               },
@@ -231,6 +264,12 @@ class TratoCulturalRepository {
                     pessoas: true,
                   },
                 },
+                transacoesfinanceiras: {
+                  include: {
+                    formaspgto: true,
+                    despesas: true,
+                  },
+                },
               },
             },
           },
@@ -252,16 +291,27 @@ class TratoCulturalRepository {
     }));
   }
 
+  public async atualizarDescricao(
+    trato: TratoCultural,
+  ): Promise<void> {
+    await this.eventoRepo.atualizarDescricao(trato);
+  };
+
   public async finalizarTrato(trato: TratoCultural): Promise<void> {
     await this.eventoRepo.finalizar(trato);
-  }
+  };
 
   public async confirmarTrato(trato: TratoCultural): Promise<void> {
     await this.eventoRepo.confirmar(trato);
+  };
+
+  public async excluirResponsaveis(trato: TratoCultural): Promise<void> {
+    await this.eventoRepo.excluirResponsaveis(trato);
   }
 
   private async mapToEntity(
     tratoDB: TratoCulturalPayload,
+    prisma: PrismaClient = this.prisma
   ): Promise<TratoCultural> {
     const eventoBase = tratoDB.eventosagricolas.eventos;
 
@@ -273,11 +323,25 @@ class TratoCulturalRepository {
       arquivada: eventoBase.safras.arquivada,
     });
 
+    const transacoes: Despesa[] = [];
+
+    for (const tf of eventoBase.transacoesfinanceiras) {
+      const despesa = await this.despesaRepo.buscarPorId(
+        tf.despesas!.idTransacaoFinanceira_PFK,
+        prisma
+      );
+
+      if (despesa) {
+        transacoes.push(despesa);
+      }
+    };
+
     const responsaveis: PessoaBase[] = [];
 
     for (const pe of eventoBase.pessoaseventos) {
       const pessoaInstancia = await this.pessoaBaseRepo.buscarPorId(
         pe.pessoas.idPessoa_PK,
+        prisma
       );
 
       if (pessoaInstancia) {
@@ -293,7 +357,7 @@ class TratoCulturalRepository {
       eventoBase.descricao,
       new Date(eventoBase.dataCadastro),
       safra,
-      [],
+      transacoes,
       responsaveis,
       eventoBase.confirmado === 1 ? true : false,
       tratoDB.tipostratos.descricao as TipoTrato,
@@ -304,6 +368,7 @@ class TratoCulturalRepository {
       tratoDB.tratosinsumos.forEach((ti: TratoInsumoPayload) => {
         const insumo = new Insumo(
           ti.insumos.idInsumo_PK,
+          ti.insumos.idProprietario_FK,
           ti.insumos.descricao,
           ti.insumos.medida as MedidaInsumo,
         );

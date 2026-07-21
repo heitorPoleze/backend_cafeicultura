@@ -14,19 +14,22 @@ import PessoaRepository from '../../shared/domain/pessoa/pessoa.repository';
 import { prisma } from "../../shared/config/database"; 
 import EventoRepository from '../../shared/domain/evento/evento.repository';
 import EventoAgricolaRepository from '../../shared/domain/evento/eventoagricola/eventoagricola.repository';
+import DespesaRepository from '../despesa/despesa.repository';
+import TransacaoFinanceiraRepository from '../../shared/domain/transacaofinanceira/transacaofinanceira.repository';
 
 const router = Router();
 
 // --- Instantiations ---
-
-const eventoRepository = new EventoRepository(prisma);
+const transacaoRepository = new TransacaoFinanceiraRepository(prisma);
+const pessoaRepository = new PessoaRepository(prisma);
+const despesaRepository = new DespesaRepository(prisma, transacaoRepository, pessoaRepository);
+const eventoRepository = new EventoRepository(prisma, despesaRepository);
 const eventoAgricolaRepository = new EventoAgricolaRepository(prisma);
 const propriedadeRepository = new PropriedadeRepository(prisma);
 const safraRepository = new SafraRepository(prisma);
 const insumoRepository = new InsumoRepository(prisma);
 const talhaoRepository = new TalhaoRepository(prisma);
-const pessoaRepository = new PessoaRepository(prisma);
-const tratoCulturalRepository = new TratoCulturalRepository(prisma, eventoRepository, eventoAgricolaRepository, pessoaRepository);
+const tratoCulturalRepository = new TratoCulturalRepository(prisma, eventoRepository, eventoAgricolaRepository, pessoaRepository, despesaRepository);
 
 const tratoCulturalService = new TratoCulturalService(
   tratoCulturalRepository,
@@ -49,11 +52,11 @@ router.post(
     body('idTipoTrato').isInt({ gt: 0 }).withMessage('O ID do tipo de trato é obrigatório e deve ser um número inteiro válido.'),
     body('dataInicio').notEmpty().withMessage('A data de início é obrigatória.').isISO8601().withMessage('A data de início deve estar em um formato válido (ex: YYYY-MM-DD).'),
     body('dataFim').optional({ nullable: true }).isISO8601().withMessage('A data de fim deve estar em um formato válido (ex: YYYY-MM-DD).'),
-    body('descricao').notEmpty().withMessage('A descrição é obrigatória.').isString().withMessage('A descrição deve ser um texto válido.').isLength({ min: 3 }).withMessage('A descrição deve ter no mínimo 3 caracteres.'),
+    body('descricao').optional().isString().withMessage('A descrição deve ser um texto.'),
     body('insumosUtilizados').optional().isArray().withMessage('Os insumos utilizados devem ser enviados em formato de lista (array).'),
     body('insumosUtilizados.*.idInsumo').optional().isInt({ gt: 0 }).withMessage('O ID do insumo deve ser um número inteiro válido.'),
     body('insumosUtilizados.*.qtdUsada').optional().isFloat({ gt: 0 }).withMessage('A quantidade usada do insumo deve ser um número maior que zero.'),
-    body('responsaveisIds').optional().isArray().withMessage('Os responsáveis devem ser enviados em formato de lista (array).'),
+    body('responsaveisIds').optional().isArray().withMessage('Os responsáveis devem ser enviados em formato de lista.'),
     body('responsaveisIds.*').optional().isInt({ gt: 0 }).withMessage('Todos os IDs dos responsáveis devem ser números inteiros válidos.')
   ],
   tratoCulturalController.cadastrar.bind(tratoCulturalController)
@@ -73,6 +76,16 @@ router.get(
   ],
   tratoCulturalController.buscarPorId.bind(tratoCulturalController)
 );
+
+router.patch(
+  '/:id/descricao',
+  exigeLogin(),
+  [
+    param('id').isInt({ gt: 0 }).withMessage('O ID do trato cultural informado na URL é inválido.'),
+    body('descricao').notEmpty().withMessage('A descrição é obrigatória.')
+  ],
+  tratoCulturalController.atualizarDescricao.bind(tratoCulturalController)
+)
 
 router.patch(
   '/:id/finalizar',

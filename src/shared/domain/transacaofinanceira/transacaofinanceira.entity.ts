@@ -52,6 +52,7 @@ abstract class TransacaoFinanceira {
 
     public get id(): number | undefined { return this._id; };
     public get idEvento(): number | null { return this._idEvento; };
+    public set idEvento(idEvento: number) { this._idEvento = idEvento; };
     public get idPropriedade(): number { return this._idPropriedade; };
     public get dataHora(): Date { return this._dataHora; };
     public get valor(): number { return this._valor; };

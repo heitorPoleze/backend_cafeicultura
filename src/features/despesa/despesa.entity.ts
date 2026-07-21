@@ -21,8 +21,6 @@ class Despesa extends TransacaoFinanceira {
         if (!beneficiado) throw new Error('O beneficiado é obrigatório.');
         this._beneficiado = beneficiado;
 
-        if (!descricao) throw new Error('A descrição é obrigatória.');
-        if (descricao.length < 3) throw new Error('A descrição deve ter no mínimo 3 caracteres.');
         this._descricao = descricao;
     }
 

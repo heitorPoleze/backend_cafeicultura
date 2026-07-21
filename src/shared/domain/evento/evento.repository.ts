@@ -1,8 +1,12 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import Evento from "./evento.entity";
+import DespesaRepository from "../../../features/despesa/despesa.repository";
 
 class EventoRepository {
-  constructor(private prisma: PrismaClient) {};
+  constructor(
+    private prisma: PrismaClient,
+    private despesaRepo: DespesaRepository
+  ) {};
 
   public async cadastrar(
     evento: Evento,
@@ -35,6 +39,18 @@ class EventoRepository {
     return eventoDB.idEvento_PK;
   };
 
+  public async atualizarDescricao(
+    evento: Evento,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void> {
+    const client = tx || this.prisma;
+
+    await client.eventos.update({
+      where: { idEvento_PK: evento.id },
+      data: { descricao: evento.descricao },
+    });   
+  };
+
   public async finalizar(
     evento: Evento,
     tx?: Prisma.TransactionClient,
@@ -56,6 +72,23 @@ class EventoRepository {
     await client.eventos.update({
       where: { idEvento_PK: evento.id },
       data: { confirmado: evento.confirmado ? 1 : 0 },
+    });
+  };
+
+  public async excluirTransacoes(evento: Evento): Promise<void> {
+    evento.transacoesFinanceiras!.forEach(async (transacao) => {
+      await this.despesaRepo.excluir(transacao.id as number, this.prisma);
+    });
+  };
+
+  public async excluirResponsaveis(evento: Evento, tx?: Prisma.TransactionClient): Promise<void> {
+    const client = tx || this.prisma;
+
+    await client.pessoaseventos.deleteMany({
+      where: { 
+        idEvento_PFK: evento.id,
+        idPessoa_PFK: { notIn: evento.responsaveis!.map((resp) => resp.id as number) }
+      },
     });
   };
 };

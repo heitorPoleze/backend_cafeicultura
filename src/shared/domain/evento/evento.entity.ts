@@ -1,6 +1,6 @@
+import Despesa from "../../../features/despesa/despesa.entity";
 import Safra from "../../../features/safra/safra.entity";
 import Pessoa from "../pessoa/pessoabase.entity";
-import TransacaoFinanceira from "../transacaofinanceira/transacaofinanceira.entity";
 
 abstract class Evento {
     private readonly _id: number | undefined;
@@ -9,7 +9,7 @@ abstract class Evento {
     private _descricao: string;
     private _dataCadastro: Date;
     private _safra: Safra;
-    private _transacoesFinanceiras?: TransacaoFinanceira[];
+    private _transacoesFinanceiras?: Despesa[];
     private _responsaveis?: Pessoa[];
     private _confirmado?: boolean;
 
@@ -20,7 +20,7 @@ abstract class Evento {
         descricao: string,
         dataCadastro: Date = new Date(),
         safra: Safra,
-        transacoesFinanceiras?: TransacaoFinanceira[],
+        transacoesFinanceiras?: Despesa[],
         responsaveis?: Pessoa[],
         confirmado?: boolean
     ) {
@@ -33,8 +33,6 @@ abstract class Evento {
         if (dataFim && dataFim < dataInicio) throw new Error(`DATA_FIM_ANTERIOR`);
         this._dataFim = dataFim;
 
-        if (!descricao) throw new Error('A descrição do evento é obrigatória.');
-        if (descricao.length < 3) throw new Error('A descrição do evento deve ter no mínimo 3 caracteres.');
         this._descricao = descricao;
 
         this._dataCadastro = dataCadastro;
@@ -44,7 +42,7 @@ abstract class Evento {
         this._safra = safra;
 
         if (transacoesFinanceiras && transacoesFinanceiras.length > 0) {
-            if (!(transacoesFinanceiras[0] instanceof TransacaoFinanceira)) throw new Error('As transações financeiras do evento é inválida.');
+            if (!(transacoesFinanceiras[0] instanceof Despesa)) throw new Error('As transações financeiras do evento é inválida.');
         };
         this._transacoesFinanceiras = transacoesFinanceiras;
 
@@ -64,21 +62,31 @@ abstract class Evento {
     public get descricao(): string { return this._descricao; }
     public get dataCadastro(): Date { return this._dataCadastro; };
     public get safra(): Safra { return this._safra; };
-    public get transacoesFinanceiras(): TransacaoFinanceira[] | undefined { return this._transacoesFinanceiras; };
+    public get transacoesFinanceiras(): Despesa[] | undefined { return this._transacoesFinanceiras; };
     public get responsaveis(): Pessoa[] | undefined { return this._responsaveis; }
     public get confirmado(): boolean | undefined { return this._confirmado; };
+
+    public set descricao(descricao: string) { this._descricao = descricao; };
     
 
-    public inserirTransacoes(transacoesFinanceiras: TransacaoFinanceira[]): void {
-        if (!transacoesFinanceiras || transacoesFinanceiras.length === 0) throw new Error('As transações financeiras do evento são obrigatórias.');
-        if (!(transacoesFinanceiras[0] instanceof TransacaoFinanceira)) throw new Error('As transações financeiras do evento são inválidas.');
-        this._transacoesFinanceiras = transacoesFinanceiras;
+    public inserirTransacoes(transacoes: Despesa[]): void {
+        if (!this._transacoesFinanceiras)
+            this._transacoesFinanceiras = [];
+        this._transacoesFinanceiras.push(...transacoes);
+    };
+
+    public excluirTransacoes(idTransacoes: number[]): void {
+        this._transacoesFinanceiras = this._transacoesFinanceiras?.filter(transacao => idTransacoes.includes(transacao.id as number));
     };
 
     public inserirResponsaveis(responsaveis: Pessoa[]): void {
-        if (!responsaveis || responsaveis.length === 0) throw new Error('Os responsáveis do evento são obrigatórios.');
-        if (!(responsaveis[0] instanceof Pessoa)) throw new Error('Os responsáveis do evento são inválidos.');
-        this._responsaveis = responsaveis;
+        if (!this._responsaveis)
+            this._responsaveis = [];
+        this._responsaveis.push(...responsaveis);
+    };
+
+    public excluirResponsaveis(idResponsaveis: number[]): void {
+        this._responsaveis = this._responsaveis?.filter(responsavel => !idResponsaveis.includes(responsavel.id as number));
     };
 
     public finalizar(dataFim: Date): void {

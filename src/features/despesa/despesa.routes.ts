@@ -30,7 +30,7 @@ router.post(
     body('idEvento').optional({ nullable: true }).isInt({ gt: 0 }).withMessage('O ID do evento deve ser numérico, se fornecido.'),
     body('beneficiado').isInt({ gt: 0 }).withMessage('O ID do beneficiado (Pessoa) é obrigatório e deve ser um número inteiro.'),
     body('valor').isFloat({ gt: 0 }).withMessage('O valor da despesa deve ser maior que zero.'),
-    body('descricao').notEmpty().withMessage('A descrição é obrigatória.').isLength({ min: 3 }).withMessage('A descrição deve ter no mínimo 3 caracteres.'),
+    body('descricao').optional().isString().withMessage('A descrição deve ser um texto.'),
     body('formaPagamento').isIn(Object.values(FormaPagamento)).withMessage('Forma de pagamento inválida.'),
     body('tipoOperacao').isIn(Object.values(TipoOperacao)).withMessage('Tipo de operação inválido.')
   ],

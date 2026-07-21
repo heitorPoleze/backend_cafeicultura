@@ -45,9 +45,6 @@ class DespesaService {
     if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
   
     if (propriedade.idProprietario !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
-
-    console.log(despesas);
-
     return despesas;
   };
 

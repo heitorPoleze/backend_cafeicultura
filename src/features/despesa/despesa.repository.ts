@@ -39,7 +39,7 @@ class DespesaRepository {
       await clientePrisma.despesas.create({
         data: {
           idTransacaoFinanceira_PFK: idTransacao,
-          descricao: despesa.descricao,
+          descricao: despesa.descricao || '',
         },
       });
 
@@ -56,8 +56,8 @@ class DespesaRepository {
   };
 
 
-  public async buscarPorId(id: number): Promise<Despesa | null> {
-    const despesaDB = await this.prisma.despesas.findUnique({
+  public async buscarPorId(id: number, tx?: Prisma.TransactionClient): Promise<Despesa | null> {
+    const despesaDB = await (tx ?? this.prisma).despesas.findUnique({
       where: { 
         idTransacaoFinanceira_PFK: id 
       },
@@ -66,7 +66,7 @@ class DespesaRepository {
 
     if (!despesaDB) return null;
 
-    return await this.mapToEntity(despesaDB);
+    return await this.mapToEntity(despesaDB, tx);
   };
   
   public async listarDespesasProprietario(idProprietario: number): Promise<Despesa[]> {
@@ -115,10 +115,10 @@ class DespesaRepository {
     return despesas.filter((d): d is Despesa => d !== null);
   }
 
-  private async mapToEntity(despesaDB: DespesaPayload): Promise<Despesa | null> {
+  private async mapToEntity(despesaDB: DespesaPayload, prisma?: Prisma.TransactionClient): Promise<Despesa | null> {
     const transacaoBase = despesaDB.transacoesfinanceiras;
 
-    const beneficiado = await this.pessoaRepo.buscarPorId(transacaoBase.idPessoa_FK);
+    const beneficiado = await this.pessoaRepo.buscarPorId(transacaoBase.idPessoa_FK, prisma);
     
     if (!beneficiado) return null; 
 

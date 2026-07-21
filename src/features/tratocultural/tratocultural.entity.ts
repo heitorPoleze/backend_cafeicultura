@@ -1,8 +1,8 @@
 import EventoAgricola from "../../shared/domain/evento/eventoagricola/eventoagricola.entity";
 import Safra from "../safra/safra.entity";
-import TransacaoFinanceira from "../../shared/domain/transacaofinanceira/transacaofinanceira.entity";
 import Pessoa from "../../shared/domain/pessoa/pessoabase.entity";
 import TratoInsumo from "../../shared/domain/insumo/tratoinsumo/tratoinsumo.entity";
+import Despesa from "../despesa/despesa.entity";
 
 export enum TipoTrato {
     CAPINA = 'Capina',
@@ -24,7 +24,7 @@ class TratoCultural extends EventoAgricola {
         descricao: string,
         dataCadastro: Date = new Date(),
         safra: Safra,
-        transacoesFinanceiras: TransacaoFinanceira[] | undefined,
+        transacoesFinanceiras: Despesa[] | undefined,
         responsaveis: Pessoa[] | undefined,
         confirmado: boolean | undefined,
         tipoTrato: TipoTrato,
@@ -57,13 +57,23 @@ class TratoCultural extends EventoAgricola {
     public get tipoTrato(): TipoTrato { return this._tipoTrato; };
     public get insumosUtilizados(): TratoInsumo[] | undefined { return this._insumosUtilizados; };
 
-        public toJSON() {
+    public inserirInsumos(insumos: TratoInsumo[]): void {
+        if (!this._insumosUtilizados) 
+            this._insumosUtilizados = [];
+        this._insumosUtilizados.push(...insumos);
+    };
+
+    public excluirInsumos(idInsumos: number[]): void {
+        this._insumosUtilizados = this._insumosUtilizados?.filter(tratoInsumo => !idInsumos.includes(tratoInsumo.insumo.id as number));
+    };
+
+    public toJSON() {
         return super.toJSON({
             tipoTrato: this._tipoTrato,
             ...(this._insumosUtilizados?.length && {
                 insumosUtilizados: this._insumosUtilizados.map(insumo => insumo.toJSON())
             }),
-        });
+    });
 }
 }
 

@@ -1,7 +1,7 @@
 import Safra from "../../../../features/safra/safra.entity";
-import TransacaoFinanceira from "../../transacaofinanceira/transacaofinanceira.entity";
 import Evento from "../evento.entity";
 import Pessoa from "../../pessoa/pessoabase.entity";
+import Despesa from "../../../../features/despesa/despesa.entity";
 
 abstract class EventoAgricola extends Evento {
   private _idTalhao: number;
@@ -13,7 +13,7 @@ abstract class EventoAgricola extends Evento {
     descricao: string,
     dataCadastro: Date = new Date(),
     safra: Safra,
-    transacoesFinanceiras?: TransacaoFinanceira[],
+    transacoesFinanceiras?: Despesa[],
     responsaveis?: Pessoa[],
     confirmado?: boolean,
   ) {
