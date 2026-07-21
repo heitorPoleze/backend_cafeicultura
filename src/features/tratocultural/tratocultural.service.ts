@@ -131,7 +131,6 @@ class TratoCulturalService {
     if (propriedade.idProprietario !== idUsuarioSessao) {
       throw new Error("ACESSO_NEGADO");
     };
-    
 
     return tratos;
   };

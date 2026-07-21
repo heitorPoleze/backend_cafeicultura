@@ -1,22 +1,22 @@
-import PessoaFisica from "../../shared/domain/pessoa/pessoafisica.entity";
-import PessoaJuridica from "../../shared/domain/pessoa/pessoajuridica.entity";
+import Pessoa from "../../shared/domain/pessoa/pessoabase.entity";
 import TransacaoFinanceira, { FormaPagamento, TipoOperacao } from "../../shared/domain/transacaofinanceira/transacaofinanceira.entity";
 
 class Despesa extends TransacaoFinanceira {
-    private _beneficiado: PessoaFisica | PessoaJuridica;
+    private _beneficiado: Pessoa;
     private _descricao: string; 
 
     constructor(
         id: number | undefined,
+        idEvento: number | null,
         idPropriedade: number,
         dataHora: Date,
         valor: number,
         formaPagamento: FormaPagamento,
         tipoOperacao: TipoOperacao,
-        beneficiado: PessoaFisica | PessoaJuridica,
+        beneficiado: Pessoa,
         descricao: string
     ) {
-        super(id, idPropriedade, dataHora, valor, formaPagamento, tipoOperacao);
+        super(id, idEvento, idPropriedade, dataHora, valor, formaPagamento, tipoOperacao);
 
         if (!beneficiado) throw new Error('O beneficiado é obrigatório.');
         this._beneficiado = beneficiado;
@@ -26,7 +26,7 @@ class Despesa extends TransacaoFinanceira {
         this._descricao = descricao;
     }
 
-    public get beneficiado(): PessoaFisica | PessoaJuridica { return this._beneficiado; }
+    public get beneficiado(): Pessoa { return this._beneficiado; }
     public get descricao(): string { return this._descricao; }
 
     public toJSON(filhos?: object) {

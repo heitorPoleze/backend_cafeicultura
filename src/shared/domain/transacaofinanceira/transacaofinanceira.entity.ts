@@ -15,6 +15,7 @@ export enum TipoOperacao {
 
 abstract class TransacaoFinanceira {
   private readonly _id: number | undefined;
+  private _idEvento: number | null;
   private _idPropriedade: number;
   private _dataHora: Date;
   private _valor: number;
@@ -23,6 +24,7 @@ abstract class TransacaoFinanceira {
 
   constructor(
     id: number | undefined,
+    idEvento: number | null,
     idPropriedade: number,
     dataHora: Date,
     valor: number,
@@ -31,9 +33,10 @@ abstract class TransacaoFinanceira {
     ) {
     if (id && id <= 0) throw new Error('O id da transação financeira deve ser maior que zero.');
     this._id = id;
+    if (idEvento && idEvento <= 0) throw new Error('O id do evento deve ser maior que zero.');
+    this._idEvento = idEvento;
     if (idPropriedade <= 0) throw new Error('O id da propriedade deve ser maior que zero.');
     this._idPropriedade = idPropriedade;
-    if (dataHora < new Date()) throw new Error('A data e hora da transação financeira não pode ser anterior à data atual.');
     this._dataHora = dataHora;
     if (valor <= 0) throw new Error('O valor da transação financeira deve ser maior que zero.');
     this._valor = valor;
@@ -48,6 +51,7 @@ abstract class TransacaoFinanceira {
   };
 
     public get id(): number | undefined { return this._id; };
+    public get idEvento(): number | null { return this._idEvento; };
     public get idPropriedade(): number { return this._idPropriedade; };
     public get dataHora(): Date { return this._dataHora; };
     public get valor(): number { return this._valor; };
@@ -57,6 +61,7 @@ abstract class TransacaoFinanceira {
     public toJSON(filhos?: object) {
       return {
         id: this._id,
+        idEvento: this._idEvento,
         idPropriedade: this._idPropriedade,
         dataHora: this._dataHora,
         valor: this._valor,

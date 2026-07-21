@@ -18,6 +18,8 @@ import talhoesRotas from "./features/talhao/talhao.routes";
 import safraRotas from "./features/safra/safra.routes";
 import tratosCulturaisRotas from "./features/tratocultural/tratocultural.routes";
 import insumosRotas from "./features/insumo/insumo.routes";
+import despesasRotas from "./features/despesa/despesa.routes";
+import comprasinsumosRotas from "./features/comprainsumo/comprainsumo.routes";
 dotenv.config(); // Carrega as variáveis de ambiente do .env
 
 const app = express();
@@ -100,5 +102,7 @@ app.use(`${API_VERSION}/talhoes`, talhoesRotas);
 app.use(`${API_VERSION}/safras`, safraRotas);
 app.use(`${API_VERSION}/tratosculturais`, tratosCulturaisRotas);
 app.use(`${API_VERSION}/insumos`, insumosRotas);
+app.use(`${API_VERSION}/despesas`, despesasRotas);
+app.use(`${API_VERSION}/comprasinsumos`, comprasinsumosRotas);
 
 export default app;

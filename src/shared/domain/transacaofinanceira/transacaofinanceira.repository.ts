@@ -6,8 +6,7 @@ class TransacaoFinanceiraRepository {
 
     public async cadastrar(
         transacao: TransacaoFinanceira, 
-        idPessoa: number, 
-        idEvento: number | null, 
+        idPessoa: number,
         tx: Prisma.TransactionClient
     ): Promise<number> {
         
@@ -29,7 +28,7 @@ class TransacaoFinanceiraRepository {
                 tipoOperacao: transacao.tipoOperacao, 
                 idPessoa_FK: idPessoa,
                 idFormaPgto_FK: formaPgtoDB.idFormaPgto_PK, 
-                idEvento_FK: idEvento !== null ? idEvento : undefined,
+                idEvento_FK: transacao.idEvento
             }
         });
         return transacaoDB.idTransacaoFinanceira_PK; 
@@ -50,6 +49,10 @@ class TransacaoFinanceiraRepository {
             id: metodo.idFormaPgto_PK,
             descricao: metodo.descricao
         }));
+    };
+    
+    public async excluir(id: number, tx: Prisma.TransactionClient): Promise<void> {
+        await tx.transacoesfinanceiras.delete({ where: { idTransacaoFinanceira_PK: id } });
     };
 };
 

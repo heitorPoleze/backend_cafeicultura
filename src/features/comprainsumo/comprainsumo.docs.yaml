@@ -1,0 +1,163 @@
+tags:
+  - name: Compras de Insumos
+    description: Gerenciamento unificado da aquisição de insumos (estoque) e o lançamento automático das despesas financeiras vinculadas.
+
+components:
+  schemas:
+    CadastrarCompraInsumoInput:
+      type: object
+      required:
+        - idInsumo
+        - qtdComprada
+        - idPropriedade
+        - beneficiado
+        - valor
+        - descricao
+        - formaPagamento
+        - tipoOperacao
+      properties:
+        idInsumo:
+          type: integer
+          description: ID do insumo previamente cadastrado no catálogo geral.
+          example: 12
+        qtdComprada:
+          type: number
+          format: float
+          description: Quantidade adquirida do insumo (na unidade de medida correspondente).
+          example: 50.5
+        idPropriedade:
+          type: integer
+          description: ID da propriedade rural de destino e vinculação financeira.
+          example: 10
+        idEvento:
+          type: integer
+          nullable: true
+          description: ID de um evento agrícola específico (Opcional).
+          example: null
+        beneficiado:
+          type: integer
+          description: ID da Pessoa (Física ou Jurídica) que vendeu o insumo (Fornecedor).
+          example: 42
+        valor:
+          type: number
+          format: float
+          description: Valor total pago pelos insumos.
+          example: 1500.50
+        descricao:
+          type: string
+          description: Motivo ou detalhamento da despesa (nota fiscal, lote, etc.).
+          example: "Compra de Fertilizante NPK para safra de inverno. NF: 12345"
+        formaPagamento:
+          type: string
+          description: Método de pagamento utilizado.
+          example: "Pix"
+        tipoOperacao:
+          type: string
+          description: Tipo de operação
+          example: "Monetária"
+
+paths:
+  /api/v1/comprasinsumos:
+    post:
+      summary: Registra a Compra de um Insumo
+      description: Realiza a orquestração do sistema. Adiciona o insumo ao estoque da propriedade e cria, na mesma transação, a Despesa financeira.
+      tags: 
+        - Compras de Insumos
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CadastrarCompraInsumoInput'
+      responses:
+        '201':
+          description: Compra de insumo registrada e Despesa financeira gerada com sucesso.
+        '400':
+          description: Erro de validação nos dados enviados (ex. valores negativos).
+        '401':
+          description: Acesso negado. O usuário não é o proprietário da propriedade informada.
+        '404':
+          description: Propriedade, Insumo ou Fornecedor (Beneficiado) não encontrado.
+
+  /api/v1/comprasinsumos/{id}:
+    get:
+      summary: Busca Compra de Insumo por ID
+      description: Retorna os dados completos da compra, incluindo a Despesa gerada e os dados do Insumo. Valida a posse do usuário.
+      tags: 
+        - Compras de Insumos
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico do registro da compra.
+      responses:
+        '200':
+          description: Registro de compra retornado com sucesso.
+        '401':
+          description: Acesso negado. O usuário não tem permissão para visualizar esta compra.
+        '404':
+          description: Compra não encontrada no banco de dados.
+
+  /api/v1/comprasinsumos/propriedade/{idPropriedade}:
+    get:
+      summary: Lista Compras por Propriedade
+      description: Retorna todo o histórico de compras de insumos vinculadas a uma propriedade rural específica.
+      tags: 
+        - Compras de Insumos
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: idPropriedade
+          required: true
+          schema:
+            type: integer
+          description: ID da propriedade rural.
+      responses:
+        '200':
+          description: Lista de compras retornada com sucesso.
+        '401':
+          description: Acesso negado. O usuário não tem permissão para visualizar dados desta propriedade.
+        '404':
+          description: Nenhuma compra encontrada para esta propriedade, ou a propriedade em si não foi encontrada.
+
+  /api/v1/comprasinsumos/proprietario:
+    get:
+      summary: Lista Todas as Compras do Proprietário
+      description: Retorna um agregado de todas as compras de insumos vinculadas a TODAS as propriedades do proprietário logado.
+      tags: 
+        - Compras de Insumos
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista geral de compras retornada com sucesso.
+        '404':
+          description: Nenhuma compra encontrada para este proprietário.
+
+  /api/v1/comprasinsumos/buscar/{descricao}:
+    get:
+      summary: Busca Compras por Descrição do Insumo
+      description: Permite ao usuário buscar no histórico global todas as vezes que comprou um insumo contendo o texto especificado.
+      tags: 
+        - Compras de Insumos
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: descricao
+          required: true
+          schema:
+            type: string
+          description: Termo de busca correspondente à descrição do insumo (ex. "Ureia").
+      responses:
+        '200':
+          description: Lista filtrada de compras retornada com sucesso.
+        '404':
+          description: Nenhuma compra encontrada com a descrição de insumo fornecida.

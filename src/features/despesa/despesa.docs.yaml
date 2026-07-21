@@ -1,0 +1,153 @@
+tags:
+  - name: Despesas
+    description: Gerenciamento de registros financeiros de saída (despesas), vinculando valores, responsáveis e propriedades.
+
+components:
+  schemas:
+    CriarDespesaInput:
+      type: object
+      required:
+        - idPropriedade
+        - beneficiado
+        - valor
+        - descricao
+        - formaPagamento
+        - tipoOperacao
+      properties:
+        idPropriedade:
+          type: integer
+          description: ID da propriedade rural onde a despesa ocorreu.
+          example: 10
+        idEvento:
+          type: integer
+          description: ID do evento agrícola vinculado (Opcional).
+          example: 5
+        beneficiado:
+          type: integer
+          description: ID da Pessoa (Física ou Jurídica) que recebeu o pagamento.
+          example: 42
+        valor:
+          type: number
+          format: float
+          description: Valor total da transação.
+          example: 1500.50
+        descricao:
+          type: string
+          minLength: 3
+          description: Motivo ou detalhamento da despesa.
+          example: "Pagamento de mão de obra temporária da colheita."
+        formaPagamento:
+          type: string
+          description: Método de pagamento utilizado (Baseado no Enum).
+          example: "Pix"
+        tipoOperacao:
+          type: string
+          description: Tipo de operação da transação.
+          example: "Monetária"
+
+paths:
+  /api/v1/despesas:
+    post:
+      summary: Cadastra uma nova Despesa
+      description: Rota privada para registrar uma despesa financeira em uma propriedade.
+      tags: 
+        - Despesas
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CriarDespesaInput'
+      responses:
+        '201':
+          description: Despesa cadastrada com sucesso.
+        '400':
+          description: Erro de validação nos dados enviados.
+        '401':
+          description: Acesso negado. Usuário não é o proprietário.
+        '404':
+          description: Propriedade ou Beneficiado não encontrado.
+
+  /api/v1/despesas/{id}:
+    get:
+      summary: Busca Despesa por ID
+      description: Retorna os dados completos de uma despesa, validando se o usuário possui acesso à propriedade vinculada.
+      tags: 
+        - Despesas
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico da despesa.
+      responses:
+        '200':
+          description: Despesa retornada com sucesso.
+        '401':
+          description: Acesso negado.
+        '404':
+          description: Despesa ou Propriedade não encontrada.
+
+    delete:
+      summary: Exclui uma Despesa
+      description: Remove permanentemente um registro de despesa do banco de dados (exige ser o proprietário).
+      tags: 
+        - Despesas
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico da despesa a ser excluída.
+      responses:
+        '200':
+          description: Despesa excluída com sucesso.
+        '401':
+          description: Acesso negado.
+        '404':
+          description: Despesa não encontrada.
+
+  /api/v1/despesas/propriedade/{idPropriedade}:
+    get:
+      summary: Listar Despesas por Propriedade
+      description: Retorna todo o histórico de despesas atreladas a uma propriedade específica.
+      tags: 
+        - Despesas
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: idPropriedade
+          required: true
+          schema:
+            type: integer
+          description: ID da propriedade rural.
+      responses:
+        '200':
+          description: Lista de despesas retornada com sucesso.
+        '401':
+          description: Acesso negado.
+        '404':
+          description: Propriedade não encontrada ou não possui despesas.
+
+  /api/v1/despesas/proprietario:
+    get:
+      summary: Listar Todas as Despesas do Proprietário
+      description: Retorna todas as despesas vinculadas a todas as propriedades do proprietário logado.
+      tags: 
+        - Despesas
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista geral de despesas retornada com sucesso.
+        '404':
+          description: Nenhuma despesa encontrada.
