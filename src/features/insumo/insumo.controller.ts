@@ -14,10 +14,22 @@ export class InsumoController {
 
         try {
             const dto: CadastrarInsumoDTO = req.body;
-            const idGerado = await this.insumoService.cadastrar(dto);
+            await this.insumoService.cadastrar(dto, req.session.idUsuario!);
             
             res.status(201).json({ mensagem: 'Insumo cadastrado com sucesso'});
         } catch (error: unknown) {
+            if (error instanceof Error) {
+                if (error.message === 'INSUMO_EXISTENTE') {
+                    return res.status(409).json({ error: "Insumo já cadastrado" });
+                };
+                if (error.message === 'MEDIDA_INVALIDA') {
+                    return res.status(422).json({ error: "Unidade de medida inválida" });
+                };
+                if (error.message === 'PROPRIETARIO_INVALIDO') {
+                    return res.status(422).json({ error: "Incosistência de dados" });
+                };
+                return res.status(400).json({ error: error.message });
+            };
             return res.status(500).json({ error: 'Erro ao cadastrar insumo' });
         };
     };
@@ -32,7 +44,7 @@ export class InsumoController {
             const dto: BuscarInsumoPorIdDTO = {
                 id: Number(req.params.id)
             };
-            const insumo = await this.insumoService.buscarPorId(dto);
+            const insumo = await this.insumoService.buscarPorId(dto, req.session.idUsuario!);
             res.status(200).json(insumo);
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -55,7 +67,7 @@ export class InsumoController {
             const dto: BuscarInsumoPorDescricaoDTO = {
                 descricao: String(req.params.descricao)
             };
-            const insumo = await this.insumoService.buscarPorDescricao(dto);
+            const insumo = await this.insumoService.buscarPorDescricao(dto, req.session.idUsuario!);
             res.status(200).json(insumo);
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -70,7 +82,7 @@ export class InsumoController {
 
     public async listarTodos(req: Request, res: Response) {
         try {
-            const insumos = await this.insumoService.listarTodos();
+            const insumos = await this.insumoService.listarTodos(req.session.idUsuario!);
             res.status(200).json(insumos);
         } catch (error) {
             if (error instanceof Error) {

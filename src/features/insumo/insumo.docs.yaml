@@ -7,9 +7,14 @@ components:
     CadastrarInsumoInput:
       type: object
       required:
+        - idProprietario
         - descricao
         - medida
       properties:
+        idProprietario:
+          type: integer
+          description: ID numérico do proprietário do insumo.
+          example: 1
         descricao:
           type: string
           minLength: 3
@@ -39,7 +44,11 @@ paths:
         '201':
           description: Insumo cadastrado com sucesso.
         '400':
-          description: Erro de validação nos dados enviados (ex. medida inválida).
+          description: Erro de sintaxe da requisição.
+        '409':
+          description: Insumo já cadastrado.
+        '422':
+          description: Erro de validação dos dados.
         '500':
           description: Erro interno ao cadastrar o insumo.
 

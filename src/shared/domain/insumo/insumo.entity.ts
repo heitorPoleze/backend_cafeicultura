@@ -12,12 +12,16 @@ export enum MedidaInsumo {
 
 class Insumo {
   private readonly _id: number | undefined;
+  private _idProprietario: number;
   private _descricao: string;
   private _medida: MedidaInsumo;
 
-  constructor(id: number | undefined, descricao: string, medida: MedidaInsumo) {
+  constructor(id: number | undefined, idProprietario: number, descricao: string, medida: MedidaInsumo) {
     if (id && id <= 0) throw new Error("O id deve ser maior que zero.");
     this._id = id;
+    
+    if (idProprietario <= 0) throw new Error("O id do proprietário deve ser maior que zero.");
+    this._idProprietario = idProprietario;
 
     if (!descricao) throw new Error("A descrição é obrigatória.");
     this._descricao = descricao;
@@ -31,6 +35,9 @@ class Insumo {
   public get id(): number | undefined {
     return this._id;
   };
+  public get idProprietario(): number {
+    return this._idProprietario;
+  };
   public get descricao(): string {
     return this._descricao;
   };
@@ -41,6 +48,7 @@ class Insumo {
   public toJSON() {
     return {
       id: this._id,
+      idProprietario: this._idProprietario,
       descricao: this._descricao,
       medida: this._medida,
     };

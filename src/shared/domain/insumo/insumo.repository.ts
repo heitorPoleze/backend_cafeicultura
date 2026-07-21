@@ -9,6 +9,7 @@ class InsumoRepository {
 
         const insumoDB = await client.insumos.create({
             data: {
+                idProprietario_FK: insumo.idProprietario,
                 descricao: insumo.descricao,
                 medida: insumo.medida
             }
@@ -17,18 +18,22 @@ class InsumoRepository {
         return insumoDB.idInsumo_PK;
     };
 
-    public async buscarPorId(idInsumo: number): Promise<Insumo | null> {
+    public async buscarPorId(idInsumo: number, idUsuario: number): Promise<Insumo | null> {
         const insumoDB = await this.prisma.insumos.findUnique({
-            where: { idInsumo_PK: idInsumo }
+            where: { 
+                idInsumo_PK: idInsumo,
+                idProprietario_FK: idUsuario
+            },
         });
 
         if (!insumoDB) return null;
-        return new Insumo(insumoDB.idInsumo_PK, insumoDB.descricao, insumoDB.medida as MedidaInsumo);
+        return new Insumo(insumoDB.idInsumo_PK, insumoDB.idProprietario_FK, insumoDB.descricao, insumoDB.medida as MedidaInsumo);
     };
 
-    public async buscarPorDescricao(descricao: string): Promise<Insumo | null> {
+    public async buscarPorDescricao(descricao: string, idUsuario: number): Promise<Insumo | null> {
         const insumoDB = await this.prisma.insumos.findFirst({
             where: {
+                idProprietario_FK: idUsuario,
                 descricao: {
                     contains: descricao
                 },
@@ -36,12 +41,13 @@ class InsumoRepository {
         });
 
         if (!insumoDB) return null;
-        return new Insumo(insumoDB.idInsumo_PK, insumoDB.descricao, insumoDB.medida as MedidaInsumo);
+        return new Insumo(insumoDB.idInsumo_PK, insumoDB.idProprietario_FK, insumoDB.descricao, insumoDB.medida as MedidaInsumo);
     };
 
-    public async verificarExistente(descricao: string): Promise<boolean> {
+    public async verificarExistente(descricao: string, idUsuario: number): Promise<boolean> {
         const insumo = await this.prisma.insumos.findFirst({
             where: {
+                idProprietario_FK: idUsuario,
                 descricao: {
                     equals: descricao
                 },
@@ -50,14 +56,17 @@ class InsumoRepository {
         return !!insumo;
     };
 
-    public async buscarTodos(): Promise<Insumo[]> {
+    public async buscarTodos(idUsuario: number): Promise<Insumo[]> {
         const insumosDB = await this.prisma.insumos.findMany({
+            where: {
+                idProprietario_FK: idUsuario,
+            },
             orderBy: {
                 descricao: 'asc'
             },
         });
 
-        return insumosDB.map(insumoDB => new Insumo(insumoDB.idInsumo_PK, insumoDB.descricao, insumoDB.medida as MedidaInsumo));
+        return insumosDB.map(insumoDB => new Insumo(insumoDB.idInsumo_PK, insumoDB.idProprietario_FK, insumoDB.descricao, insumoDB.medida as MedidaInsumo));
     };
 }
 

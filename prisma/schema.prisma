@@ -210,6 +210,7 @@ model geolocalizacoes {
 
 model insumos {
   idInsumo_PK         Int                   @id @unique(map: "idInsumo_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
+  idProprietario_FK   Int                   @db.UnsignedInt
   descricao           String                @db.VarChar(25)
   medida              String                @db.VarChar(3)
   comprasinsumos      comprasinsumos[]
