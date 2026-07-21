@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import PropriedadeService from "./propriedade.service";
+import { ListPropriedadesDTO } from "./propriedade.dto";
 
 class PropriedadeController {
   constructor(private service: PropriedadeService) {}
@@ -92,6 +93,26 @@ class PropriedadeController {
           return res.status(403).json({ error: "Acesso negado! Não foi possivel atualizar o endereço da propriedade" });
         };
         return res.status(500).json({ error: "Erro ao atualizar endereço da propriedade" });
+      };
+    };
+  };
+
+  public async listarPorProprietario(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
+    
+    try {
+      const dto: ListPropriedadesDTO = {
+        idProprietario: req.session.idUsuario!
+      };
+      const propriedades = await this.service.listarPorProprietario(dto);
+      res.status(200).json(propriedades);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === "NAO_ENCONTRADA") {
+          return res.status(404).json({ error: "Nenhuma propriedade encontrada" });
+        };
+        return res.status(500).json({ error: "Erro ao listar propriedades" });
       };
     };
   };

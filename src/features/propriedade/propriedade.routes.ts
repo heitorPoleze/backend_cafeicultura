@@ -45,6 +45,12 @@ router.post(
 );
 
 router.get(
+  "/proprietario",
+  exigeLogin(),
+  propriedadeController.listarPorProprietario.bind(propriedadeController)
+);
+
+router.get(
   "/:id",
   exigeLogin(),
   propriedadeController.buscarPorId.bind(propriedadeController)
