@@ -38,7 +38,9 @@ class PropriedadeRepository {
 
   public async buscarPorId(idPropriedade: number): Promise<Propriedade | null> {
     const prop = await this.db.propriedades.findUnique({
-      where: { idPropriedade_PK: idPropriedade },
+      where: { 
+        idPropriedade_PK: idPropriedade 
+      },
       include: {
         tamanhos: true,
         enderecos: true,

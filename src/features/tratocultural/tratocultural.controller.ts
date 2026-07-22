@@ -96,7 +96,7 @@ class TratoCulturalController {
 
   public async listarTodosPropriedade(req: Request, res: Response) {
     try {
-      const dto: ListarTratoPorPropriedadeDTO = { idPropriedade: Number(req.params.idPropriedade) };
+      const dto: ListarTratoPorPropriedadeDTO = { idPropriedade: Number(req.params.id) };
       const tratos = await this.tratoCulturalService.listarTodosPropriedade(dto, req.session.idUsuario!);
       res.status(200).json(tratos);
     } catch (error: unknown) {
@@ -106,7 +106,7 @@ class TratoCulturalController {
 
   public async listarTodosSafra(req: Request, res: Response) {
     try {
-      const dto: ListarTratoPorSafraDTO = { idSafra: Number(req.params.idSafra), idPropriedade: Number(req.params.idPropriedade) };
+      const dto: ListarTratoPorSafraDTO = { idSafra: Number(req.params.idSafra), idPropriedade: Number(req.params.id) };
       const tratos = await this.tratoCulturalService.listarTodosSafra(dto, req.session.idUsuario!);
       res.status(200).json(tratos);
     } catch (error: unknown) {
@@ -116,7 +116,7 @@ class TratoCulturalController {
 
   public async listarTodosTalhao(req: Request, res: Response) {
     try {
-      const dto: ListarTratoPorTalhaoDTO = { idTalhao: Number(req.params.idTalhao), idPropriedade: Number(req.params.idPropriedade) };
+      const dto: ListarTratoPorTalhaoDTO = { idTalhao: Number(req.params.idTalhao), idPropriedade: Number(req.params.id) };
       const tratos = await this.tratoCulturalService.listarTodosTalhao(dto, req.session.idUsuario!);
       res.status(200).json(tratos);
     } catch (error: unknown) {
