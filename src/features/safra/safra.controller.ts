@@ -12,10 +12,13 @@ class SafraController {
     }
     try {
       const dto = req.body;
-      const idUsuario = req.session.idUsuario!
-      await this.safraService.cadastrar(dto, idUsuario);
-      
-      res.status(201).json({mensagem: 'Safra cadastrada com sucesso'});
+      const idUsuario = req.session.idUsuario!;
+      const idSafra = await this.safraService.cadastrar(dto, idUsuario);
+
+      return res.status(201).json({
+        mensagem: 'Safra cadastrada com sucesso',
+        dados: { id: idSafra },
+      });
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === 'ACESSO_NEGADO') {

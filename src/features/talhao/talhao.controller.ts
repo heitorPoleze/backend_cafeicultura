@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import TalhaoService from './talhao.service';
-import { CadastrarTalhaoDTO, EncerrarTalhaoDTO } from './talhao.dto';
+import { CadastrarTalhaoDTO } from './talhao.dto';
 
 export class TalhaoController {
   constructor(private readonly talhaoService: TalhaoService) {}
@@ -13,10 +13,13 @@ export class TalhaoController {
     }
     try {
       const dto: CadastrarTalhaoDTO = req.body;
-      const idUsuario = req.session.idUsuario!
-      await this.talhaoService.cadastrarTalhao(dto, idUsuario);
-      
-      res.status(201).json({mensagem: 'Talhão cadastrado com sucesso'});
+      const idUsuario = req.session.idUsuario!;
+      const idTalhao = await this.talhaoService.cadastrarTalhao(dto, idUsuario);
+
+      return res.status(201).json({
+        mensagem: 'Talhão cadastrado com sucesso',
+        dados: { id: idTalhao },
+      });
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === 'NAO_ENCONTRADA') {
@@ -34,8 +37,10 @@ export class TalhaoController {
     try {
       const variedades = await this.talhaoService.buscarVariedades();
       res.status(200).json(variedades);
-    } catch (error) {
-      return res.status(500).json({ error: 'Erro ao buscar variedades' });
+    } catch (error: unknown) {
+      if(error instanceof Error) {
+        return res.status(500).json({ error: 'Erro ao buscar variedades' });      
+      };
     };
   };  
 

@@ -11,14 +11,19 @@ class PropriedadeController {
     if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
 
     try {
-      const idUsuario = req.session.idUsuario!; 
-      await this.service.cadastrar(req.body, idUsuario);
-      
-      res.status(201).json({ mensagem: "Propriedade cadastrada com sucesso" });
+      const idUsuario = req.session.idUsuario!;
+      const idPropriedade = await this.service.cadastrar(req.body, idUsuario);
+
+      return res.status(201).json({
+        mensagem: "Propriedade cadastrada com sucesso",
+        dados: { id: idPropriedade },
+      });
     } catch (error: unknown) {
       if (error instanceof Error) {
-        res.json(500).json({ error: "Erro ao cadastrar propriedade" });
+        return res.status(500).json({ error: "Erro ao cadastrar propriedade" });
       }
+
+      return res.status(500).json({ error: "Erro ao cadastrar propriedade" });
     };
   };
 
