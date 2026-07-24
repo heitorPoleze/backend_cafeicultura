@@ -108,7 +108,12 @@ class TalhaoService {
     };
     return tamanho.valor;
   };
-
+  public async buscarAtivosPorPropriedade(idPropriedade: number): Promise<Talhao[]> {
+    return await this.repository.buscarAtivosPorPropriedade(idPropriedade);
+  }
+  public async buscarTodosPorPropriedade(idPropriedade: number): Promise<Talhao[]> {
+    return await this.repository.buscarTodosPorPropriedade(idPropriedade);
+  }
 };
 
 export default TalhaoService;

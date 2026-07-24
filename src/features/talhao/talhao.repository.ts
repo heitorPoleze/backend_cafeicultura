@@ -68,7 +68,23 @@ class TalhaoRepository {
 
     return talhoesDb.map((db) => this.mapToDomain(db));
   }
+  public async buscarTodosPorPropriedade(
+    idPropriedade: number,
+  ): Promise<Talhao[]> {
+    const talhoesDb = await this.prisma.talhoes.findMany({
+      where: {
+        idPropriedade_FK: idPropriedade,
+      },
+      include: {
+        tamanhos: true,
+        variedadestalhoes: {
+          include: { variedades: true },
+        },
+      },
+    });
 
+    return talhoesDb.map((db) => this.mapToDomain(db));
+  }
   async buscarPorId(id: number): Promise<Talhao | null> {
     const talhaoDb = await this.prisma.talhoes.findFirst({
       where: {

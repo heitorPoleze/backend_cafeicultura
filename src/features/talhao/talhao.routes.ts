@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router} from 'express';
 import { body, param } from 'express-validator';
 import exigeLogin from "../../shared/middlewares/exigeLogin";
 import TalhaoController from './talhao.controller';
@@ -54,6 +54,24 @@ router.delete(
     param('id').isInt({ gt: 0 }).withMessage('O ID do talhão informado na URL é inválido.')
   ],
   talhaoController.excluir.bind(talhaoController)
+);
+
+router.get(
+  '/propriedade/ativos/:idPropriedade',
+  exigeLogin(),
+  [
+    param('idPropriedade').isInt({ gt: 0 }).withMessage('O ID da propriedade informado na URL é inválido.')
+  ],
+  talhaoController.ativosPorPropriedade.bind(talhaoController)
+);
+
+router.get(
+  '/propriedade/todos/:idPropriedade',
+  exigeLogin(),
+  [
+    param('idPropriedade').isInt({ gt: 0 }).withMessage('O ID da propriedade informado na URL é inválido.')
+  ],
+  talhaoController.allTalhoesPorPropriedade.bind(talhaoController)
 );
 
 export default router;
