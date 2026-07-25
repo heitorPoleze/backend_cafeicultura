@@ -1,5 +1,5 @@
 import Tamanho from "../../shared/domain/tamanho/tamanho.entity";
-
+import Variedade from "../../shared/domain/variedade/variedade.entity";
 export enum Especie {
   Conilon = "conilon",
   Arabica = "arabica",
@@ -15,7 +15,7 @@ class Talhao {
   private _idPropriedade: number;
   private _qtdPeCafe: number;
   private _especie: Especie;
-  private _variedadesCafe: string[];
+  private _variedadesCafe: Variedade[];
   private _geolocalizacao: Geolocalizacao = null;
   private _dataInicio: Date;
   private _dataFim: Date | null;
@@ -27,7 +27,7 @@ class Talhao {
     idPropriedade: number,
     qtdPeCafe: number,
     especie: Especie,
-    variedadesCafe: string[],
+    variedadesCafe: Variedade[],
     geolocalizacao: Geolocalizacao = null,
     dataInicio: Date,
     dataFim: Date | null = null,
@@ -87,7 +87,7 @@ class Talhao {
   public get especie(): Especie {
     return this._especie;
   };
-  public get variedadesCafe(): string[] {
+  public get variedadesCafe(): Variedade[] {
     return this._variedadesCafe;
   };
   public get geolocalizacao(): Geolocalizacao {

@@ -73,5 +73,23 @@ router.get(
   ],
   talhaoController.allTalhoesPorPropriedade.bind(talhaoController)
 );
+router.get(
+  '/propriedade/desativados/:idPropriedade',
+  exigeLogin(),
+  [
+    param('idPropriedade').isInt({ gt: 0 }).withMessage('O ID da propriedade informado na URL é inválido.')
+  ],
+  talhaoController.desativadosPorPropriedade.bind(talhaoController)
+);
+router.get(
+  '/propriedade/finalizados/:idPropriedade',
+  exigeLogin(),
+  [
+    param('idPropriedade').isInt({ gt: 0 }).withMessage('O ID da propriedade informado na URL é inválido.')
+  ],
+  talhaoController.finalizadosPorPropriedade.bind(talhaoController)
+);
+
+
 
 export default router;

@@ -114,6 +114,12 @@ class TalhaoService {
   public async buscarTodosPorPropriedade(idPropriedade: number): Promise<Talhao[]> {
     return await this.repository.buscarTodosPorPropriedade(idPropriedade);
   }
+  public async buscarDesativadosPorPropriedade(idPropriedade: number): Promise<Talhao[]> {
+    return await this.repository.buscarDesativadosPorPropriedade(idPropriedade);
+  }
+  public async buscarFinalizadosPorPropriedade(idPropriedade: number): Promise<Talhao[]> {
+    return await this.repository.buscarFinalizadosPorPropriedade(idPropriedade);
+  }
 };
 
 export default TalhaoService;

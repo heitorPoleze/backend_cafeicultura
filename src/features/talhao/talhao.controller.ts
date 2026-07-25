@@ -117,7 +117,7 @@ export class TalhaoController {
       }
     }
   }
-    public async allTalhoesPorPropriedade(req: Request, res: Response) {
+  public async allTalhoesPorPropriedade(req: Request, res: Response) {
       const erros = validationResult(req);
       const idPropriedade = Number(req.params.idPropriedade);
       if(!erros.isEmpty()){
@@ -131,7 +131,37 @@ export class TalhaoController {
           return res.status(500).json({ error: 'Erro ao buscar todos os talhões' });
         }
       }
+  }
+  public async desativadosPorPropriedade(req: Request, res: Response) {
+    const erros = validationResult(req);
+    const idPropriedade = Number(req.params.idPropriedade);
+    if (!erros.isEmpty()) {
+      return res.status(400).json({ erros: erros.array() });
     }
+    try {
+      const talhoes = await this.talhaoService.buscarDesativadosPorPropriedade(idPropriedade);
+      res.status(200).json(talhoes);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return res.status(500).json({ error: 'Erro ao buscar talhões desativados' });
+      }
+    }
+  }
+  public async finalizadosPorPropriedade(req: Request, res: Response) {
+    const erros = validationResult(req);
+    const idPropriedade = Number(req.params.idPropriedade);
+    if (!erros.isEmpty()) {
+      return res.status(400).json({ erros: erros.array() });
+    }
+    try {
+      const talhoes = await this.talhaoService.buscarFinalizadosPorPropriedade(idPropriedade);
+      res.status(200).json(talhoes);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        return res.status(500).json({ error: 'Erro ao buscar talhões finalizados' });
+      }
+    }
+  }
 
 }
 

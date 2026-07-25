@@ -1,6 +1,7 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import Talhao, { Especie } from "./talhao.entity";
 import Tamanho from "../../shared/domain/tamanho/tamanho.entity";
+import Variedade from "../../shared/domain/variedade/variedade.entity";
 
 type TalhaoCompleto = Prisma.talhoesGetPayload<{
   include: {
@@ -57,6 +58,45 @@ class TalhaoRepository {
       where: {
         idPropriedade_FK: idPropriedade,
         arquivado: 0,
+        dataFim: null,
+      },
+      include: {
+        tamanhos: true,
+        variedadestalhoes: {
+          include: { variedades: true },
+        },
+      },
+    });
+
+    return talhoesDb.map((db) => this.mapToDomain(db));
+  }
+
+   public async buscarFinalizadosPorPropriedade(
+    idPropriedade: number,
+  ): Promise<Talhao[]> {
+    const talhoesDb = await this.prisma.talhoes.findMany({
+      where: {
+        idPropriedade_FK: idPropriedade,
+        arquivado: 0,
+        dataFim: { not: null },
+      },
+      include: {
+        tamanhos: true,
+        variedadestalhoes: {
+          include: { variedades: true },
+        },
+      },
+    });
+
+    return talhoesDb.map((db) => this.mapToDomain(db));
+  }
+  public async buscarDesativadosPorPropriedade(
+    idPropriedade: number,
+  ): Promise<Talhao[]> {
+    const talhoesDb = await this.prisma.talhoes.findMany({
+      where: {
+        idPropriedade_FK: idPropriedade,
+        arquivado: 1
       },
       include: {
         tamanhos: true,
@@ -142,7 +182,7 @@ class TalhaoRepository {
     );
 
     const descricoesVariedades = db.variedadestalhoes.map(
-      (vt) => vt.variedades.descricao,
+      (vt) => new Variedade(vt.variedades.idVariedade_PK, vt.variedades.descricao)
     );
 
     return new Talhao(
