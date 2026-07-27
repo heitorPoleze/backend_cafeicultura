@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import PessoaService from "./pessoa.service";
-
+import Endereco from "../../shared/domain/endereco/endereco.vo";
 class PessoaController {
   constructor(private service: PessoaService) {}
 
@@ -204,6 +204,26 @@ class PessoaController {
       };
     };
   };
+  public async buscarFuncionarioPorIdAdministrador(req: Request, res: Response) {
+    try {
+      const funcionarios = await this.service.buscarFuncionariosPorIdAdministrador(
+        req.session.idUsuario!
+      );
+      res.status(200).json(funcionarios);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === "NAO_ENCONTRADO") {
+          return res.status(404).json({ error: "Funcionário não encontrado" });
+        } else if (error.message === "ACESSO_NEGADO") {
+          return res
+            .status(403)
+            .json({ error: "Acesso negado! Não pode visualizar funcionário" });
+        } else if (error.message === "ERRO_AO_BUSCAR") {
+          return res.status(500).json({ error: "Erro ao buscar funcionário" });
+        };
+      };
+    };
+  };
 
   public async buscarMeeiroPorId(req: Request, res: Response) {
     try {
@@ -269,6 +289,86 @@ class PessoaController {
       res.status(500).json({ error: "Erro ao listar pessoas" });
     };
   }
+  public async cadastrarEnderecoPessoaGenerica(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) {
+      return res.status(400).json({ erros: erros.array() });
+    }
+    try {
+      await this.service.cadastrarEnderecoPessoaGenerica(
+        Number(req.params.id),
+        new Endereco(
+          req.body.cidade,
+          req.body.bairro,
+          req.body.cep,
+          req.body.uf,
+          req.body.pais,
+          req.body.logradouro,
+          req.body.idEndereco
+          
+        )
+      );
+      res.status(201).json({ message: "Endereço cadastrado com sucesso", endereco: req.body });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === "NAO_ENCONTRADO") {
+          return res.status(404).json({ error: "Pessoa não encontrada" });
+        }
+        return res.status(400).json({ error: error.message });
+      };
+      res.status(500).json({ error: "Erro ao cadastrar endereço" });
+    };
+  }
+  public async atualizarEnderecoPessoaGenerica(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) {
+      return res.status(400).json({ erros: erros.array() });
+    }
+    try {
+      await this.service.atualizarEnderecoPessoaGenerica(
+        Number(req.params.id),
+        new Endereco(
+          req.body.cidade,
+          req.body.bairro,
+          req.body.cep,
+          req.body.uf,
+          req.body.pais,
+          req.body.logradouro,
+          req.body.idEndereco
+        )
+      );
+      res.status(200).json({ message: "Endereço atualizado com sucesso", endereco: req.body });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === "NAO_ENCONTRADO") {
+          return res.status(404).json({ error: "Pessoa não encontrada" });
+        }
+        return res.status(400).json({ error: error.message });
+      };
+      res.status(500).json({ error: "Erro ao atualizar endereço" });
+    };
+  }
+  public async RemoverEnderecoPessoaGenerica(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) {
+      return res.status(400).json({ erros: erros.array() });
+    }
+    try {
+     let response =  await this.service.removerEnderecoPessoaGenerica(
+        Number(req.params.id)
+      );
+      res.status(200).json({ message: "Endereço removido com sucesso", response });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === "NAO_ENCONTRADO") {
+          return res.status(404).json({ error: "Pessoa ou endereço não encontrado" });
+        }
+        return res.status(400).json({ error: error.message });
+      };
+      res.status(500).json({ error: "Erro ao remover endereço" });
+    }
+  }
+
 };
 
 export default PessoaController;

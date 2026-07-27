@@ -30,6 +30,8 @@ import Meeiro from "../../shared/domain/pessoa/meeiro/meeiro.entity";
 import Prestador from "../../shared/domain/pessoa/prestadordeservico/prestador.entity";
 import PessoaFisica from "../../shared/domain/pessoa/pessoafisica.entity";
 import PessoaJuridica from "../../shared/domain/pessoa/pessoajuridica.entity";
+import Endereco from "../../shared/domain/endereco/endereco.vo";
+import PessoaDTO from "../../shared/domain/pessoa/pessoa.dto";
 
 class PessoaService {
   constructor(
@@ -297,6 +299,52 @@ class PessoaService {
 
     return pessoasDTO;
   };
+  public async buscarFuncionariosPorIdAdministrador(idAdministrador: number): Promise<FuncionarioResponseDTO[]> {
+    const funcionarios = await this.funcionarioRepo.listarFuncionarios(idAdministrador);
+    if (!funcionarios) return [];
+    const funcionariosDTO: FuncionarioResponseDTO[] = [];
+    for (const f of funcionarios) {
+      if (f.pessoa instanceof PessoaFisica) {
+        funcionariosDTO.push({
+          id: f.pessoa.id!,
+          idAdministrador: f.pessoa.idAdministrador,
+          dataCadastro: f.pessoa.dataCadastro,
+          nome: f.pessoa.nome,
+          cpf: f.pessoa.cpf,
+          endereco: f.pessoa.endereco,
+          ctps: f.ctps,
+          salario: f.salario,
+        });
+      } else {
+        throw new Error("ERRO_AO_BUSCAR");
+      }
+    }
+    return funcionariosDTO;
+  }
+  public async cadastrarEnderecoPessoaGenerica(pessoaId: number, enderecoData: Endereco): Promise<Endereco> {
+    const pessoa = await this.pessoaRepo.buscarPorId(pessoaId);
+    if (!pessoa) {
+      throw new Error("NAO_ENCONTRADO");
+    }
+    const endereco = await this.pessoaRepo.cadastrarEndereco(enderecoData, pessoaId);
+    return endereco;
+  }
+  public async atualizarEnderecoPessoaGenerica(pessoaId: number, enderecoData: Endereco): Promise<Endereco> {
+    const pessoa = await this.pessoaRepo.buscarPorId(pessoaId);
+    if (!pessoa) {
+      throw new Error("NAO_ENCONTRADO");
+    }
+    const endereco = await this.pessoaRepo.atualizarEndereco(enderecoData, pessoaId);
+    return endereco;
+  }
+  public async removerEnderecoPessoaGenerica(pessoaId: number) {
+    const pessoa = await this.pessoaRepo.buscarPorId(pessoaId);
+    if (!pessoa) {
+      throw new Error("NAO_ENCONTRADO");
+    }
+    const pessoaAtualizada = await this.pessoaRepo.removerEndereco(pessoaId);
+    return pessoaAtualizada;
+  }
 };
 
 export default PessoaService;

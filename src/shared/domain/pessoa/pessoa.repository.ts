@@ -128,22 +128,17 @@ class PessoaRepository {
     });
   }
 
-  private async resolverIdEnderecoDaPessoaEmTransacao(tx: Prisma.TransactionClient, pessoaId: number): Promise<number | null> {
-    const pessoa = await tx.pessoas.findUnique({
-      where: { idPessoa_PK: pessoaId },
-      select: { idEndereco_FK: true },
-    });
+private async resolverIdEnderecoDaPessoaEmTransacao(
+  tx: Prisma.TransactionClient,
+  pessoaId: number,
+): Promise<number | null> {
+  const pessoa = await tx.pessoas.findUnique({  
+    where: { idPessoa_PK: pessoaId },
+    select: { idEndereco_FK: true },
+  });
 
-    if (pessoa?.idEndereco_FK) {
-      return pessoa.idEndereco_FK;
-    }
-
-    const enderecoExistente = await tx.enderecos.findUnique({
-      where: { idEndereco_PK: pessoaId },
-    });
-
-    return enderecoExistente ? pessoaId : null;
-  }
+  return pessoa?.idEndereco_FK ?? null;
+}
 
   public async atualizarEndereco(enderecoData: Endereco, pessoaId: number): Promise<Endereco> {
     const enderecoId = await this.resolverIdEnderecoDaPessoa(pessoaId);
@@ -184,13 +179,35 @@ class PessoaRepository {
     );
   };
   //retorna pessoa sem endereco
-  public async removerEndereco(pessoaId: number): Promise<PessoaDTO|null>{
-    await this.prisma.enderecos.delete({
-      where: { idEndereco_PK: pessoaId },
-    });
-    let resultado = await this.buscarPessoaPorId(pessoaId)
-    return resultado
+public async removerEndereco(pessoaId: number): Promise<PessoaDTO | null> {
+  const pessoa = await this.prisma.pessoas.findUnique({
+    where: { idPessoa_PK: pessoaId },
+    select: { idEndereco_FK: true },
+  });
+
+  if (!pessoa?.idEndereco_FK) {
+    return this.buscarPessoaPorId(pessoaId);
   }
+
+  const enderecoId = pessoa.idEndereco_FK;
+
+  await this.prisma.pessoas.update({
+    where: { idPessoa_PK: pessoaId },
+    data: { idEndereco_FK: null },
+  });
+
+  const [outrasPessoas, armazensCount, propriedadesCount] = await Promise.all([
+    this.prisma.pessoas.count({ where: { idEndereco_FK: enderecoId } }),
+    this.prisma.armazens.count({ where: { idEndereco_FK: enderecoId } }),
+    this.prisma.propriedades.count({ where: { idEndereco_FK: enderecoId } }),
+  ]);
+
+  if (outrasPessoas === 0 && armazensCount === 0 && propriedadesCount === 0) {
+    await this.prisma.enderecos.delete({ where: { idEndereco_PK: enderecoId } });
+  }
+
+  return this.buscarPessoaPorId(pessoaId);
+}
 
   public async verificarCpfExistente(cpf: string): Promise<boolean> {
     const existe = await this.prisma.pessoasfisicas.findUnique({

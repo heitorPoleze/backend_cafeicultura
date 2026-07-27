@@ -59,12 +59,12 @@ class FuncionarioRepository {
 
     const endereco = e
       ? new Endereco(
-          e.logradouro,
-          e.bairro,
           e.cidade,
+          e.bairro,
+          e.cep,
           e.uf,
           e.pais,
-          e.cep,
+          e.logradouro,
           e.idEndereco_PK,
         )
       : null;
@@ -83,6 +83,63 @@ class FuncionarioRepository {
 
     return new Funcionario(pessoa, f.ctps, Number(f.salario));
   };
-};
 
+public async listarFuncionarios(idAdministrador: number): Promise<Funcionario[] | null> {
+    const pessoas = await this.prisma.pessoas.findMany({
+      where: { idAdministrador_FK: idAdministrador },
+      include: {
+        pessoasfisicas: true,
+        enderecos: true,
+        usuarios: true,
+      },
+    });
+
+    if (!pessoas || pessoas.length === 0) return null;
+
+    const pessoasIds = pessoas.map((p) => p.idPessoa_PK);
+
+    const funcionariosData = await this.prisma.funcionarios.findMany({
+      where: { idPeFisica_PFK: { in: pessoasIds } },
+    });
+
+    const funcionarios: Funcionario[] = [];
+
+    pessoas.forEach((p) => {
+      const funcData = funcionariosData.find((f) => f.idPeFisica_PFK === p.idPessoa_PK);
+
+      if (p.pessoasfisicas && funcData) {
+        const e = p.enderecos;
+
+        const endereco = e
+          ? new Endereco(
+              e.cidade,
+              e.bairro,
+              e.cep,
+              e.uf,
+              e.pais,
+              e.logradouro,
+              e.idEndereco_PK,
+            )
+          : null;
+
+        const dados = {
+          id: p.idPessoa_PK,
+          idAdministrador: p.idAdministrador_FK,
+          dataCadastro: p.dataCadastro,
+          endereco: endereco,
+          nome: p.pessoasfisicas.nome,
+          cpf: p.pessoasfisicas.cpf,
+        };
+
+        const pessoa = PessoaFactory.criarPessoa("fisica", dados);
+
+        funcionarios.push(
+          new Funcionario(pessoa, funcData.ctps, Number(funcData.salario))
+        );
+      }
+    });
+
+    return funcionarios.length > 0 ? funcionarios : null;
+  }
+}
 export default FuncionarioRepository

@@ -68,7 +68,66 @@ router.get(
   [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
   pessoaController.buscarClientePorId.bind(pessoaController)
 );
-
+router.get(
+  "/funcionarios/id/",
+  // Só de estar logado já vai puxar o ID administrador do usuário logado.
+  exigeLogin(),
+  pessoaController.buscarFuncionarioPorIdAdministrador.bind(pessoaController)
+)
+router.post(
+  "/pessoa/cadastrar-endereco/:id",
+  exigeLogin(),
+  [
+    param("id").isInt().withMessage("O ID deve ser um número inteiro"),
+    body(["cidade", "Cidade"]).custom((value, { req }) => {
+          const cidade = value ?? req.body.cidade ?? req.body.Cidade;
+          return typeof cidade === "string" && cidade.trim() !== "";
+        }).withMessage("Cidade é obrigatória"),
+        body(["CEP", "cep", "Cep"]).custom((value, { req }) => {
+          const cep = value ?? req.body.CEP ?? req.body.cep ?? req.body.Cep;
+          return typeof cep === "string" && /^\d{5}-\d{3}$/.test(cep);
+        }).withMessage("CEP inválido"),
+        body(["UF", "uf", "Uf"]).custom((value, { req }) => {
+          const uf = value ?? req.body.UF ?? req.body.uf ?? req.body.Uf;
+          return typeof uf === "string" && uf.length === 2;
+        }).withMessage("UF deve ter 2 caracteres"),
+        body(["logradouro", "Logradouro"]).custom((value, { req }) => {
+          const logradouro = value ?? req.body.logradouro ?? req.body.Logradouro;
+          return typeof logradouro === "string" && logradouro.trim() !== "";
+        }).withMessage("Logradouro é obrigatório")
+  ],
+  pessoaController.cadastrarEnderecoPessoaGenerica.bind(pessoaController)
+)
+router.put(
+  "/pessoa/atualizar-endereco/:id",
+  exigeLogin(),
+  [
+    param("id").isInt().withMessage("O ID deve ser um número inteiro"),
+    body(["cidade", "Cidade"]).custom((value, { req }) => {
+          const cidade = value ?? req.body.cidade ?? req.body.Cidade;
+          return typeof cidade === "string" && cidade.trim() !== "";
+        }).withMessage("Cidade é obrigatória"),
+        body(["CEP", "cep", "Cep"]).custom((value, { req }) => {
+          const cep = value ?? req.body.CEP ?? req.body.cep ?? req.body.Cep;
+          return typeof cep === "string" && /^\d{5}-\d{3}$/.test(cep);
+        }).withMessage("CEP inválido"),
+        body(["UF", "uf", "Uf"]).custom((value, { req }) => {
+          const uf = value ?? req.body.UF ?? req.body.uf ?? req.body.Uf;
+          return typeof uf === "string" && uf.length === 2;
+        }).withMessage("UF deve ter 2 caracteres"),
+        body(["logradouro", "Logradouro"]).custom((value, { req }) => {
+          const logradouro = value ?? req.body.logradouro ?? req.body.Logradouro;
+          return typeof logradouro === "string" && logradouro.trim() !== "";
+        }).withMessage("Logradouro é obrigatório")
+  ],
+  pessoaController.atualizarEnderecoPessoaGenerica.bind(pessoaController)
+)
+router.delete(
+  "/pessoa/deletar-endereco/:id",
+  exigeLogin(),
+  [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
+  pessoaController.RemoverEnderecoPessoaGenerica.bind(pessoaController)
+)
 router.post(
   "/fornecedores",
   exigeLogin(),
