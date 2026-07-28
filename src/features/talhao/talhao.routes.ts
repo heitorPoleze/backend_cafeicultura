@@ -24,7 +24,7 @@ router.post(
     body("dataInicio").notEmpty().withMessage('A data de início é obrigatória.').isISO8601().withMessage('A data de início deve estar em um formato válido (ex: YYYY-MM-DD).'),
     body('tamanho.valor').isFloat({ gt: 0 }).withMessage('O valor do tamanho deve ser um número maior que zero.'),
     body('tamanho.medida').isIn(['m2', 'hectare']).withMessage('A medida do tamanho deve ser estritamente "m2" ou "hectare".'),
-    body('especie').isIn(['conilon', 'arabica']).withMessage('A espécie deve ser estritamente "conilon" ou "arabica".'),
+    body('especie').isIn(['Conilon', 'Arábica']).withMessage('A espécie deve ser estritamente Conilon ou Arábica.'),
     body('variedadesIds').isArray({ min: 1 }).withMessage('A lista de variedades é obrigatória e deve conter pelo menos um ID.'),
     body('variedadesIds.*').isInt({ gt: 0 }).withMessage('Todos os IDs das variedades devem ser números inteiros válidos.')
   ],

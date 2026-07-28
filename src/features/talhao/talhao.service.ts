@@ -36,8 +36,10 @@ class TalhaoService {
 
     if (areaNovoTalhaoM2 > areaDisponivelM2) {
       const disponivelHectares = areaDisponivelM2 / 10000;
+      const formatador = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 4, minimumFractionDigits: 0 });
       throw new Error(
-        `Capacidade excedida! A propriedade possui apenas ${areaDisponivelM2} m2 (ou ${disponivelHectares} hectares) disponíveis.`
+        `Capacidade excedida! A propriedade possui apenas ${formatador.format(Math.round(areaDisponivelM2))} m² ` +
+        `(ou ${formatador.format(disponivelHectares)} hectares) disponíveis.`
       );
     };
 
