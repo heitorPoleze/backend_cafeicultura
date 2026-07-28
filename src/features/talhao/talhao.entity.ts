@@ -1,8 +1,10 @@
 import Tamanho from "../../shared/domain/tamanho/tamanho.entity";
 import Variedade from "../../shared/domain/variedade/variedade.entity";
+
 export enum Especie {
-  Conilon = "conilon",
-  Arabica = "arabica",
+  Conilon = "Conilon",
+  Arabica = "Arábica",
+  Mista = "Mista"
 }
 
 // Tipo simplificado e ignorado por enquanto
