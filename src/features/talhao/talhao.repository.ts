@@ -165,13 +165,14 @@ class TalhaoRepository {
   }
 
   public async buscarVariedades(): Promise<
-    { id: number; descricao: string }[]
+    { id: number; descricao: string; especie: Especie}[]
   > {
     const variedades = await this.prisma.variedades.findMany();
 
     return variedades.map((variedade) => ({
       id: variedade.idVariedade_PK,
       descricao: variedade.descricao,
+      especie: variedade.especie === 0 ? Especie.Arabica : variedade.especie === 1 ? Especie.Conilon : Especie.Mista
     }));
   }
 
@@ -182,7 +183,7 @@ class TalhaoRepository {
     );
 
     const descricoesVariedades = db.variedadestalhoes.map(
-      (vt) => new Variedade(vt.variedades.idVariedade_PK, vt.variedades.descricao)
+      (vt) => new Variedade(vt.variedades.idVariedade_PK, vt.variedades.descricao, vt.variedades.especie === 0 ? Especie.Arabica : vt.variedades.especie === 1 ? Especie.Conilon : Especie.Mista)
     );
 
     return new Talhao(

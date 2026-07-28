@@ -1,19 +1,29 @@
+import { Especie } from "../../../features/talhao/talhao.entity";
+
 export default class Variedade {
-    private id: number;
-    private descricao: string;
+    private _id: number;
+    private _descricao: string;
+    private _especie: Especie;
 
-    constructor(id: number, descricao: string) {
-        this.id = id;
-        this.descricao = descricao;
+    constructor(id: number, descricao: string, especie: Especie) {
+        this._id = id;
+        this._descricao = descricao;
+        this._especie = especie;
     }
-    getId(): number {
-        return this.id;
+    get id(): number {
+        return this._id;
     }
-    getDescricao(): string {
-        return this.descricao;
+    get descricao(): string {
+        return this._descricao;
     }
-    toString(): string {
-        return `Variedade [id=${this.id}, descricao=${this.descricao}]`;
+    get especie(): Especie {
+        return this._especie;
     }
-
+    toJSON() {
+        return {
+            id: this.id,
+            descricao: this.descricao,
+            especie: this.especie
+        }
+    }
 }

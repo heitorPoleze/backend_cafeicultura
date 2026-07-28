@@ -63,7 +63,7 @@ components:
           example: [1, 3, 5]
 
 paths:
-  /api/talhoes:
+  /api/v1/talhoes:
     post:
       summary: Cadastra um novo Talhão
       tags: 
@@ -88,7 +88,20 @@ paths:
         '500':
           description: Erro interno ao cadastrar talhão
 
-  /api/talhoes/{id}/encerrar:
+  /api/v1/talhoes/variedades:
+    get:
+      summary: Busca todas as variedades do sistema
+      tags: 
+        - Talhões
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista de todas as variedades cadastradas
+        '500':
+          description: Erro interno ao buscar variedades
+
+  /api/v1/talhoes/{id}/encerrar:
     patch:
       summary: Encerra as atividades de um Talhão
       description: Define a data de fim do talhão, desativando-o no sistema.
@@ -131,7 +144,7 @@ paths:
         '500':
           description: Erro interno ao encerrar talhão
 
-  /api/talhoes/{id}:
+  /api/v1/talhoes/{id}:
     delete:
       summary: Exclui logicamente ou arquiva um Talhão
       tags: 
