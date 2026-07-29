@@ -31,6 +31,12 @@ export type BuscarTodosEventosDTO = {
   idSafra: number;
 }
 
+export type BuscarTodosEventosTalhaoDTO = {
+  idSafra: number;
+  idPropriedade: number;
+  idTalhao: number;
+}
+
 export type EventoDTO = {
   id: number | undefined;
   idTalhao: number;

@@ -280,6 +280,55 @@ class TratoCulturalRepository {
 
     return await Promise.all(tratos.map((trato) => this.mapToEntity(trato)));
   }
+  public async listarTodosTalhaoSafra(
+  idTalhao: number,
+  idSafra: number,
+  idPropriedade: number,
+  tx: Prisma.TransactionClient = this.prisma
+): Promise<TratoCultural[]> {
+  const tratos = await tx.tratosculturais.findMany({
+    where: {
+      eventosagricolas: {
+        idTalhao_FK: idTalhao,
+        talhoes: {
+          idPropriedade_FK: idPropriedade,
+        },
+        eventos: {
+          safras: {
+            idSafra_PK: idSafra,
+            idPropriedade_FK: idPropriedade,
+            arquivada: false,
+          },
+        },
+      },
+    },
+    include: {
+      tipostratos: true,
+      tratosinsumos: {
+        include: { insumos: true },
+      },
+      eventosagricolas: {
+        include: {
+          eventos: {
+            include: {
+              safras: true,
+              pessoaseventos: {
+                include: { pessoas: true },
+              },
+              transacoesfinanceiras: {
+                include: { formaspgto: true, despesas: true },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return await Promise.all(
+    tratos.map((trato) => this.mapToEntity(trato, tx))
+  );
+}
 
   public async buscarTiposTratos(): Promise<
     { id: number; descricao: string }[]
