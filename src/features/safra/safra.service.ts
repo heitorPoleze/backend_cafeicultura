@@ -38,7 +38,17 @@ export class SafraService {
 
     return await this.safraRepository.cadastrar(novaSafra);
   };
-
+  public async buscarAtivasPorPropriedade(idPropriedade: number, idUsuarioSessao: number): Promise<SafraRespostaDTO[]> {
+    const propriedade = await this.propriedadeRepo.buscarPorId(idPropriedade);
+    if (!propriedade) {
+      throw new Error('NAO_ENCONTRADA');
+    }
+    if (propriedade.idProprietario !== idUsuarioSessao) {
+      throw new Error('ACESSO_NEGADO');
+    }
+    const safras = await this.safraRepository.bucarAtivasPorPropriedade(idPropriedade);
+    return safras.map((safra) => safra.toJSON());
+  } 
   public async buscarPorId(id: number, idUsuarioSessao: number): Promise<SafraRespostaDTO> {
     const safra = await this.safraRepository.buscarPorId(id);
     if (!safra) {

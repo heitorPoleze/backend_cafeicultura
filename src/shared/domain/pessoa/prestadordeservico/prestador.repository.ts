@@ -24,7 +24,26 @@ class PrestadorRepository {
       return id;
     });
   };
-
+  public async buscarPrestadoresPorAdministrador(idAdministrador: number): Promise<Prestador[]> {
+    const prestadoresDb = await this.prisma.prestadoresdeservico.findMany({
+      include: {
+        pessoas: true
+      },
+      where: {  
+      pessoas: {
+          idAdministrador_FK: idAdministrador
+        }
+      }
+    });
+    const prestadores: Prestador[] = [];
+    for (const p of prestadoresDb) {
+      const pessoa = await this.buscarPorId(p.idPeFisica_PFK);
+      if (pessoa) {
+        prestadores.push(pessoa);
+      }
+    }
+    return prestadores;
+  }
   public async buscarPorId(id: number): Promise<Prestador | null> {
     const m = await this.prisma.prestadoresdeservico.findUnique({
       where: { idPeFisica_PFK: id },

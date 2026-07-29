@@ -3,7 +3,7 @@ import { validationResult } from "express-validator";
 import PessoaService from "./pessoa.service";
 import Endereco from "../../shared/domain/endereco/endereco.vo";
 class PessoaController {
-  constructor(private service: PessoaService) {}
+  constructor(private service: PessoaService) { }
 
   public async cadastrarCliente(req: Request, res: Response) {
     const erros = validationResult(req);
@@ -204,6 +204,7 @@ class PessoaController {
       };
     };
   };
+
   public async buscarFuncionarioPorIdAdministrador(req: Request, res: Response) {
     try {
       const funcionarios = await this.service.buscarFuncionariosPorIdAdministrador(
@@ -222,6 +223,89 @@ class PessoaController {
           return res.status(500).json({ error: "Erro ao buscar funcionário" });
         };
       };
+    };
+  };
+  public async buscarClientesPorIdAdministrador(req: Request, res: Response) {
+    try {
+      const clientes = await this.service.buscarClientesPorIdAdministrador(
+        req.session.idUsuario!
+      );
+      res.status(200).json(clientes);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === "NAO_ENCONTRADO") {
+          return res.status(404).json({ error: "Cliente não encontrado" });
+        } else if (error.message === "ACESSO_NEGADO") {
+          return res
+            .status(403)
+            .json({ error: "Acesso negado! Não pode visualizar cliente" });
+        } else if (error.message === "ERRO_AO_BUSCAR") {
+          return res.status(500).json({ error: "Erro ao buscar cliente" });
+        };
+      }
+    };
+  };
+
+  public async buscarMeeirosPorIdAdministrador(req: Request, res: Response) {
+    try {
+      const meeiros = await this.service.buscarMeeirosPorIdAdministrador(
+        req.session.idUsuario!
+      );
+      res.status(200).json(meeiros);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === "NAO_ENCONTRADO") {
+          return res.status(404).json({ error: "Meeiro não encontrado" });
+        } else if (error.message === "ACESSO_NEGADO") {
+          return res
+            .status(403)
+            .json({ error: "Acesso negado! Não pode visualizar meeiro" });
+        } else if (error.message === "ERRO_AO_BUSCAR") {
+          return res.status(500).json({ error: "Erro ao buscar meeiro" });
+        };
+      }
+    };
+  };
+
+  public async buscarPrestadoresDeServicoPorIdAdministrador(req: Request, res: Response) {
+    try {
+      const meeiros = await this.service.buscarPrestadoresDeServicoPorIdAdministrador(
+        req.session.idUsuario!
+      );
+      res.status(200).json(meeiros);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === "NAO_ENCONTRADO") {
+          return res.status(404).json({ error: "Prestador de Serviço não encontrado" });
+        } else if (error.message === "ACESSO_NEGADO") {
+          return res
+            .status(403)
+            .json({ error: "Acesso negado! Não pode visualizar prestador de serviço" });
+        } else if (error.message === "ERRO_AO_BUSCAR") {
+          return res.status(500).json({ error: "Erro ao buscar prestador de serviço" });
+        };
+      }
+    };
+  };
+
+  public async buscarFornecedoresPorIdAdministrador(req: Request, res: Response) {
+    try {
+      const fornecedores = await this.service.buscarFornecedoresPorIdAdministrador(
+        req.session.idUsuario!
+      );
+      res.status(200).json(fornecedores);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === "NAO_ENCONTRADO") {
+          return res.status(404).json({ error: "Fornecedor não encontrado" });
+        } else if (error.message === "ACESSO_NEGADO") {
+          return res
+            .status(403)
+            .json({ error: "Acesso negado! Não pode visualizar fornecedor" });
+        } else if (error.message === "ERRO_AO_BUSCAR") {
+          return res.status(500).json({ error: "Erro ao buscar fornecedor" });
+        };
+      }
     };
   };
 
@@ -277,7 +361,7 @@ class PessoaController {
 
   public async listarPessoas(req: Request, res: Response) {
     try {
-      const pessoas = await this.service.listarPessoas({idAdministrador: req.session.idUsuario!});
+      const pessoas = await this.service.listarPessoas({ idAdministrador: req.session.idUsuario! });
       res.status(200).json(pessoas);
     } catch (error) {
       if (error instanceof Error) {
@@ -288,7 +372,8 @@ class PessoaController {
       };
       res.status(500).json({ error: "Erro ao listar pessoas" });
     };
-  }
+  };
+
   public async cadastrarEnderecoPessoaGenerica(req: Request, res: Response) {
     const erros = validationResult(req);
     if (!erros.isEmpty()) {
@@ -305,7 +390,7 @@ class PessoaController {
           req.body.pais,
           req.body.logradouro,
           req.body.idEndereco
-          
+
         )
       );
       res.status(201).json({ message: "Endereço cadastrado com sucesso", endereco: req.body });
@@ -318,7 +403,8 @@ class PessoaController {
       };
       res.status(500).json({ error: "Erro ao cadastrar endereço" });
     };
-  }
+  };
+
   public async atualizarEnderecoPessoaGenerica(req: Request, res: Response) {
     const erros = validationResult(req);
     if (!erros.isEmpty()) {
@@ -347,14 +433,15 @@ class PessoaController {
       };
       res.status(500).json({ error: "Erro ao atualizar endereço" });
     };
-  }
+  };
+
   public async RemoverEnderecoPessoaGenerica(req: Request, res: Response) {
     const erros = validationResult(req);
     if (!erros.isEmpty()) {
       return res.status(400).json({ erros: erros.array() });
     }
     try {
-     let response =  await this.service.removerEnderecoPessoaGenerica(
+      let response = await this.service.removerEnderecoPessoaGenerica(
         Number(req.params.id)
       );
       res.status(200).json({ message: "Endereço removido com sucesso", response });
@@ -367,8 +454,8 @@ class PessoaController {
       };
       res.status(500).json({ error: "Erro ao remover endereço" });
     }
-  }
-
+  };
+  
 };
 
 export default PessoaController;

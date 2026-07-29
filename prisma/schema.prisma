@@ -33,6 +33,8 @@ model armazens {
 
 model clientes {
   idCliente_PFK Int @id @unique(map: "idCliente_PFK_UNIQUE") @db.UnsignedInt
+  pessoas        pessoas @relation(fields: [idCliente_PFK], references: [idPessoa_PK])
+
 }
 
 model colheitas {
@@ -193,6 +195,9 @@ model formaspgto {
 
 model fornecedores {
   idFornecedor_PFK Int @id @unique(map: "idFornecedor_PFK_UNIQUE") @db.UnsignedInt
+  pessoas        pessoas @relation(fields: [idFornecedor_PFK], references: [idPessoa_PK])
+
+
 }
 
 model funcionarios {
@@ -242,6 +247,7 @@ model itenstipos {
 
 model meeiros {
   idPeFisica_PFK Int @id @unique(map: "idPessoaFisica_PFK_UNIQUE") @db.UnsignedInt
+  pessoas        pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK])
 }
 
 model metodosfermentacoes {
@@ -272,6 +278,10 @@ model pessoas {
   pessoaseventos        pessoaseventos[]
   pessoasfisicas        pessoasfisicas?
   pessoasjuridicas      pessoasjuridicas?
+  meeiros               meeiros?
+  fornecedores          fornecedores?
+  clientes               clientes?
+  prestadoresdeservico     prestadoresdeservico?
   transacoesfinanceiras transacoesfinanceiras[]
   usuarios              usuarios?
 
@@ -324,6 +334,8 @@ model presecagens {
 
 model prestadoresdeservico {
   idPeFisica_PFK Int @id @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
+  pessoas        pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK])
+
 }
 
 model propriedades {

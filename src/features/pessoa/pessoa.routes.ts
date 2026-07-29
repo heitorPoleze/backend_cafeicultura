@@ -74,6 +74,30 @@ router.get(
   exigeLogin(),
   pessoaController.buscarFuncionarioPorIdAdministrador.bind(pessoaController)
 )
+router.get(
+  "/meeiros/id/",
+  // Só de estar logado já vai puxar o ID administrador do usuário logado.
+  exigeLogin(),
+  pessoaController.buscarMeeirosPorIdAdministrador.bind(pessoaController)
+)
+router.get(
+  "/prestadores/id/",
+  // Só de estar logado já vai puxar o ID administrador do usuário logado.
+  exigeLogin(),
+  pessoaController.buscarPrestadoresDeServicoPorIdAdministrador.bind(pessoaController)
+)
+router.get(
+  "/fornecedores/id/",
+  // Só de estar logado já vai puxar o ID administrador do usuário logado.
+  exigeLogin(),
+  pessoaController.buscarFornecedoresPorIdAdministrador.bind(pessoaController)
+)
+router.get(
+  "/clientes/id/",
+  // Só de estar logado já vai puxar o ID administrador do usuário logado.
+  exigeLogin(),
+  pessoaController.buscarClientesPorIdAdministrador.bind(pessoaController)
+)
 router.post(
   "/pessoa/cadastrar-endereco/:id",
   exigeLogin(),
