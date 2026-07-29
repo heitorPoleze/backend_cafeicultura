@@ -10,6 +10,7 @@ type Pessoa = {
   inscrEstadual?: string | null;
   endereco: Endereco | null;
   dataCadastro: Date;
+  papel?: string | null
 };
 
 export default Pessoa;

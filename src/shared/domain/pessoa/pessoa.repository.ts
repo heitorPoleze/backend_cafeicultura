@@ -14,7 +14,20 @@ const pessoaInclude = {
 type PessoaPayload = Prisma.pessoasGetPayload<{
   include: typeof pessoaInclude;
 }>;
+const searchPessoas = {
+  enderecos: true,
+  pessoasfisicas: true,
+  pessoasjuridicas: true,
+  funcionarios: true,
+  prestadoresdeservico: true,
+  fornecedores: true,
+  clientes: true,
+  meeiros: true,
+} satisfies Prisma.pessoasInclude;
 
+type PessoaSearchPayload = Prisma.pessoasGetPayload<{
+  include: typeof searchPessoas;
+}>;
 class PessoaRepository {
   constructor(private readonly prisma: PrismaClient) { }
   //retornar pessoa construida
@@ -248,25 +261,56 @@ class PessoaRepository {
     if (!pessoaDB) return null;
     return this.mapToEntity(pessoaDB);
   };
-
+private obterPapel(p: PessoaSearchPayload): string | null {
+  if (p.funcionarios) return 'funcionario';
+  if (p.clientes) return 'cliente';
+  if (p.meeiros) return 'meeiro';
+  if (p.fornecedores) return 'fornecedor';
+  if (p.prestadoresdeservico) return 'prestadordeservico';
+  return null;
+}
   public async listarPessoas(idAdministrador: number): Promise<PessoaBase[]> {
     const pessoasDB = await this.prisma.pessoas.findMany({
       where: { idAdministrador_FK: idAdministrador },
-      include: pessoaInclude,
+      include: searchPessoas,
     });
-
     console.log(pessoasDB);
-
     const pessoas: PessoaBase[] = [];
 
     for (const p of pessoasDB) {
-      const pessoaMapeada = this.mapToEntity(p);
+      const pessoaMapeada = this.mapToEntityComPapeis(p);
       if (pessoaMapeada) {
         pessoas.push(pessoaMapeada);
       };
     };
     return pessoas;
   };
+ private mapToEntityComPapeis(p: PessoaSearchPayload): PessoaBase | null {
+      if (!p) return null;
+
+      const e = p.enderecos;
+      const endereco = e
+        ? new Endereco(e.logradouro, e.bairro, e.cidade, e.uf, e.pais, e.cep, e.idEndereco_PK)
+        : null;
+
+      const tipoPessoa = p.pessoasfisicas ? 'fisica' : 'juridica';
+      const papel = this.obterPapel(p);
+
+      const dados = {
+        id: p.idPessoa_PK,
+        idAdministrador: p.idAdministrador_FK,
+        dataCadastro: p.dataCadastro,
+        endereco: endereco,
+        papel,
+        nome: p.pessoasfisicas?.nome,
+        cpf: p.pessoasfisicas?.cpf,
+        razaoSocial: p.pessoasjuridicas?.razaoSocial,
+        cnpj: p.pessoasjuridicas?.cnpj,
+        inscEstadual: p.pessoasjuridicas?.inscEstadual,
+      };
+
+      return PessoaFactory.criarPessoa(tipoPessoa, dados);
+  }
 
   private mapToEntity(p: PessoaPayload): PessoaBase | null {
     if (!p) return null;
@@ -293,7 +337,7 @@ class PessoaRepository {
 
     return PessoaFactory.criarPessoa(tipoPessoa, dados);
   }
-
+ 
   //retornam pessoa atualizada depois da alteração 
   public async atualizarNomePessoaFisica(cpf: string, nome?: string): Promise<PessoaDTO | null> {
     await this.prisma.pessoasfisicas.update({
@@ -443,7 +487,7 @@ class PessoaRepository {
       dataCadastro: pessoaBase.dataCadastro,
     };
   }
-public async atualizarCnpj(cnpj:string,pessoaId:number)Promise<PessoaDTO | null>{
+/*public async atualizarCnpj(cnpj:string,pessoaId:number)Promise<PessoaDTO | null>{
     const pessoaBase = await this.prisma.pessoas.findUnique({
       where: { idPessoa_PK: pessoaId },
       include: { pessoasfisicas: true, pessoasjuridicas: true }
@@ -467,9 +511,8 @@ public async atualizarCnpj(cnpj:string,pessoaId:number)Promise<PessoaDTO | null>
     } else {
     throw new Error("Esta pessoa não é uma pessoa jurídica.");
   }
-  
 }
-
+  */
 }
 
 

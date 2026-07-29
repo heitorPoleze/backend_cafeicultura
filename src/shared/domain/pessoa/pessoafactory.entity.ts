@@ -12,7 +12,8 @@ class PessoaFactory {
         dados.nome!,
         dados.cpf!,
         dados.endereco,
-        dados.dataCadastro
+        dados.dataCadastro,
+        dados.papel || null
       );
     } else if (tipo === 'juridica') {
       return new PessoaJuridica(
@@ -22,7 +23,8 @@ class PessoaFactory {
         dados.razaoSocial ?? "",
         dados.inscrEstadual ?? null,
         dados.endereco,
-        dados.dataCadastro
+        dados.dataCadastro,
+        dados.papel || null
       );
     };
 

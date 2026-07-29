@@ -15,9 +15,10 @@ class PessoaJuridica extends PessoaBase {
     razaoSocial: string,
     inscrEstadual: string | null = null,
     endereco: Endereco | null = null,
-    dataCadastro: Date
+    dataCadastro: Date,
+    papel:string | null = null
   ) {
-    super(id, idAdministrador, endereco, dataCadastro);
+    super(id, idAdministrador, endereco, dataCadastro,papel);
 
     if (!cnpjValidator.isValid(cnpj)) {
       throw new Error("CNPJ inválido. O CNPJ deve conter 18 caracteres. Formato: XX.XXX.XXX/XXXX-XX");

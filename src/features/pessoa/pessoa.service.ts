@@ -276,6 +276,7 @@ class PessoaService {
           nome: p.nome,
           cpf: p.cpf,
           endereco: p.endereco,
+          papel: p.papel
         });
       } else if (p instanceof PessoaJuridica) {
         pessoasDTO.push({
@@ -286,6 +287,7 @@ class PessoaService {
           cnpj: p.cnpj,
           inscrEstadual: p.inscrEstadual,
           endereco: p.endereco,
+          papel: p.papel
         });
       } else {
         throw new Error("ERRO_AO_BUSCAR");
