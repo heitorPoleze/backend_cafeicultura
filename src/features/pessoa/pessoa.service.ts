@@ -31,7 +31,6 @@ import Prestador from "../../shared/domain/pessoa/prestadordeservico/prestador.e
 import PessoaFisica from "../../shared/domain/pessoa/pessoafisica.entity";
 import PessoaJuridica from "../../shared/domain/pessoa/pessoajuridica.entity";
 import Endereco from "../../shared/domain/endereco/endereco.vo";
-import PessoaDTO from "../../shared/domain/pessoa/pessoa.dto";
 
 class PessoaService {
   constructor(
@@ -456,6 +455,50 @@ class PessoaService {
     }
     const pessoaAtualizada = await this.pessoaRepo.removerEndereco(pessoaId);
     return pessoaAtualizada;
+  }
+  public async atualizarNomeOuRazaoSocial(dados: Record<string, unknown>, pessoaId: number): Promise<void> {
+    const pessoa = await this.pessoaRepo.buscarPorId(pessoaId)
+
+    if (!pessoa) {
+      throw new Error(`Pessoa com ID ${pessoaId} não encontrado.`);
+    }
+
+    const perfil = pessoa
+    if (perfil instanceof PessoaFisica) {
+      const novoNome = dados.nome as string;
+      if (!novoNome || novoNome.trim() === "") {
+        throw new Error("Nome é obrigatório.");
+      }
+      if (novoNome.length < 3) {
+        throw new Error("Nome deve ter no mínimo 3 caracteres.");
+      }
+      if (novoNome.length > 100) {
+        throw new Error("Nome deve ter no máximo 100 caracteres.");
+      }
+      await this.pessoaRepo.atualizarNomePessoaFisica(perfil.cpf, novoNome);
+    } else if (perfil instanceof PessoaJuridica) {
+      const novaRazaoSocial = dados.razaoSocial as string;
+
+      if (!novaRazaoSocial || novaRazaoSocial.trim() === "") {
+        throw new Error("Razão Social é obrigatória.");
+      }
+      if (novaRazaoSocial.length < 3) {
+        throw new Error("Razão Social deve ter no mínimo 3 caracteres.");
+      }
+      if (novaRazaoSocial.length > 100) {
+        throw new Error("Razão Social deve ter no máximo 100 caracteres.");
+      }
+      await this.pessoaRepo.atualizarRazaoSocial(
+        perfil.cnpj,
+        novaRazaoSocial,
+      );
+    } else {
+      throw new Error("Tipo de pessoa inválido.");
+    }
+  }
+  public async atualizarCpf(cpf:string,pessoaId:number){
+   let resultado =  await this.pessoaRepo.atualizarCpfPessoa(cpf,pessoaId)
+   return resultado
   }
 };
 

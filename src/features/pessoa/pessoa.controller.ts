@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import PessoaService from "./pessoa.service";
 import Endereco from "../../shared/domain/endereco/endereco.vo";
+import { IsCPF } from "cpf-cnpj-validator/class-validator";
+import { cpfValidator } from "cpf-cnpj-validator";
 class PessoaController {
   constructor(private service: PessoaService) { }
 
@@ -455,7 +457,34 @@ class PessoaController {
       res.status(500).json({ error: "Erro ao remover endereço" });
     }
   };
-  
+  public async AtualizarNomeOuRazaoSocial(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) {
+      return res.status(400).json({ erros: erros.array() })
+    } try {
+      const pessoaId = Number(req.params.id);
+      await this.service.atualizarNomeOuRazaoSocial(req.body, pessoaId);
+      res.status(200).json({ mensagem: "Nome ou Razão Social atualizadas com sucesso.", novaInformacao: req.body });
+    } catch (error: unknown) {
+      res.status(400).json({ mensagem: (error as Error).message })
+    }
+  }
+  public async atualizarCpf(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) {
+      return res.status(400).json({ erros: erros.array() })
+    } try {
+      const pessoaId = Number(req.params.id);
+      const cpf = req.body.cpf
+      IsCPF(cpf);
+      cpfValidator.isValid(cpf);
+      let resposta = await this.service.atualizarCpf(cpf, pessoaId);
+      return resposta;
+    } catch (error: unknown) {
+      res.status(400).json({ mensagem: (error as Error).message })
+    }
+  }
+
 };
 
 export default PessoaController;

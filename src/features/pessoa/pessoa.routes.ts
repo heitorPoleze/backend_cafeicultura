@@ -227,5 +227,39 @@ router.get(
   exigeLogin(),
   pessoaController.listarPessoas.bind(pessoaController)
 );
+router.put(
+  "/pessoas/:id/identificacao",
+  exigeLogin(),
+  pessoaController.AtualizarNomeOuRazaoSocial.bind(pessoaController),
+  [
+    body("nome")
+      .optional()
+      .isString().withMessage("Nome deve ser uma string"),
+    body("razaoSocial")
+      .optional()
+      .isString().withMessage("Razão Social deve ser uma string"),
+  ],
+);
+router.put("/pessoas/:id/cpf",
+  exigeLogin(),
+  [
+    body("cpf").custom((value) => validarCPF.isValid(value, true)).withMessage("O CPF informado deve estar formatado corretamente. Ex: 000.000.000-00"),
+  ],
+  pessoaController.atualizarCpf.bind(pessoaController)
+)
+
+
+
+//router put razaoSocial //router put nome
+//router put cpf
+
+
+
+//router put cnpj
+//router put inscricaoEstadual
+
+//misto
+//router put telefone
+
 
 export default router;
