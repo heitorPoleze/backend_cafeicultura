@@ -25,6 +25,22 @@ export class SafraRepository {
 
     return data.idSafra_PK;
   };
+  public async bucarAtivasPorPropriedade(idPropriedade: number): Promise<Safra[]> {
+    const data = await this.prisma.safras.findMany({
+      where: {
+        idPropriedade_FK: idPropriedade,
+        dataFim: null,
+        arquivada: false,
+      },
+    });
+    return data.map((safra) => new Safra({
+      id: safra.idSafra_PK,
+      idPropriedade: safra.idPropriedade_FK,
+      dataInicio: safra.dataInicio,
+      dataFim: safra.dataFim,
+      arquivada: safra.arquivada,
+    }));
+  }
 
   public async buscarPorId(id: number): Promise<Safra | null> {
     const data = await this.prisma.safras.findUnique({

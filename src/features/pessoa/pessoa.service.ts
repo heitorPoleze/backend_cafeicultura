@@ -321,6 +321,118 @@ class PessoaService {
     }
     return funcionariosDTO;
   }
+  public async buscarClientesPorIdAdministrador(idAdministrador: number): Promise<ClienteResponseDTO[]> {
+    const clientes = await this.clienteRepo.buscarClientesPorAdministrador(idAdministrador);
+    if (!clientes) return [];
+    const clientesDTO: ClienteResponseDTO[] = [];
+    for (const c of clientes) {
+      if (c.pessoa instanceof PessoaFisica) {
+        clientesDTO.push({
+          id: c.pessoa.id!,
+          idAdministrador: c.pessoa.idAdministrador,
+          dataCadastro: c.pessoa.dataCadastro,
+          nome: c.pessoa.nome,
+          cpf: c.pessoa.cpf,
+          endereco: c.pessoa.endereco,
+        });
+      } else if (c.pessoa instanceof PessoaJuridica) {
+        clientesDTO.push({
+          id: c.pessoa.id!,
+          idAdministrador: c.pessoa.idAdministrador,
+          dataCadastro: c.pessoa.dataCadastro,
+          razaoSocial: c.pessoa.razaoSocial,
+          cnpj: c.pessoa.cnpj,
+          inscrEstadual: c.pessoa.inscrEstadual,
+          endereco: c.pessoa.endereco,
+        });
+      }
+    }
+    return clientesDTO;
+  }
+  public async buscarFornecedoresPorIdAdministrador(idAdministrador: number): Promise<FornecedorResponseDTO[]> {
+    const fornecedores = await this.fornecedorRepo.buscarFornecedoresPorAdministrador(idAdministrador);
+    if (!fornecedores) return [];
+    const fornecedoresDTO: FornecedorResponseDTO[] = [];
+    for (const f of fornecedores) {
+      if (f.pessoa instanceof PessoaFisica) {
+        fornecedoresDTO.push({
+          id: f.pessoa.id!,
+          idAdministrador: f.pessoa.idAdministrador,
+          dataCadastro: f.pessoa.dataCadastro,
+          nome: f.pessoa.nome,
+          cpf: f.pessoa.cpf,
+          endereco: f.pessoa.endereco,
+        });
+      } else if (f.pessoa instanceof PessoaJuridica) {
+        fornecedoresDTO.push({
+          id: f.pessoa.id!,
+          idAdministrador: f.pessoa.idAdministrador,
+          dataCadastro: f.pessoa.dataCadastro,
+          razaoSocial: f.pessoa.razaoSocial,
+          cnpj: f.pessoa.cnpj,
+          inscrEstadual: f.pessoa.inscrEstadual,
+          endereco: f.pessoa.endereco,
+        });
+      }
+    }
+    return fornecedoresDTO;
+  }
+  public async buscarMeeirosPorIdAdministrador(idAdministrador: number): Promise<MeeiroResponseDTO[]> {
+    const meeiros = await this.meeiroRepo.buscarMeeirosPorAdministrador(idAdministrador);
+    if (!meeiros) return [];
+    const meeirosDTO: MeeiroResponseDTO[] = [];
+    for (const m of meeiros) {
+      if (m.pessoa instanceof PessoaFisica) {
+        meeirosDTO.push({
+          id: m.pessoa.id!,
+          idAdministrador: m.pessoa.idAdministrador,
+          dataCadastro: m.pessoa.dataCadastro,
+          nome: m.pessoa.nome,
+          cpf: m.pessoa.cpf,
+          endereco: m.pessoa.endereco,
+        });
+      }else if (m.pessoa instanceof PessoaJuridica) {
+        meeirosDTO.push({
+          id: m.pessoa.id!,
+          idAdministrador: m.pessoa.idAdministrador,
+          dataCadastro: m.pessoa.dataCadastro,
+          razaoSocial: m.pessoa.razaoSocial,
+          cnpj: m.pessoa.cnpj,
+          inscrEstadual: m.pessoa.inscrEstadual,
+          endereco: m.pessoa.endereco,
+        });
+      }
+    }
+    return meeirosDTO;
+  }
+  public async buscarPrestadoresDeServicoPorIdAdministrador(idAdministrador: number): Promise<PrestadorResponseDTO[]> {
+    const prestadores = await this.prestadorRepo.buscarPrestadoresPorAdministrador(idAdministrador);
+    if (!prestadores) return [];
+    const prestadoresDTO: PrestadorResponseDTO[] = [];
+    for (const p of prestadores) {
+      if (p.pessoa instanceof PessoaFisica) {
+        prestadoresDTO.push({
+          id: p.pessoa.id!,
+          idAdministrador: p.pessoa.idAdministrador,
+          dataCadastro: p.pessoa.dataCadastro,
+          nome: p.pessoa.nome,
+          cpf: p.pessoa.cpf,
+          endereco: p.pessoa.endereco,
+        });
+      } else if (p.pessoa instanceof PessoaJuridica) {
+        prestadoresDTO.push({
+          id: p.pessoa.id!,
+          idAdministrador: p.pessoa.idAdministrador,
+          dataCadastro: p.pessoa.dataCadastro,
+          razaoSocial: p.pessoa.razaoSocial,
+          cnpj: p.pessoa.cnpj,
+          inscrEstadual: p.pessoa.inscrEstadual,
+          endereco: p.pessoa.endereco,
+        });
+      }
+    }
+    return prestadoresDTO;
+  }
   public async cadastrarEnderecoPessoaGenerica(pessoaId: number, enderecoData: Endereco): Promise<Endereco> {
     const pessoa = await this.pessoaRepo.buscarPorId(pessoaId);
     if (!pessoa) {

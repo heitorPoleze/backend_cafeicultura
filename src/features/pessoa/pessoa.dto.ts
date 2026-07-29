@@ -50,8 +50,8 @@ export type FuncionarioResponseDTO = PessoaFisicaResponseDTO & {
     salario: number;
 };
 
-export type MeeiroResponseDTO = PessoaFisicaResponseDTO;
-export type PrestadorResponseDTO = PessoaFisicaResponseDTO;
+export type MeeiroResponseDTO = PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO;
+export type PrestadorResponseDTO = PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO;
 
 export type ClienteResponseDTO = PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO;
 export type FornecedorResponseDTO = PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO;

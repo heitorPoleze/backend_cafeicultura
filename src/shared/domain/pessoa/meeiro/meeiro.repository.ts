@@ -24,7 +24,26 @@ class MeeiroRepository {
       return id;
     });
   };
-
+  public async buscarMeeirosPorAdministrador(idAdministrador: number): Promise<Meeiro[]> {
+    const meeirosDb = await this.prisma.meeiros.findMany({
+      include: {
+        pessoas: true
+      },
+      where: {
+        pessoas: {
+          idAdministrador_FK: idAdministrador
+        }
+      },
+    });
+    const meeiros: Meeiro[] = [];
+    for (const m of meeirosDb) {
+      const pessoa = await this.buscarPorId(m.idPeFisica_PFK);
+      if (pessoa) {
+        meeiros.push(pessoa);
+      }
+    }
+    return meeiros;
+  }
   public async buscarPorId(id: number): Promise<Meeiro | null> {
     const m = await this.prisma.meeiros.findUnique({
       where: { idPeFisica_PFK: id },

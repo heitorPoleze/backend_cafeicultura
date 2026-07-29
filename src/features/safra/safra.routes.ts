@@ -54,7 +54,14 @@ router.get(
   ],
   safraController.buscarPorId.bind(safraController)
 );
-
+router.get(
+  '/propriedade/:idPropriedade',
+  exigeLogin(),
+  [
+    param('idPropriedade').isInt().withMessage('O ID da propriedade deve ser um número inteiro.'),
+  ],
+  safraController.buscarAtivasPorPropriedade.bind(safraController)
+);
 router.patch(
   '/:id/finalizar',
   exigeLogin(),

@@ -26,7 +26,26 @@ class ClienteRepository {
       return id;
     });
   };
-
+  public async buscarClientesPorAdministrador(idAdministrador: number): Promise<Cliente[]> {
+    const clientesDb = await this.prisma.clientes.findMany({
+      include: {
+        pessoas: true
+      },
+      where: {
+        pessoas: {
+          idAdministrador_FK: idAdministrador
+        }
+      },
+    });
+    const clientes: Cliente[] = [];
+    for (const c of clientesDb) {
+      const pessoa = await this.buscarPorId(c.idCliente_PFK);
+      if (pessoa) {
+        clientes.push(pessoa);
+      }
+    }
+    return clientes;
+  }
   public async buscarPorId(id: number): Promise<Cliente | null> {
     const c = await this.prisma.clientes.findUnique({
       where: { idCliente_PFK: id }
