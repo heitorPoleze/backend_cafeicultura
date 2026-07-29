@@ -1,17 +1,29 @@
 import { Router } from 'express';
 import { body, param } from 'express-validator';
+import TransacaoRepository from '../../shared/domain/transacaofinanceira/transacaofinanceira.repository';
 import SafraController from './safra.controller';
 import SafraService from './safra.service';
 import SafraRepository from './safra.repository';
+import TratoRepository from '../tratocultural/tratocultural.repository';
 import PropriedadeRepo from '../propriedade/propriedade.repository';
 import exigeLogin from '../../shared/middlewares/exigeLogin';
 import { prisma } from "../../shared/config/database";
+import EventoRepository from '../../shared/domain/evento/evento.repository';
+import DespesaRepository from '../despesa/despesa.repository';
+import PessoaRepository from '../../shared/domain/pessoa/pessoa.repository';
+import { EventoAgricolaRepository } from '../../shared/domain/evento/eventoagricola/eventoagricola.repository';
 
 const router = Router();
 
+const pessoaRepository = new PessoaRepository(prisma);
+const transacaoRepository = new TransacaoRepository(prisma);
+const despesaRepository = new DespesaRepository(prisma, transacaoRepository, pessoaRepository);
 const safraRepository = new SafraRepository(prisma);
+const eventoRepository = new EventoRepository(prisma, despesaRepository);
+const eventoAgricolaRepository = new EventoAgricolaRepository(prisma);
 const propriedadeRepo = new PropriedadeRepo(prisma);
-const safraService = new SafraService(safraRepository, propriedadeRepo);
+const tratoRepository = new TratoRepository(prisma, eventoRepository, eventoAgricolaRepository, pessoaRepository, despesaRepository);
+const safraService = new SafraService(prisma, safraRepository, propriedadeRepo, tratoRepository);
 const safraController = new SafraController(safraService);
 
 router.post(
@@ -22,6 +34,16 @@ router.post(
     body('dataInicio').isISO8601().withMessage('A data de início é obrigatória e deve ser uma data válida.'),
   ],
   safraController.cadastrar.bind(safraController)
+);
+
+router.get(
+  '/propriedade/:id/safra/:idSafra/relatorios/eventos',
+  exigeLogin(),
+  [
+    param('id').isInt({ gt: 0 }).withMessage('ID da propriedade inválido.'),
+    param('idSafra').isInt({ gt: 0 }).withMessage('ID da safra inválido.')
+  ],
+  safraController.relatorioEventos.bind(safraController)
 );
 
 router.get(

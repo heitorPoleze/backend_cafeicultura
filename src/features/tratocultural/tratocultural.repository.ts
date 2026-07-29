@@ -182,8 +182,9 @@ class TratoCulturalRepository {
   public async listarTodosSafra(
     idSafra: number,
     idPropriedade: number,
+    tx: Prisma.TransactionClient = this.prisma
   ): Promise<TratoCultural[]> {
-    const tratos = await this.prisma.tratosculturais.findMany({
+    const tratos = await tx.tratosculturais.findMany({
       where: {
         eventosagricolas: {
           eventos: {
@@ -225,7 +226,7 @@ class TratoCulturalRepository {
       },
     });
 
-    return await Promise.all(tratos.map((trato) => this.mapToEntity(trato)));
+    return await Promise.all(tratos.map((trato) => this.mapToEntity(trato, tx)));
   }
 
   public async listarTodosTalhao(
@@ -392,7 +393,7 @@ class TratoCulturalRepository {
 
   private async mapToEntity(
     tratoDB: TratoCulturalPayload,
-    prisma: PrismaClient = this.prisma
+    prisma: Prisma.TransactionClient = this.prisma
   ): Promise<TratoCultural> {
     const eventoBase = tratoDB.eventosagricolas.eventos;
 
