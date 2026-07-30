@@ -38,7 +38,7 @@ class Usuario {
   };
 
   public async criptografarSenha(): Promise<void> {
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(12);
     this._senha = await bcrypt.hash(this._senha, salt);
   };
 
