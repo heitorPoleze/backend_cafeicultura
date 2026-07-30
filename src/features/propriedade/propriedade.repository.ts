@@ -1,12 +1,12 @@
 import Propriedade from "./propriedade.entity";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import Tamanho from "../../shared/domain/tamanho/tamanho.entity";
 import Endereco from "../../shared/domain/endereco/endereco.vo";
 class PropriedadeRepository {
   constructor(private db: PrismaClient) {}
 
-  public async salvar(prop: Propriedade): Promise<number> {
-    const novaPropriedade = await this.db.propriedades.create({
+  public async salvar(prop: Propriedade, tx: Prisma.TransactionClient): Promise<number> {
+    const novaPropriedade = await tx.propriedades.create({
       data: {
         nome: prop.nome,
         proprietarios: {
@@ -106,6 +106,16 @@ class PropriedadeRepository {
       return new Propriedade(p.nome, p.idProprietario_FK, tamanho, endereco, p.idPropriedade_PK);
     });
   };
+
+  public async verificarNome(p: Propriedade, tx: Prisma.TransactionClient): Promise<boolean> {
+    const propriedade = await tx.propriedades.findFirst({
+      where: {
+        nome: p.nome,
+        idProprietario_FK: p.idProprietario
+      }
+    });
+    return !!propriedade;
+  }
 };
 
 export default PropriedadeRepository;

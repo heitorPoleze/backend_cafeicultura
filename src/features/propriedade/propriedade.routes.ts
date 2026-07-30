@@ -11,7 +11,7 @@ import PropriedadeController from "./propriedade.controller";
 const router = Router();
 
 const propriedadeRepo = new PropriedadeRepository(prisma);
-const propriedadeService = new PropriedadeService(propriedadeRepo);
+const propriedadeService = new PropriedadeService(prisma, propriedadeRepo);
 const propriedadeController = new PropriedadeController(propriedadeService);
 
 router.post(

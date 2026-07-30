@@ -10,9 +10,10 @@ import {
 import Propriedade from "./propriedade.entity";
 import Tamanho from "../../shared/domain/tamanho/tamanho.entity";
 import Endereco from "../../shared/domain/endereco/endereco.vo";
+import { Prisma, PrismaClient } from "@prisma/client";
 
 class PropriedadeService {
-  constructor(private repo: PropriedadeRepository) {}
+  constructor(private prisma: PrismaClient, private repo: PropriedadeRepository) {}
 
   public async cadastrar(
     dto: CreatePropriedadeDTO,
@@ -35,7 +36,12 @@ class PropriedadeService {
       tamanho,
       endereco,
     );
-    return await this.repo.salvar(propriedade);
+    return await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      if (await this.repo.verificarNome(propriedade, tx)) {
+        throw new Error("NOME_DUPLICADO");
+      };
+      return await this.repo.salvar(propriedade, tx);
+    })
   };
 
   public async buscarPorId(
