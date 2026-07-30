@@ -7,11 +7,13 @@ import exigeLogin from "../../shared/middlewares/exigeLogin";
 import PropriedadeRepository from "./propriedade.repository";
 import PropriedadeService from "./propriedade.service";
 import PropriedadeController from "./propriedade.controller";
+import TalhaoRepository from "../talhao/talhao.repository";
 
 const router = Router();
 
+const talhaoRepo = new TalhaoRepository(prisma);
 const propriedadeRepo = new PropriedadeRepository(prisma);
-const propriedadeService = new PropriedadeService(prisma, propriedadeRepo);
+const propriedadeService = new PropriedadeService(prisma, propriedadeRepo, talhaoRepo);
 const propriedadeController = new PropriedadeController(propriedadeService);
 
 router.post(

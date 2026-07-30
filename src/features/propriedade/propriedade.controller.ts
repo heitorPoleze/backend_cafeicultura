@@ -80,8 +80,9 @@ class PropriedadeController {
         } else if (error.message === "ACESSO_NEGADO") {
           return res.status(403).json({ error: "Acesso negado! Não foi possivel atualizar o tamanho da propriedade" });
         };
-        return res.status(500).json({ error: "Erro ao atualizar tamanho da propriedade" });
+        return res.status(400).json({ error: error.message });
       };
+      return res.status(500).json({ error: "Erro ao atualizar tamanho da propriedade" });
     };
   };
 
