@@ -20,7 +20,7 @@ class TalhaoService {
       throw new Error('ACESSO_NEGADO');
     };
 
-    const talhoesExistentes = await this.repository.buscarAtivosPorPropriedade(dto.idPropriedade);
+    const talhoesExistentes = await this.repository.buscarAbertosPorPropriedade(dto.idPropriedade);
 
     const tamanhoNovoTalhao = new Tamanho(dto.tamanho.valor, dto.tamanho.medida);
 
