@@ -395,6 +395,15 @@ private obterPapel(p: PessoaSearchPayload): string | null {
     let resultado = await this.buscarPessoaPorCnpj(cnpj)
     return resultado
   }
+  public async atualizarCnpj(novoCnpj:string,pessoaId:number){
+    await this.prisma.pessoasjuridicas.update({
+      where: {idPeJuridica_PFK:pessoaId},
+      data:{
+        cnpj: novoCnpj
+      }
+    })
+  }
+  
   //buscadores de pessoa
   public async buscarPessoaPorCnpj(cnpj: string): Promise<PessoaDTO | null> {
     const pessoa = await this.buscarPessoaJuridicaPorCnpj(cnpj);
@@ -487,32 +496,6 @@ private obterPapel(p: PessoaSearchPayload): string | null {
       dataCadastro: pessoaBase.dataCadastro,
     };
   }
-/*public async atualizarCnpj(cnpj:string,pessoaId:number)Promise<PessoaDTO | null>{
-    const pessoaBase = await this.prisma.pessoas.findUnique({
-      where: { idPessoa_PK: pessoaId },
-      include: { pessoasfisicas: true, pessoasjuridicas: true }
-    });
-
-    if (!pessoaBase) return null;
-
-    // 2. Busca o endereço (se o seu DTO de retorno precisar dessa informação)
-    const endereco = pessoaBase.idEndereco_FK 
-      ? await this.prisma.enderecos.findUnique({ where: { idEndereco_PK: pessoaBase.idEndereco_FK } })
-      : null;
-
-    // 3. Verifica se é pessoa jurídica e faz o update
-    if (pessoaBase.pessoasjuridicas) {
-      await this.prisma.pessoasjuridicas.update({
-        where: { idPeJuridica_PFK: pessoaBase.pessoasjuridicas.idPeJuridica_PFK }, 
-        data: {
-          cnpj: cnpj,
-        }
-      });
-    } else {
-    throw new Error("Esta pessoa não é uma pessoa jurídica.");
-  }
-}
-  */
 }
 
 

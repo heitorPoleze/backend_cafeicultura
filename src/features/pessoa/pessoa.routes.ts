@@ -227,8 +227,8 @@ router.get(
   exigeLogin(),
   pessoaController.listarPessoas.bind(pessoaController)
 );
-router.put(
-  "/pessoas/:id/identificacao",
+router.patch(
+  "/pessoas/identificacao/:id",
   exigeLogin(),
   pessoaController.AtualizarNomeOuRazaoSocial.bind(pessoaController),
   [
@@ -240,23 +240,41 @@ router.put(
       .isString().withMessage("Razão Social deve ser uma string"),
   ],
 );
-router.put("/pessoas/:id/cpf",
+router.patch("/pessoas-fisicas/cpf/:id",
   exigeLogin(),
   [
     body("cpf").custom((value) => validarCPF.isValid(value, true)).withMessage("O CPF informado deve estar formatado corretamente. Ex: 000.000.000-00"),
   ],
   pessoaController.atualizarCpf.bind(pessoaController)
 )
-
+router.patch("/pessoa-juridica/atualizar-cnpj/:id",
+  exigeLogin(),
+  [
+    body("cnpj").custom((value) => validarCNPJ.isValid(value, true)).withMessage("O CNPJ informado deve estar formatado corretamente. Ex: 00.000.000/0000-00"),
+  ],
+  pessoaController.atualizarCpnj.bind(pessoaController)
+)
+router.patch("/pessoa-juridica/atualizar-inscricaoEstadual/:id",
+  exigeLogin(),
+   [
+      body("inscricaoEstadual")
+        .custom((value) => {
+          if (!value || typeof value !== "string" || value.trim() === "") {
+            throw new Error("A Inscrição Estadual deve ser informada");
+          }
+          return true;
+        })
+    ],
+)
 
 
 //router put razaoSocial //router put nome
 //router put cpf
-
-
-
 //router put cnpj
 //router put inscricaoEstadual
+
+
+
 
 //misto
 //router put telefone

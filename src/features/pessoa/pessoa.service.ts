@@ -5,6 +5,7 @@ import MeeiroRepo from "../../shared/domain/pessoa/meeiro/meeiro.repository";
 import PrestadorRepo from "../../shared/domain/pessoa/prestadordeservico/prestador.repository";
 import PessoaRepo from "../../shared/domain/pessoa/pessoa.repository";
 import PessoaFactory from "../../shared/domain/pessoa/pessoafactory.entity";
+import { cnpj as ValidarCNPJ } from "cpf-cnpj-validator";
 import {
     ClienteResponseDTO,
   CreateClienteDTO,
@@ -498,9 +499,30 @@ class PessoaService {
       throw new Error("Tipo de pessoa inválido.");
     }
   }
-  public async atualizarCpf(cpf:string,pessoaId:number){
-   let resultado =  await this.pessoaRepo.atualizarCpfPessoa(cpf,pessoaId)
+  public async atualizarCpf(novoCpf:string,pessoaId:number){
+      const cpfExistente = await this.pessoaRepo.verificarCpfExistente(
+        novoCpf!
+      );
+      if (cpfExistente) {
+        throw new Error(`CPF_EXISTENTE`);
+      };
+   let resultado =  await this.pessoaRepo.atualizarCpfPessoa(novoCpf,pessoaId);
    return resultado
+  }
+  public async atualizarCNPJ(novoCnpj:string,pessoaId:number){
+    const cnpjExistente = await this.pessoaRepo.verificarCnpjExistente(novoCnpj!)
+    if (cnpjExistente ){
+      throw new Error(`CNPJ_EXISTENTE`)
+    };
+    if(ValidarCNPJ.isValid(novoCnpj,true)!){
+        throw new Error(`CNPJ_INVALIDO`)
+    }
+    let resultado = await this.pessoaRepo.atualizarCnpj(novoCnpj,pessoaId)
+    return resultado
+  }
+  public async atualizarInscricaoEstadual(novaIE:string,pessoaId:number){
+    let resultado = await this.pessoaRepo.atualizarInscricaoEstadualPorPessoaId(pessoaId,novaIE)
+    return resultado
   }
 };
 

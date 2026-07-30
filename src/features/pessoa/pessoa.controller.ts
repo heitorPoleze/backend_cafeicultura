@@ -466,7 +466,7 @@ class PessoaController {
       await this.service.atualizarNomeOuRazaoSocial(req.body, pessoaId);
       res.status(200).json({ mensagem: "Nome ou Razão Social atualizadas com sucesso.", novaInformacao: req.body });
     } catch (error: unknown) {
-      res.status(400).json({ mensagem: (error as Error).message })
+      res.status(500).json({ mensagem: (error as Error).message })
     }
   }
   public async atualizarCpf(req: Request, res: Response) {
@@ -476,15 +476,56 @@ class PessoaController {
     } try {
       const pessoaId = Number(req.params.id);
       const cpf = req.body.cpf
-      IsCPF(cpf);
-      cpfValidator.isValid(cpf);
       let resposta = await this.service.atualizarCpf(cpf, pessoaId);
-      return resposta;
+      res.status(200).json({ mensagem: "CPF Atualizado com sucesso.", resposta });
     } catch (error: unknown) {
-      res.status(400).json({ mensagem: (error as Error).message })
+      if (error instanceof Error) {
+        if (error.message === "CPF_EXISTENTE") {
+          return res.status(404).json({ error: "CPF já cadastrado no sistema." });
+        }
+      }
+      res.status(500).json({ error: "Erro ao atualizar CPF." });
     }
   }
-
+  public async atualizarCpnj(req: Request,res:Response){
+    const erros = validationResult(req);
+    if(!erros.isEmpty()){
+      return res.status(400).json({erros: erros.array()})
+    }try{
+      const pessoaId = Number(req.params.id)
+      const cnpj = req.body.cnpj
+      let resposta = await this.service.atualizarCNPJ(cnpj,pessoaId)
+      return res.status(200).json({mensagem: "CNPJ atualizado com sucesso.",resposta})
+    }catch (error: unknown){
+      if(error instanceof Error){
+        if(error.message === "CNPJ_EXISTENTE"){
+          return res.status(404).json({error: "CNPJ já cadastrado no sistema."});
+        }
+        if(error.message === "CNPJ_INVALIDO"){
+          return res.status(404).json({error: "CNPJ em formato inválido."});
+        }
+        res.status(500).json({error: "Erro ao atualizar CNPJ."})
+      }
+    }
+  }
+  public async atualizarInscricaoEstadual(req:Request,res:Response){
+    const erros = validationResult(req);
+    if(!erros.isEmpty()){
+      return res.status(400).json({erros: erros.array()})
+    }try{
+      const pessoaId = Number(req.params.id)
+      const novaIE = req.body.inscricaoEstadual
+      let resposta = await this.service.atualizarInscricaoEstadual(novaIE,pessoaId)
+      return res.status(200).json({mensagem:"Inscrição Estadual atualizada com sucesso.",resposta})
+    }catch (error: unknown){
+      if(error instanceof Error){
+        if(error.message === "INSCRICAO_INVALIDA"){
+          return res.status(400).json({error: "Inscrição estadual inválida."})
+        }
+      }
+      res.status(500).json({error: "Erro ao atualizar Inscrição Estadual."})
+    }
+  }
 };
 
 export default PessoaController;
