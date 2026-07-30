@@ -41,7 +41,7 @@ router.post(
 
     // Validações Condicionais (Pessoa Jurídica)
     body("razaoSocial").if(body("tipoPessoa").equals("juridica")).notEmpty().withMessage("A Razão Social é obrigatória para Pessoa Jurídica"),
-    body("cnpj").if(body("tipoPessoa").equals("juridica")).custom((value) => validarCNPJ.isValid(value, true)).withMessage("O CNPJ informado deve estar formatado corretamente. Ex: 00.000.000/0000-00"),
+    body("cnpj").if(body("tipoPessoa").equals("juridica")).custom((value) => validarCNPJ.isValid(value, true)).withMessage("O CNPJ informado é inválido"),
     body("inscrEstadual").if(body("tipoPessoa").equals("juridica")).optional()
   ],
   proprietarioController.cadastrar.bind(proprietarioController)

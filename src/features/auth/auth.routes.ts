@@ -17,6 +17,7 @@ router.post(
     body("tipoEntrada").isIn(["email", "cpf", "cnpj"]).withMessage("Tipo de entrada inválido"),
     body("entrada").notEmpty().withMessage("Campo de login obrigatório"),
     body("entrada").if(body("tipoEntrada").equals("cpf")).custom((value) => validarCPF.isValid(value, true)).withMessage("O CPF informado é inválido"),
+    body("entrada").if(body("tipoEntrada").equals("cnpj")).custom((value) => validarCNPJ.isValid(value, true)).withMessage("O CNPJ informado é inválido"),
     body("senha").notEmpty().withMessage("Senha obrigatória"),
   ],
   authController.autenticar.bind(authController)
