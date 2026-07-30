@@ -4,6 +4,7 @@ import AuthRepository from "./auth.repository";
 import AuthService from "./auth.service";
 import AuthController from "./auth.controller";
 import exigeLogin from "../../shared/middlewares/exigeLogin";
+import { cpf as validarCPF, cnpj as validarCNPJ } from "cpf-cnpj-validator";
 import { prisma } from "../../shared/config/database";
 const router = Router();
 const authRepo = new AuthRepository(prisma);
@@ -15,6 +16,7 @@ router.post(
   [
     body("tipoEntrada").isIn(["email", "cpf", "cnpj"]).withMessage("Tipo de entrada inválido"),
     body("entrada").notEmpty().withMessage("Campo de login obrigatório"),
+    body("entrada").if(body("tipoEntrada").equals("cpf")).custom((value) => validarCPF.isValid(value, true)).withMessage("O CPF informado é inválido"),
     body("senha").notEmpty().withMessage("Senha obrigatória"),
   ],
   authController.autenticar.bind(authController)
