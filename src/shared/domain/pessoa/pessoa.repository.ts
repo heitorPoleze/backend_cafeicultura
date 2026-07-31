@@ -5,6 +5,7 @@ import PessoaFactory from "./pessoafactory.entity";
 import PessoaBase from "./pessoabase.entity";
 import PessoaDTO from "./pessoa.dto";
 import { Prisma, PrismaClient } from "@prisma/client";
+import { paginar, ResultadoPaginacao } from "../../utils/pagination.dto";
 const pessoaInclude = {
   pessoasfisicas: true,
   pessoasjuridicas: true,
@@ -269,22 +270,40 @@ private obterPapel(p: PessoaSearchPayload): string | null {
   if (p.prestadoresdeservico) return 'prestadordeservico';
   return null;
 }
-  public async listarPessoas(idAdministrador: number): Promise<PessoaBase[]> {
-    const pessoasDB = await this.prisma.pessoas.findMany({
-      where: { idAdministrador_FK: idAdministrador },
-      include: searchPessoas,
-    });
-    console.log(pessoasDB);
-    const pessoas: PessoaBase[] = [];
+public async listarPessoas(
+  idAdministrador: number,
+  pagina: number = 1,
+  limite: number = 10,
+): Promise<ResultadoPaginacao<PessoaBase>> {
+  const { skip, take } = paginar(pagina, limite);
 
-    for (const p of pessoasDB) {
-      const pessoaMapeada = this.mapToEntityComPapeis(p);
-      if (pessoaMapeada) {
-        pessoas.push(pessoaMapeada);
-      };
-    };
-    return pessoas;
+  const where = { idAdministrador_FK: idAdministrador };
+
+  const [pessoasDB, total] = await this.prisma.$transaction([
+    this.prisma.pessoas.findMany({
+      where,
+      include: searchPessoas,
+      skip,
+      take,
+    }),
+    this.prisma.pessoas.count({ where }),
+  ]);
+
+  const pessoas: PessoaBase[] = [];
+  for (const p of pessoasDB) {
+    const pessoaMapeada = this.mapToEntityComPapeis(p);
+    if (pessoaMapeada) {
+      pessoas.push(pessoaMapeada);
+    }
+  }
+
+  return {
+    data: pessoas,
+    total,
+    pagina,
+    totalPaginas: Math.ceil(total / limite),
   };
+}
  private mapToEntityComPapeis(p: PessoaSearchPayload): PessoaBase | null {
       if (!p) return null;
 

@@ -32,6 +32,7 @@ import Prestador from "../../shared/domain/pessoa/prestadordeservico/prestador.e
 import PessoaFisica from "../../shared/domain/pessoa/pessoafisica.entity";
 import PessoaJuridica from "../../shared/domain/pessoa/pessoajuridica.entity";
 import Endereco from "../../shared/domain/endereco/endereco.vo";
+import { ResultadoPaginacao } from "../../shared/utils/pagination.dto";
 
 class PessoaService {
   constructor(
@@ -261,46 +262,56 @@ class PessoaService {
     };
   };
 
-  public async listarPessoas(dto: ListarPessoasDTO): Promise<PessoaResponseDTO[]> {
-    const pessoas = await this.pessoaRepo.listarPessoas(dto.idAdministrador);
-    if (!pessoas) {
+public async listarPessoas(dto: ListarPessoasDTO): Promise<ResultadoPaginacao<PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO>> {
+  const { data: pessoas, total, pagina, totalPaginas } = await this.pessoaRepo.listarPessoas(
+    dto.idAdministrador,
+    dto.pagina,
+    dto.limite,
+  );
+
+  if (!pessoas) {
+    throw new Error("ERRO_AO_BUSCAR");
+  }
+
+  if (pessoas.length === 0) {
+    throw new Error("SEM_REGISTROS");
+  }
+
+  const pessoasDTO: (PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO)[] = [];
+  for (const p of pessoas) {
+    if (p instanceof PessoaFisica) {
+      pessoasDTO.push({
+        id: p.id!,
+        idAdministrador: p.idAdministrador,
+        dataCadastro: p.dataCadastro,
+        nome: p.nome,
+        cpf: p.cpf,
+        endereco: p.endereco,
+        papel: p.papel,
+      });
+    } else if (p instanceof PessoaJuridica) {
+      pessoasDTO.push({
+        id: p.id!,
+        idAdministrador: p.idAdministrador,
+        dataCadastro: p.dataCadastro,
+        razaoSocial: p.razaoSocial,
+        cnpj: p.cnpj,
+        inscrEstadual: p.inscrEstadual,
+        endereco: p.endereco,
+        papel: p.papel,
+      });
+    } else {
       throw new Error("ERRO_AO_BUSCAR");
-    };
-
-    const pessoasDTO: (PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO)[] = [];
-    for (const p of pessoas) {
-      if (p instanceof PessoaFisica) {
-        pessoasDTO.push({
-          id: p.id!,
-          idAdministrador: p.idAdministrador,
-          dataCadastro: p.dataCadastro,
-          nome: p.nome,
-          cpf: p.cpf,
-          endereco: p.endereco,
-          papel: p.papel
-        });
-      } else if (p instanceof PessoaJuridica) {
-        pessoasDTO.push({
-          id: p.id!,
-          idAdministrador: p.idAdministrador,
-          dataCadastro: p.dataCadastro,
-          razaoSocial: p.razaoSocial,
-          cnpj: p.cnpj,
-          inscrEstadual: p.inscrEstadual,
-          endereco: p.endereco,
-          papel: p.papel
-        });
-      } else {
-        throw new Error("ERRO_AO_BUSCAR");
-      };
     }
+  }
 
-    if (pessoas && pessoas.length === 0) {
-      throw new Error("SEM_REGISTROS");
-    };
-
-    return pessoasDTO;
+  return {
+    data: pessoasDTO,
+    total,
+    pagina,
+    totalPaginas,
   };
+}
   public async buscarFuncionariosPorIdAdministrador(idAdministrador: number): Promise<FuncionarioResponseDTO[]> {
     const funcionarios = await this.funcionarioRepo.listarFuncionarios(idAdministrador);
     if (!funcionarios) return [];

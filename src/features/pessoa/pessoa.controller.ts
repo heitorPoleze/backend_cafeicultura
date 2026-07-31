@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import PessoaService from "./pessoa.service";
 import Endereco from "../../shared/domain/endereco/endereco.vo";
-import { IsCPF } from "cpf-cnpj-validator/class-validator";
-import { cpfValidator } from "cpf-cnpj-validator";
+
+
 class PessoaController {
   constructor(private service: PessoaService) { }
 
@@ -361,20 +361,28 @@ class PessoaController {
     };
   };
 
-  public async listarPessoas(req: Request, res: Response) {
-    try {
-      const pessoas = await this.service.listarPessoas({ idAdministrador: req.session.idUsuario! });
-      res.status(200).json(pessoas);
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message === "SEM_REGISTROS") {
-          return res.status(404).json({ error: "Nenhuma pessoa cadastrada" });
-        }
-        return res.status(400).json({ error: error.message });
-      };
-      res.status(500).json({ error: "Erro ao listar pessoas" });
-    };
-  };
+public async listarPessoas(req: Request, res: Response) {
+  try {
+    const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
+    const limite = req.query.limite ? Number(req.query.limite) : 10;
+
+    const pessoas = await this.service.listarPessoas({
+      idAdministrador: req.session.idUsuario!,
+      pagina,
+      limite,
+    });
+
+    res.status(200).json(pessoas);
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === "SEM_REGISTROS") {
+        return res.status(200).json({ error: "Nenhuma pessoa cadastrada a esse ID ou Página Vazia.",data:[] });
+      }
+      return res.status(400).json({ error: error.message });
+    }
+    res.status(500).json({ error: "Erro ao listar pessoas" });
+  }
+}
 
   public async cadastrarEnderecoPessoaGenerica(req: Request, res: Response) {
     const erros = validationResult(req);

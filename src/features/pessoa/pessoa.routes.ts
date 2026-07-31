@@ -268,16 +268,4 @@ router.patch("/pessoa-juridica/atualizar-inscricaoEstadual/:id",
 )
 
 
-//router put razaoSocial //router put nome
-//router put cpf
-//router put cnpj
-//router put inscricaoEstadual
-
-
-
-
-//misto
-//router put telefone
-
-
 export default router;

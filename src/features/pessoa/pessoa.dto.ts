@@ -60,4 +60,6 @@ export type FornecedorResponseDTO = PessoaFisicaResponseDTO | PessoaJuridicaResp
 
 export type ListarPessoasDTO = {
     idAdministrador: number;
+    pagina: number;
+    limite: number;
 };
