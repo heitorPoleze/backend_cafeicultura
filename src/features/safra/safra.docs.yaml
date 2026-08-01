@@ -43,6 +43,66 @@ paths:
         '500':
           description: Erro interno inesperado ao cadastrar safra
 
+  paths:
+  /api/v1/safras/propriedade/{id}/safra/{idSafra}/relatorios/eventos:
+    get:
+      summary: Relatório Unificado de Eventos da Safra (Transacional)
+      description: Retorna uma linha do tempo de todos os eventos da safra. A requisição utiliza uma transação de banco de dados para garantir integridade e consistência de leitura. O payload é embrulhado polimorficamente na propriedade `dados`.
+      tags: 
+        - Safras
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID da Propriedade rural.
+        - in: path
+          name: idSafra
+          required: true
+          schema:
+            type: integer
+          description: ID da Safra a ser analisada.
+      responses:
+        '200':
+          description: Linha do tempo gerada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - modulo
+                    - dados
+                  properties:
+                    modulo:
+                      type: string
+                      description: Discriminador para tipagem do front-end.
+                      example: "TRATO_CULTURAL"
+                    dados:
+                      type: object
+                      description: O objeto completo do evento, contendo todos os atributos gerados pela entidade. Ex:(TratoCulturalDTO).
+                      properties:
+                        id: { type: integer, example: 45 }
+                        idTalhao: { type: integer, example: 3 }
+                        dataInicio: { type: string, format: date-time }
+                        dataFim: { type: string, format: date-time, nullable: true }
+                        descricao: { type: string }
+                        dataCadastro: { type: string, format: date-time }
+                        safra: { type: object }
+                        tipoTrato: { type: string, example: "Adubação" }
+                        insumosUtilizados: { type: array, items: { type: object } }
+                        transacoesFinanceiras: { type: array, items: { type: object } }
+                        responsaveis: { type: array, items: { type: object } }
+                        confirmado: { type: boolean, example: true }
+        '401':
+          description: Acesso negado. Usuário não é proprietário.
+        '404':
+          description: Propriedade ou Safra não encontrada.
+
   /api/v1/safras/{id}:
     get:
       summary: Busca uma Safra pelo ID

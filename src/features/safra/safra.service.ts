@@ -6,12 +6,19 @@ import {
   SafraRespostaDTO,
   ExcluirSafraDTO,
   FinalizarSafraDTO,
+  BuscarTodosEventosDTO,
+  EventoRelatorioDTO,
+  TratoCulturalDTO,
 } from "./safra.dto";
+import { PrismaClient } from "@prisma/client";
+import TratoCulturalRepository from "../tratocultural/tratocultural.repository";
 
 export class SafraService {
   constructor(
+    private readonly prisma: PrismaClient,
     private readonly safraRepository: SafraRepository,
-    private readonly propriedadeRepo: PropriedadeRepository
+    private readonly propriedadeRepo: PropriedadeRepository,
+    private readonly tratoCulturalRepo: TratoCulturalRepository,
   ) {}
 
   public async cadastrar(dto: CadastrarSafraDTO, idUsuarioSessao: number): Promise<number> {
@@ -95,6 +102,39 @@ export class SafraService {
     safra.arquivar();
     await this.safraRepository.arquivar(safra);
   };
+
+  // ---- Relatórios -----
+  public async listarTodosEventos(dto: BuscarTodosEventosDTO, idUsuarioSessao: number): Promise<EventoRelatorioDTO[]> {
+    // 1. Validations (Done outside the transaction for performance)
+    const propriedade = await this.propriedadeRepo.buscarPorId(dto.idPropriedade);
+    if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
+    if (propriedade.idProprietario !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
+
+    const safra = await this.safraRepository.buscarPorId(dto.idSafra);
+    if (!safra) throw new Error("NAO_ENCONTRADA");
+
+    return await this.prisma.$transaction(async (tx) => {
+      const [tratosCulturais] = await Promise.all([
+        this.tratoCulturalRepo.listarTodosSafra(dto.idSafra, dto.idPropriedade, tx),
+        // this.colheitaRepo.listarTodosSafra(dto.idSafra, dto.idPropriedade, tx) 
+      ]);
+
+      const eventosRelatorio: EventoRelatorioDTO[] = [
+        ...tratosCulturais.map((trato) => ({
+          modulo: 'TRATO_CULTURAL' as const,
+          dados: trato.toJSON() as TratoCulturalDTO
+        })),
+      ];
+
+      eventosRelatorio.sort((a, b) => {
+        const dateA = new Date(a.dados.dataInicio).getTime();
+        const dateB = new Date(b.dados.dataInicio).getTime();
+        return dateB - dateA;
+      });
+
+      return eventosRelatorio;
+    });
+  }
 };
 
 export default SafraService;

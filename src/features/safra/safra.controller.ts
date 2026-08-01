@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import SafraService from './safra.service';
+import { BuscarTodosEventosDTO } from './safra.dto';
 
 class SafraController {
     constructor(private readonly safraService: SafraService) {};
@@ -136,5 +137,35 @@ class SafraController {
       };
     };
   };
+
+  // ---- Relatórios -----
+  public async relatorioEventos(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
+
+    try {
+      const dto: BuscarTodosEventosDTO = {
+        idPropriedade: Number(req.params.id),
+        idSafra: Number(req.params.idSafra)
+      };
+      const eventos = await this.safraService.listarTodosEventos(dto, req.session.idUsuario!);
+      
+      res.status(200).json(eventos);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === 'NAO_ENCONTRADA') {
+          return res.status(404).json({ error: 'Safra não encontrada.' });
+        };
+        if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
+          return res.status(404).json({ error: 'Propriedade não encontrada.' });
+        };
+        if (error.message === 'ACESSO_NEGADO') {
+          return res.status(401).json({ error: 'Acesso negado à propriedade.' });
+        };
+        return res.status(400).json({ error: error.message });
+      }
+      return res.status(500).json({ error: 'Erro interno ao gerar relatório de eventos.' });
+    }
+  }
 }
 export default SafraController;
