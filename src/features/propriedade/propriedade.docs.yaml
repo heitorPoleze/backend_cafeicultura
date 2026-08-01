@@ -82,6 +82,8 @@ paths:
           description: Propriedade cadastrada com sucesso
         '400':
           description: Erro de validação nos campos (ex. tamanho zero, CEP inválido)
+        '422':
+          description: Nome da propriedade duplicado.
         '500':
           description: Erro interno ao cadastrar propriedade
 

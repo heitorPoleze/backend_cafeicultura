@@ -10,9 +10,11 @@ import {
 import Propriedade from "./propriedade.entity";
 import Tamanho from "../../shared/domain/tamanho/tamanho.entity";
 import Endereco from "../../shared/domain/endereco/endereco.vo";
+import { Prisma, PrismaClient } from "@prisma/client";
+import TalhaoRepository from "../talhao/talhao.repository";
 
 class PropriedadeService {
-  constructor(private repo: PropriedadeRepository) {}
+  constructor(private prisma: PrismaClient, private repo: PropriedadeRepository, private talhaoRepo: TalhaoRepository) {}
 
   public async cadastrar(
     dto: CreatePropriedadeDTO,
@@ -35,7 +37,12 @@ class PropriedadeService {
       tamanho,
       endereco,
     );
-    return await this.repo.salvar(propriedade);
+    return await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      if (await this.repo.verificarNome(propriedade, tx)) {
+        throw new Error("NOME_DUPLICADO");
+      };
+      return await this.repo.salvar(propriedade, tx);
+    })
   };
 
   public async buscarPorId(
@@ -72,12 +79,25 @@ class PropriedadeService {
     idUsuarioSessao: number,
   ): Promise<void> {
     const propriedade = await this.buscarPorId(idPropriedade, idUsuarioSessao);
+    const talhoesExistentes = await this.talhaoRepo.buscarAbertosPorPropriedade(idPropriedade);
 
-    const novoTamanho = new Tamanho(
-      dto.tamanho.valor,
-      dto.tamanho.medida,
-      propriedade.tamanho.id,
-    );
+    const novoTamanho = new Tamanho(dto.tamanho.valor, dto.tamanho.medida, propriedade.tamanho.id);
+    const areaNovaPropriedadeM2 = this.calcularAreaEmM2(novoTamanho);
+    
+    let areaUtilizadaM2 = 0;
+    for (const t of talhoesExistentes) {
+      areaUtilizadaM2 += this.calcularAreaEmM2(t.tamanho);
+    };
+    areaUtilizadaM2 = Math.round(areaUtilizadaM2);
+
+    if (areaNovaPropriedadeM2 < areaUtilizadaM2) {
+      const disponivelHectares = areaUtilizadaM2 / 10000;
+      const formatador = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 4, minimumFractionDigits: 0 });
+      throw new Error(
+        `O novo tamanho da propriedade não pode ser menor que ${formatador.format(areaUtilizadaM2)} m² ` +
+        `(ou ${formatador.format(disponivelHectares)} hectares). Você deve finalizar um talhão ou diminuir a área de um talhão aberto.`
+      );
+    };
 
     propriedade.tamanho = novoTamanho;
     await this.repo.atualizarTamanho(
@@ -120,6 +140,13 @@ class PropriedadeService {
     };
 
     return propriedades
+  };
+
+  private calcularAreaEmM2(tamanho: Tamanho): number {
+    if (tamanho.medida === "hectare") {
+      return tamanho.valor * 10000;
+    };
+    return tamanho.valor;
   };
 
 };

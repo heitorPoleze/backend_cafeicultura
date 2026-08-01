@@ -20,9 +20,11 @@ class PropriedadeController {
       });
     } catch (error: unknown) {
       if (error instanceof Error) {
-        return res.status(500).json({ error: "Erro ao cadastrar propriedade" });
-      }
-
+        if (error.message === "NOME_DUPLICADO") {
+          return res.status(422).json({ error: "Nome da propriedade já existe" });
+        };
+        return res.status(400).json({ error: error.message });
+      };
       return res.status(500).json({ error: "Erro ao cadastrar propriedade" });
     };
   };
@@ -78,8 +80,9 @@ class PropriedadeController {
         } else if (error.message === "ACESSO_NEGADO") {
           return res.status(403).json({ error: "Acesso negado! Não foi possivel atualizar o tamanho da propriedade" });
         };
-        return res.status(500).json({ error: "Erro ao atualizar tamanho da propriedade" });
+        return res.status(400).json({ error: error.message });
       };
+      return res.status(500).json({ error: "Erro ao atualizar tamanho da propriedade" });
     };
   };
 
