@@ -37,13 +37,24 @@ router.post(
 );
 
 router.get(
-  '/propriedade/:id/safra/:idSafra/relatorios/eventos',
+  '/propriedade/:id/safra/:idSafra/eventos',
   exigeLogin(),
   [
     param('id').isInt({ gt: 0 }).withMessage('ID da propriedade inválido.'),
     param('idSafra').isInt({ gt: 0 }).withMessage('ID da safra inválido.')
   ],
-  safraController.relatorioEventos.bind(safraController)
+  safraController.relatorioEventosSafra.bind(safraController)
+);
+
+router.get(
+  '/propriedade/:id/safra/:idSafra/talhao/:idTalhao/eventos',
+  exigeLogin(),
+  [
+    param('id').isInt({ gt: 0 }).withMessage('ID da propriedade inválido.'),
+    param('idSafra').isInt({ gt: 0 }).withMessage('ID da safra inválido.'),
+    param('idTalhao').isInt({ gt: 0 }).withMessage('ID do talhão inválido.')
+  ],
+  safraController.relatorioEventosTalhao.bind(safraController)
 );
 
 router.get(

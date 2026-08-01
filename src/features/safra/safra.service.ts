@@ -9,6 +9,7 @@ import {
   BuscarTodosEventosDTO,
   EventoRelatorioDTO,
   TratoCulturalDTO,
+  BuscarTodosEventosTalhaoDTO,
 } from "./safra.dto";
 import { PrismaClient } from "@prisma/client";
 import TratoCulturalRepository from "../tratocultural/tratocultural.repository";
@@ -19,7 +20,7 @@ export class SafraService {
     private readonly safraRepository: SafraRepository,
     private readonly propriedadeRepo: PropriedadeRepository,
     private readonly tratoCulturalRepo: TratoCulturalRepository,
-  ) {}
+  ) { }
 
   public async cadastrar(dto: CadastrarSafraDTO, idUsuarioSessao: number): Promise<number> {
     const propriedade = await this.propriedadeRepo.buscarPorId(dto.idPropriedade);
@@ -55,7 +56,7 @@ export class SafraService {
     }
     const safras = await this.safraRepository.bucarAtivasPorPropriedade(idPropriedade);
     return safras.map((safra) => safra.toJSON());
-  } 
+  }
   public async buscarPorId(id: number, idUsuarioSessao: number): Promise<SafraRespostaDTO> {
     const safra = await this.safraRepository.buscarPorId(id);
     if (!safra) {
@@ -105,15 +106,15 @@ export class SafraService {
 
   // ---- Relatórios -----
   public async listarTodosEventos(dto: BuscarTodosEventosDTO, idUsuarioSessao: number): Promise<EventoRelatorioDTO[]> {
-    // 1. Validations (Done outside the transaction for performance)
     const propriedade = await this.propriedadeRepo.buscarPorId(dto.idPropriedade);
     if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
     if (propriedade.idProprietario !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
 
     const safra = await this.safraRepository.buscarPorId(dto.idSafra);
     if (!safra) throw new Error("NAO_ENCONTRADA");
+    if (safra.idPropriedade !== dto.idPropriedade) throw new Error("SAFRA_NAO_PERTENCE_PROPRIEDADE");
 
-    return await this.prisma.$transaction(async (tx) => {
+    const eventos = await this.prisma.$transaction(async (tx) => {
       const [tratosCulturais] = await Promise.all([
         this.tratoCulturalRepo.listarTodosSafra(dto.idSafra, dto.idPropriedade, tx),
         // this.colheitaRepo.listarTodosSafra(dto.idSafra, dto.idPropriedade, tx) 
@@ -134,6 +135,44 @@ export class SafraService {
 
       return eventosRelatorio;
     });
+    if (!eventos || eventos.length === 0) throw new Error("SEM_EVENTOS");
+
+    return eventos;
+  }
+
+  public async listarTodosEventosTalhao(dto: BuscarTodosEventosTalhaoDTO, idUsuarioSessao: number): Promise<EventoRelatorioDTO[]> {
+    const propriedade = await this.propriedadeRepo.buscarPorId(dto.idPropriedade);
+    if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
+    if (propriedade.idProprietario !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
+
+    const safra = await this.safraRepository.buscarPorId(dto.idSafra);
+    if (!safra) throw new Error("NAO_ENCONTRADA");
+
+    const eventos = await this.prisma.$transaction(async (tx) => {
+
+      const [tratosCulturais] = await Promise.all([
+        this.tratoCulturalRepo.listarTodosTalhaoSafra(dto.idTalhao, dto.idSafra, dto.idPropriedade, tx),
+      ]);
+
+      const eventosRelatorio: EventoRelatorioDTO[] = [
+        ...tratosCulturais.map((trato) => ({
+          modulo: 'TRATO_CULTURAL' as const,
+          dados: trato.toJSON() as TratoCulturalDTO
+        })),
+      ];
+
+      eventosRelatorio.sort((a, b) => {
+        const dateA = new Date(a.dados.dataInicio).getTime();
+        const dateB = new Date(b.dados.dataInicio).getTime();
+        return dateB - dateA;
+      });
+
+      return eventosRelatorio;
+    });
+
+    if (!eventos || eventos.length === 0) throw new Error("SEM_EVENTOS");
+    
+    return eventos;
   }
 };
 
