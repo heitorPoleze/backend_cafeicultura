@@ -1,6 +1,6 @@
-tags:
+﻿tags:
   - name: Pessoas
-    description: Gerenciamento de clientes, fornecedores, funcionários, meeiros e prestadores
+    description: Cadastro e gestão de clientes, fornecedores, funcionários, meeiros, prestadores e endereços
 
 components:
   schemas:
@@ -12,7 +12,7 @@ components:
         tipoPessoa:
           type: string
           enum: [fisica, juridica]
-          description: Define os campos obrigatórios. Se 'fisica', exige nome e cpf. Se 'juridica', exige razaoSocial e cnpj.
+          description: Define os campos obrigatórios. Para física, são necessários nome e cpf; para jurídica, razão social e cnpj.
         nome:
           type: string
         cpf:
@@ -23,6 +23,7 @@ components:
           type: string
         inscrEstadual:
           type: string
+
     PessoaFisicaInput:
       type: object
       required:
@@ -37,6 +38,7 @@ components:
           type: string
         cpf:
           type: string
+
     FuncionarioInput:
       allOf:
         - $ref: '#/components/schemas/PessoaFisicaInput'
@@ -52,14 +54,72 @@ components:
               format: float
               description: Deve ser maior que zero.
 
+    EnderecoInput:
+      type: object
+      required:
+        - cidade
+        - bairro
+        - cep
+        - uf
+        - pais
+        - logradouro
+      properties:
+        cidade:
+          type: string
+        bairro:
+          type: string
+        cep:
+          type: string
+          pattern: '^\d{5}-\d{3}$'
+        uf:
+          type: string
+          maxLength: 2
+        pais:
+          type: string
+        logradouro:
+          type: string
+        idEndereco:
+          type: integer
+          nullable: true
+
+    PessoaResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12
+        idAdministrador:
+          type: integer
+          example: 3
+        dataCadastro:
+          type: string
+          format: date-time
+        nome:
+          type: string
+          example: João da Silva
+        cpf:
+          type: string
+          example: 123.456.789-00
+        razaoSocial:
+          type: string
+          example: Empresa LTDA
+        cnpj:
+          type: string
+          example: 12.345.678/0001-90
+        inscrEstadual:
+          type: string
+        endereco:
+          type: object
+          nullable: true
+        papel:
+          type: string
+          example: CLIENTE
+
 paths:
-  # ==========================================
-  # CLIENTES
-  # ==========================================
   /api/v1/clientes:
     post:
-      summary: Cadastra um novo Cliente
-      tags: 
+      summary: Cadastra um novo cliente
+      tags:
         - Pessoas
       security:
         - cookieAuth: []
@@ -71,18 +131,26 @@ paths:
               $ref: '#/components/schemas/PessoaMistaInput'
       responses:
         '201':
-          description: Cliente cadastrado com sucesso
+          description: Cliente cadastrado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Cliente cadastrado com sucesso
         '400':
-          description: Erro de validação nos campos (ex. CPF/CNPJ inválido ou ausente)
+          description: Erro de validação nos campos.
         '409':
-          description: CPF ou CNPJ já cadastrado no sistema
+          description: CPF ou CNPJ já cadastrado no sistema.
         '500':
-          description: Erro interno do servidor
+          description: Erro interno do servidor.
 
   /api/v1/clientes/{id}:
     get:
-      summary: Busca um Cliente pelo ID
-      tags: 
+      summary: Busca um cliente pelo ID
+      tags:
         - Pessoas
       security:
         - cookieAuth: []
@@ -92,22 +160,24 @@ paths:
           required: true
           schema:
             type: integer
-          description: ID numérico do cliente
       responses:
         '200':
-          description: Dados do cliente retornados com sucesso
+          description: Dados do cliente retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PessoaResponse'
+        '403':
+          description: Acesso negado; usuário não pode visualizar este cliente.
         '404':
-          description: Cliente não encontrado
+          description: Cliente não encontrado.
         '500':
-          description: Erro ao buscar cliente
+          description: Erro ao buscar cliente.
 
-  # ==========================================
-  # FORNECEDORES
-  # ==========================================
   /api/v1/fornecedores:
     post:
-      summary: Cadastra um novo Fornecedor
-      tags: 
+      summary: Cadastra um novo fornecedor
+      tags:
         - Pessoas
       security:
         - cookieAuth: []
@@ -119,18 +189,26 @@ paths:
               $ref: '#/components/schemas/PessoaMistaInput'
       responses:
         '201':
-          description: Fornecedor cadastrado com sucesso
+          description: Fornecedor cadastrado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Fornecedor cadastrado com sucesso
         '400':
-          description: Erro de validação
+          description: Erro de validação.
         '409':
-          description: CPF já cadastrado (Regra específica do Fornecedor)
+          description: CPF já cadastrado.
         '500':
-          description: Erro interno do servidor
+          description: Erro interno do servidor.
 
   /api/v1/fornecedores/{id}:
     get:
-      summary: Busca um Fornecedor pelo ID
-      tags: 
+      summary: Busca um fornecedor pelo ID
+      tags:
         - Pessoas
       security:
         - cookieAuth: []
@@ -142,19 +220,22 @@ paths:
             type: integer
       responses:
         '200':
-          description: Dados do fornecedor retornados
+          description: Dados do fornecedor retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PessoaResponse'
+        '403':
+          description: Acesso negado; usuário não pode visualizar este fornecedor.
         '404':
-          description: Fornecedor não encontrado
+          description: Fornecedor não encontrado.
         '500':
-          description: Erro ao buscar fornecedor
+          description: Erro ao buscar fornecedor.
 
-  # ==========================================
-  # FUNCIONÁRIOS
-  # ==========================================
   /api/v1/funcionarios:
     post:
-      summary: Cadastra um novo Funcionário
-      tags: 
+      summary: Cadastra um novo funcionário
+      tags:
         - Pessoas
       security:
         - cookieAuth: []
@@ -166,18 +247,26 @@ paths:
               $ref: '#/components/schemas/FuncionarioInput'
       responses:
         '201':
-          description: Funcionário cadastrado com sucesso
+          description: Funcionário cadastrado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Funcionário cadastrado com sucesso
         '400':
-          description: Erro de validação (ex. CTPS vazia, salário inválido)
+          description: Erro de validação.
         '409':
-          description: CPF já cadastrado
+          description: CPF já cadastrado.
         '500':
-          description: Erro interno
+          description: Erro interno.
 
   /api/v1/funcionarios/{id}:
     get:
-      summary: Busca um Funcionário pelo ID
-      tags: 
+      summary: Busca um funcionário pelo ID
+      tags:
         - Pessoas
       security:
         - cookieAuth: []
@@ -189,16 +278,22 @@ paths:
             type: integer
       responses:
         '200':
-          description: Dados do funcionário retornados
+          description: Dados do funcionário retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PessoaResponse'
+        '403':
+          description: Acesso negado; usuário não pode visualizar este funcionário.
         '404':
-          description: Funcionário não encontrado
+          description: Funcionário não encontrado.
         '500':
-          description: Erro ao buscar funcionário
+          description: Erro ao buscar funcionário.
 
   /api/v1/funcionarios/{id}/salario:
     put:
-      summary: Atualiza o salário de um Funcionário
-      tags: 
+      summary: Atualiza o salário de um funcionário
+      tags:
         - Pessoas
       security:
         - cookieAuth: []
@@ -222,21 +317,49 @@ paths:
                   format: float
       responses:
         '200':
-          description: Salário atualizado com sucesso
+          description: Salário atualizado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Salário atualizado com sucesso
         '400':
-          description: Erro de validação (ex. salário negativo)
+          description: Erro de validação.
+        '403':
+          description: Acesso negado; usuário não pode atualizar salário.
         '404':
-          description: Funcionário não encontrado
+          description: Funcionário não encontrado.
         '500':
-          description: Erro ao atualizar salário
+          description: Erro ao atualizar salário.
 
-  # ==========================================
-  # MEEIROS
-  # ==========================================
+  /api/v1/funcionarios/id/:
+    get:
+      summary: Lista funcionários ligados ao administrador autenticado
+      tags:
+        - Pessoas
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista de funcionários retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PessoaResponse'
+        '404':
+          description: Funcionário não encontrado.
+        '500':
+          description: Erro ao buscar funcionários.
+
   /api/v1/meeiros:
     post:
-      summary: Cadastra um novo Meeiro
-      tags: 
+      summary: Cadastra um novo meeiro
+      tags:
         - Pessoas
       security:
         - cookieAuth: []
@@ -248,18 +371,26 @@ paths:
               $ref: '#/components/schemas/PessoaFisicaInput'
       responses:
         '201':
-          description: Meeiro cadastrado com sucesso
+          description: Meeiro cadastrado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Meeiro cadastrado com sucesso
         '400':
-          description: Erro de validação
+          description: Erro de validação.
         '409':
-          description: CPF já cadastrado
+          description: CPF já cadastrado.
         '500':
-          description: Erro interno
+          description: Erro interno.
 
   /api/v1/meeiros/{id}:
     get:
-      summary: Busca um Meeiro pelo ID
-      tags: 
+      summary: Busca um meeiro pelo ID
+      tags:
         - Pessoas
       security:
         - cookieAuth: []
@@ -271,19 +402,43 @@ paths:
             type: integer
       responses:
         '200':
-          description: Dados do meeiro retornados
+          description: Dados do meeiro retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PessoaResponse'
+        '403':
+          description: Acesso negado; usuário não pode visualizar este meeiro.
         '404':
-          description: Meeiro não encontrado
+          description: Meeiro não encontrado.
         '500':
-          description: Erro ao buscar meeiro
+          description: Erro ao buscar meeiro.
 
-  # ==========================================
-  # PRESTADORES DE SERVIÇO
-  # ==========================================
+  /api/v1/meeiros/id/:
+    get:
+      summary: Lista meeiros ligados ao administrador autenticado
+      tags:
+        - Pessoas
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista de meeiros retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PessoaResponse'
+        '404':
+          description: Meeiro não encontrado.
+        '500':
+          description: Erro ao buscar meeiros.
+
   /api/v1/prestadores:
     post:
-      summary: Cadastra um novo Prestador de Serviço
-      tags: 
+      summary: Cadastra um novo prestador de serviço
+      tags:
         - Pessoas
       security:
         - cookieAuth: []
@@ -295,18 +450,26 @@ paths:
               $ref: '#/components/schemas/PessoaFisicaInput'
       responses:
         '201':
-          description: Prestador de Serviço cadastrado com sucesso
+          description: Prestador de Serviço cadastrado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Prestador de Serviço cadastrado com sucesso
         '400':
-          description: Erro de validação
+          description: Erro de validação.
         '409':
-          description: CPF já cadastrado
+          description: CPF já cadastrado.
         '500':
-          description: Erro interno
+          description: Erro interno.
 
   /api/v1/prestadores/{id}:
     get:
-      summary: Busca um Prestador de Serviço pelo ID
-      tags: 
+      summary: Busca um prestador pelo ID
+      tags:
         - Pessoas
       security:
         - cookieAuth: []
@@ -318,25 +481,351 @@ paths:
             type: integer
       responses:
         '200':
-          description: Dados do prestador retornados
+          description: Dados do prestador retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PessoaResponse'
+        '403':
+          description: Acesso negado; usuário não pode visualizar este prestador.
         '404':
-          description: Prestador de Serviço não encontrado
+          description: Prestador de Serviço não encontrado.
         '500':
-          description: Erro ao buscar prestador
+          description: Erro ao buscar prestador.
 
-  /api/v1/pessoas:
+  /api/v1/prestadores/id/:
     get:
-      summary: Lista todas as Pessoas
-      tags: 
+      summary: Lista prestadores ligados ao administrador autenticado
+      tags:
         - Pessoas
       security:
         - cookieAuth: []
       responses:
         '200':
-          description: Lista de pessoas retornada com sucesso
-        '400':
-          description: Erro de validação
+          description: Lista de prestadores retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PessoaResponse'
         '404':
-          description: Nenhuma pessoa encontrada
+          description: Prestador não encontrado.
         '500':
-          description: Erro interno ao listar pessoas
+          description: Erro ao buscar prestadores.
+
+  /api/v1/pessoas:
+    get:
+      summary: Lista pessoas paginadas do administrador autenticado
+      tags:
+        - Pessoas
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limite
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Lista de pessoas retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PessoaResponse'
+                  total:
+                    type: integer
+                  pagina:
+                    type: integer
+                  totalPaginas:
+                    type: integer
+        '400':
+          description: Erro ao processar os parâmetros de paginação.
+        '500':
+          description: Erro interno ao listar pessoas.
+
+  /api/v1/pessoa/cadastrar-endereco/{id}:
+    post:
+      summary: Cadastra um endereço para uma pessoa
+      tags:
+        - Pessoas
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnderecoInput'
+      responses:
+        '201':
+          description: Endereço cadastrado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Endereço cadastrado com sucesso
+                  endereco:
+                    $ref: '#/components/schemas/EnderecoInput'
+        '400':
+          description: Dados inválidos.
+        '404':
+          description: Pessoa não encontrada.
+        '500':
+          description: Erro ao cadastrar endereço.
+
+  /api/v1/pessoa/atualizar-endereco/{id}:
+    put:
+      summary: Atualiza o endereço de uma pessoa
+      tags:
+        - Pessoas
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnderecoInput'
+      responses:
+        '200':
+          description: Endereço atualizado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Endereço atualizado com sucesso
+                  endereco:
+                    $ref: '#/components/schemas/EnderecoInput'
+        '400':
+          description: Dados inválidos.
+        '404':
+          description: Pessoa não encontrada.
+        '500':
+          description: Erro ao atualizar endereço.
+
+  /api/v1/pessoa/deletar-endereco/{id}:
+    delete:
+      summary: Remove um endereço de uma pessoa
+      tags:
+        - Pessoas
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Endereço removido com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Endereço removido com sucesso
+        '400':
+          description: Dados inválidos.
+        '404':
+          description: Pessoa ou endereço não encontrado.
+        '500':
+          description: Erro ao remover endereço.
+
+  /api/v1/pessoas/identificacao/{id}:
+    patch:
+      summary: Atualiza nome ou razão social de uma pessoa
+      tags:
+        - Pessoas
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                razaoSocial:
+                  type: string
+      responses:
+        '200':
+          description: Nome ou razão social atualizados com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Nome ou Razão Social atualizadas com sucesso.
+                  novaInformacao:
+                    type: object
+        '400':
+          description: Dados inválidos.
+        '500':
+          description: Erro ao atualizar identificação.
+
+  /api/v1/pessoas-fisicas/cpf/{id}:
+    patch:
+      summary: Atualiza o CPF de uma pessoa física
+      tags:
+        - Pessoas
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cpf
+              properties:
+                cpf:
+                  type: string
+      responses:
+        '200':
+          description: CPF atualizado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: CPF Atualizado com sucesso.
+        '400':
+          description: CPF inválido.
+        '404':
+          description: CPF já cadastrado no sistema.
+        '500':
+          description: Erro ao atualizar CPF.
+
+  /api/v1/pessoa-juridica/atualizar-cnpj/{id}:
+    patch:
+      summary: Atualiza o CNPJ de uma pessoa jurídica
+      tags:
+        - Pessoas
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cnpj
+              properties:
+                cnpj:
+                  type: string
+      responses:
+        '200':
+          description: CNPJ atualizado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: CNPJ atualizado com sucesso.
+        '400':
+          description: CNPJ inválido.
+        '404':
+          description: CNPJ já cadastrado no sistema.
+        '500':
+          description: Erro ao atualizar CNPJ.
+
+  /api/v1/pessoa-juridica/atualizar-inscricaoEstadual/{id}:
+    patch:
+      summary: Atualiza a inscrição estadual de uma pessoa jurídica
+      tags:
+        - Pessoas
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - inscricaoEstadual
+              properties:
+                inscricaoEstadual:
+                  type: string
+      responses:
+        '200':
+          description: Inscrição estadual atualizada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Inscrição Estadual atualizada com sucesso.
+        '400':
+          description: Inscrição estadual inválida.
+        '500':
+          description: Erro ao atualizar inscrição estadual.

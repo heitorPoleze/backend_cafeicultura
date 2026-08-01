@@ -1,12 +1,60 @@
-tags:
+﻿tags:
   - name: Safras
-    description: Gerenciamento das safras vinculadas a uma propriedade
+    description: Gerenciamento das safras vinculadas a propriedades
+
+components:
+  schemas:
+    CriarSafraInput:
+      type: object
+      required:
+        - idPropriedade
+        - dataInicio
+      properties:
+        idPropriedade:
+          type: integer
+          description: ID da propriedade onde a safra será registrada.
+          example: 1
+        dataInicio:
+          type: string
+          format: date-time
+          description: Data de início da safra no formato ISO 8601.
+          example: 2026-06-23T00:00:00.000Z
+
+    SafraResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 5
+        idPropriedade:
+          type: integer
+          example: 1
+        dataInicio:
+          type: string
+          format: date-time
+        dataFim:
+          type: string
+          format: date-time
+          nullable: true
+        ativa:
+          type: boolean
+          example: true
+
+    EventoSafraResponse:
+      type: object
+      properties:
+        modulo:
+          type: string
+          example: TRATO_CULTURAL
+        dados:
+          type: object
+          description: Objeto completo do evento retornado pelo módulo correspondente.
 
 paths:
   /api/v1/safras:
     post:
-      summary: Cadastra uma nova Safra
-      tags: 
+      summary: Cadastra uma nova safra
+      tags:
         - Safras
       security:
         - cookieAuth: []
@@ -15,39 +63,40 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - idPropriedade
-                - dataInicio
-              properties:
-                idPropriedade:
-                  type: integer
-                  description: ID da propriedade onde a safra será registrada.
-                  example: 1
-                dataInicio:
-                  type: string
-                  format: date-time
-                  description: Data de início da safra no formato ISO 8601.
-                  example: "2026-06-23T00:00:00.000Z"
+              $ref: '#/components/schemas/CriarSafraInput'
       responses:
         '201':
-          description: Safra cadastrada com sucesso
+          description: Safra cadastrada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Safra cadastrada com sucesso
+                  dados:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 5
         '400':
-          description: Erro de validação nos campos (ex. formato de data inválido)
+          description: Erro de validação nos campos.
         '403':
-          description: Acesso negado! O usuário não tem permissão para cadastrar nesta propriedade.
+          description: Acesso negado; usuário não pode cadastrar safra nesta propriedade.
         '404':
-          description: Propriedade da safra não encontrada
+          description: Propriedade da safra não encontrada.
         '422':
-          description: Erro de processamento nos campos (ex. data de inicio superior ao dia atual)
+          description: "Erro de processamento: duas safras ativas ou data inicial futura."
         '500':
-          description: Erro interno inesperado ao cadastrar safra
+          description: Erro interno inesperado ao cadastrar safra.
 
   /api/v1/safras/propriedade/{id}/safra/{idSafra}/eventos:
     get:
-      summary: Relatório Unificado de Eventos da Safra (Transacional)
-      description: Retorna uma linha do tempo de todos os eventos da safra. A requisição utiliza uma transação de banco de dados para garantir integridade e consistência de leitura. O payload é embrulhado polimorficamente na propriedade `dados`.
-      tags: 
+      summary: Relatório unificado de eventos da safra
+      description: Retorna uma linha do tempo de todos os eventos da safra para a propriedade informada.
+      tags:
         - Safras
       security:
         - cookieAuth: []
@@ -57,13 +106,13 @@ paths:
           required: true
           schema:
             type: integer
-          description: ID da Propriedade rural.
+          description: ID da propriedade rural.
         - in: path
           name: idSafra
           required: true
           schema:
             type: integer
-          description: ID da Safra a ser analisada.
+          description: ID da safra.
       responses:
         '200':
           description: Linha do tempo gerada com sucesso.
@@ -72,41 +121,17 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  required:
-                    - modulo
-                    - dados
-                  properties:
-                    modulo:
-                      type: string
-                      description: Discriminador para tipagem do front-end.
-                      example: "TRATO_CULTURAL"
-                    dados:
-                      type: object
-                      description: O objeto completo do evento, contendo todos os atributos gerados pela entidade. Ex:(TratoCulturalDTO).
-                      properties:
-                        id: { type: integer, example: 45 }
-                        idTalhao: { type: integer, example: 3 }
-                        dataInicio: { type: string, format: date-time }
-                        dataFim: { type: string, format: date-time, nullable: true }
-                        descricao: { type: string }
-                        dataCadastro: { type: string, format: date-time }
-                        safra: { type: object }
-                        tipoTrato: { type: string, example: "Adubação" }
-                        insumosUtilizados: { type: array, items: { type: object } }
-                        transacoesFinanceiras: { type: array, items: { type: object } }
-                        responsaveis: { type: array, items: { type: object } }
-                        confirmado: { type: boolean, example: true }
+                  $ref: '#/components/schemas/EventoSafraResponse'
         '401':
-          description: Acesso negado. Usuário não é proprietário.
+          description: Acesso negado à propriedade.
         '404':
-          description: Propriedade ou Safra não encontrada.
-  
+          description: Propriedade, safra não encontrada ou safra sem eventos.
+
   /api/v1/safras/propriedade/{id}/safra/{idSafra}/talhao/{idTalhao}/eventos:
     get:
-      summary: Linha do Tempo de Eventos Específicos por Talhão de determinada Safra
-      description: Retorna uma lista unificada e ordenada cronologicamente de todos os eventos ocorridos em um Talhão específico durante uma Safra. Utiliza transações para garantir consistência de leitura.
-      tags: 
+      summary: Relatório de eventos da safra por talhão
+      description: Retorna os eventos ocorridos em um talhão específico durante uma safra.
+      tags:
         - Safras
       security:
         - cookieAuth: []
@@ -116,19 +141,19 @@ paths:
           required: true
           schema:
             type: integer
-          description: ID da Propriedade rural.
+          description: ID da propriedade rural.
         - in: path
           name: idSafra
           required: true
           schema:
             type: integer
-          description: ID da Safra a ser analisada.
+          description: ID da safra.
         - in: path
           name: idTalhao
           required: true
           schema:
             type: integer
-          description: ID do Talhão para filtrar os eventos.
+          description: ID do talhão.
       responses:
         '200':
           description: Linha do tempo filtrada gerada com sucesso.
@@ -137,40 +162,16 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  required:
-                    - modulo
-                    - dados
-                  properties:
-                    modulo:
-                      type: string
-                      description: Discriminador para tipagem do front-end.
-                      example: "TRATO_CULTURAL"
-                    dados:
-                      type: object
-                      description: O objeto completo do evento mapeado a partir da respectiva entidade (ex. TratoCulturalDTO).
-                      properties:
-                        id: { type: integer, example: 45 }
-                        idTalhao: { type: integer, example: 3 }
-                        dataInicio: { type: string, format: date-time }
-                        dataFim: { type: string, format: date-time, nullable: true }
-                        descricao: { type: string }
-                        dataCadastro: { type: string, format: date-time }
-                        safra: { type: object }
-                        tipoTrato: { type: string, example: "Capina" }
-                        insumosUtilizados: { type: array, items: { type: object } }
-                        transacoesFinanceiras: { type: array, items: { type: object } }
-                        responsaveis: { type: array, items: { type: object } }
-                        confirmado: { type: boolean, example: true }
+                  $ref: '#/components/schemas/EventoSafraResponse'
         '401':
-          description: Acesso negado. Usuário não é proprietário da fazenda.
+          description: Acesso negado à propriedade.
         '404':
-          description: Propriedade, Safra não encontrada ou não existem eventos.
+          description: Propriedade, safra ou talhão não encontrado, ou sem eventos.
 
   /api/v1/safras/{id}:
     get:
-      summary: Busca uma Safra pelo ID
-      tags: 
+      summary: Busca uma safra pelo ID
+      tags:
         - Safras
       security:
         - cookieAuth: []
@@ -180,22 +181,26 @@ paths:
           required: true
           schema:
             type: integer
-          description: ID numérico da safra
+          description: ID numérico da safra.
       responses:
         '200':
-          description: Dados da safra retornados com sucesso
+          description: Dados da safra retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SafraResponse'
         '400':
-          description: ID da safra inválido
+          description: ID da safra inválido.
         '403':
-          description: Acesso negado ou Propriedade da safra não encontrada
+          description: Acesso negado ou propriedade da safra não encontrada.
         '404':
-          description: Safra não encontrada
+          description: Safra não encontrada.
         '500':
-          description: Erro interno inesperado ao buscar safra
+          description: Erro interno inesperado ao buscar safra.
 
     delete:
-      summary: Exclui ou arquiva uma Safra
-      tags: 
+      summary: Exclui ou arquiva uma safra
+      tags:
         - Safras
       security:
         - cookieAuth: []
@@ -205,24 +210,32 @@ paths:
           required: true
           schema:
             type: integer
-          description: ID numérico da safra
+          description: ID numérico da safra.
       responses:
         '200':
-          description: Safra excluída com sucesso
+          description: Safra excluída com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Safra excluida com sucesso!
         '400':
-          description: ID da safra inválido
+          description: ID da safra inválido.
         '403':
-          description: Acesso negado ou Propriedade da safra não encontrada
+          description: Acesso negado ou propriedade da safra não encontrada.
         '404':
-          description: Safra não encontrada
+          description: Safra não encontrada.
         '500':
-          description: Erro interno inesperado ao excluir safra
+          description: Erro interno inesperado ao excluir safra.
 
   /api/v1/safras/{id}/finalizar:
     patch:
-      summary: Finaliza uma Safra
-      description: Atualiza a data de fim de uma safra, alterando seu status de ativa para finalizada.
-      tags: 
+      summary: Finaliza uma safra
+      description: Atualiza a data de fim de uma safra e altera seu status para finalizada.
+      tags:
         - Safras
       security:
         - cookieAuth: []
@@ -232,7 +245,7 @@ paths:
           required: true
           schema:
             type: integer
-          description: ID numérico da safra
+          description: ID numérico da safra.
       requestBody:
         required: true
         content:
@@ -245,18 +258,54 @@ paths:
                 dataFim:
                   type: string
                   format: date-time
-                  description: Data de encerramento da safra no formato ISO 8601.
-                  example: "2026-12-16T00:00:00.000Z"
+                  example: 2026-12-16T00:00:00.000Z
       responses:
         '200':
-          description: Safra finalizada com sucesso
+          description: Safra finalizada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Safra finalizada com sucesso
         '400':
-          description: Erro de validação (ex. dataFim inválida)
+          description: Erro de validação da data.
         '403':
-          description: Acesso negado ou Propriedade da safra não encontrada
+          description: Acesso negado ou propriedade da safra não encontrada.
         '404':
-          description: Safra não encontrada
+          description: Safra não encontrada.
         '422':
-          description: Erro de processamento nos campos (ex. data de fim inferior a data de início)
+          description: Erro de processamento (data fim anterior à data de início ou superior ao dia atual).
         '500':
-          description: Erro interno inesperado ao finalizar safra
+          description: Erro interno inesperado ao finalizar safra.
+
+  /api/v1/safras/propriedade/{idPropriedade}:
+    get:
+      summary: Lista as safras ativas de uma propriedade
+      tags:
+        - Safras
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: idPropriedade
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Safras ativas retornadas com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SafraResponse'
+        '403':
+          description: Acesso negado; usuário não pode consultar esta propriedade.
+        '404':
+          description: Propriedade não encontrada.
+        '500':
+          description: Erro interno inesperado ao buscar safras.
