@@ -204,6 +204,7 @@ model funcionarios {
   idPeFisica_PFK Int     @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
   ctps           String  @unique(map: "ctps_UNIQUE") @db.VarChar(14)
   salario        Decimal @db.Decimal(10, 2)
+  pessoas        pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK])
 
   @@id([idPeFisica_PFK, ctps])
 }
@@ -279,6 +280,7 @@ model pessoas {
   pessoasfisicas        pessoasfisicas?
   pessoasjuridicas      pessoasjuridicas?
   meeiros               meeiros?
+  funcionarios          funcionarios?
   fornecedores          fornecedores?
   clientes               clientes?
   prestadoresdeservico     prestadoresdeservico?

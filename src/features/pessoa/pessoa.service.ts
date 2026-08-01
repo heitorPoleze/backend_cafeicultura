@@ -5,6 +5,7 @@ import MeeiroRepo from "../../shared/domain/pessoa/meeiro/meeiro.repository";
 import PrestadorRepo from "../../shared/domain/pessoa/prestadordeservico/prestador.repository";
 import PessoaRepo from "../../shared/domain/pessoa/pessoa.repository";
 import PessoaFactory from "../../shared/domain/pessoa/pessoafactory.entity";
+import { cnpj as ValidarCNPJ } from "cpf-cnpj-validator";
 import {
     ClienteResponseDTO,
   CreateClienteDTO,
@@ -31,7 +32,7 @@ import Prestador from "../../shared/domain/pessoa/prestadordeservico/prestador.e
 import PessoaFisica from "../../shared/domain/pessoa/pessoafisica.entity";
 import PessoaJuridica from "../../shared/domain/pessoa/pessoajuridica.entity";
 import Endereco from "../../shared/domain/endereco/endereco.vo";
-import PessoaDTO from "../../shared/domain/pessoa/pessoa.dto";
+import { ResultadoPaginacao } from "../../shared/utils/pagination.dto";
 
 class PessoaService {
   constructor(
@@ -261,44 +262,56 @@ class PessoaService {
     };
   };
 
-  public async listarPessoas(dto: ListarPessoasDTO): Promise<PessoaResponseDTO[]> {
-    const pessoas = await this.pessoaRepo.listarPessoas(dto.idAdministrador);
-    if (!pessoas) {
+public async listarPessoas(dto: ListarPessoasDTO): Promise<ResultadoPaginacao<PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO>> {
+  const { data: pessoas, total, pagina, totalPaginas } = await this.pessoaRepo.listarPessoas(
+    dto.idAdministrador,
+    dto.pagina,
+    dto.limite,
+  );
+
+  if (!pessoas) {
+    throw new Error("ERRO_AO_BUSCAR");
+  }
+
+  if (pessoas.length === 0) {
+    throw new Error("SEM_REGISTROS");
+  }
+
+  const pessoasDTO: (PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO)[] = [];
+  for (const p of pessoas) {
+    if (p instanceof PessoaFisica) {
+      pessoasDTO.push({
+        id: p.id!,
+        idAdministrador: p.idAdministrador,
+        dataCadastro: p.dataCadastro,
+        nome: p.nome,
+        cpf: p.cpf,
+        endereco: p.endereco,
+        papel: p.papel,
+      });
+    } else if (p instanceof PessoaJuridica) {
+      pessoasDTO.push({
+        id: p.id!,
+        idAdministrador: p.idAdministrador,
+        dataCadastro: p.dataCadastro,
+        razaoSocial: p.razaoSocial,
+        cnpj: p.cnpj,
+        inscrEstadual: p.inscrEstadual,
+        endereco: p.endereco,
+        papel: p.papel,
+      });
+    } else {
       throw new Error("ERRO_AO_BUSCAR");
-    };
-
-    const pessoasDTO: (PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO)[] = [];
-    for (const p of pessoas) {
-      if (p instanceof PessoaFisica) {
-        pessoasDTO.push({
-          id: p.id!,
-          idAdministrador: p.idAdministrador,
-          dataCadastro: p.dataCadastro,
-          nome: p.nome,
-          cpf: p.cpf,
-          endereco: p.endereco,
-        });
-      } else if (p instanceof PessoaJuridica) {
-        pessoasDTO.push({
-          id: p.id!,
-          idAdministrador: p.idAdministrador,
-          dataCadastro: p.dataCadastro,
-          razaoSocial: p.razaoSocial,
-          cnpj: p.cnpj,
-          inscrEstadual: p.inscrEstadual,
-          endereco: p.endereco,
-        });
-      } else {
-        throw new Error("ERRO_AO_BUSCAR");
-      };
     }
+  }
 
-    if (pessoas && pessoas.length === 0) {
-      throw new Error("SEM_REGISTROS");
-    };
-
-    return pessoasDTO;
+  return {
+    data: pessoasDTO,
+    total,
+    pagina,
+    totalPaginas,
   };
+}
   public async buscarFuncionariosPorIdAdministrador(idAdministrador: number): Promise<FuncionarioResponseDTO[]> {
     const funcionarios = await this.funcionarioRepo.listarFuncionarios(idAdministrador);
     if (!funcionarios) return [];
@@ -456,6 +469,71 @@ class PessoaService {
     }
     const pessoaAtualizada = await this.pessoaRepo.removerEndereco(pessoaId);
     return pessoaAtualizada;
+  }
+  public async atualizarNomeOuRazaoSocial(dados: Record<string, unknown>, pessoaId: number): Promise<void> {
+    const pessoa = await this.pessoaRepo.buscarPorId(pessoaId)
+
+    if (!pessoa) {
+      throw new Error(`Pessoa com ID ${pessoaId} não encontrado.`);
+    }
+
+    const perfil = pessoa
+    if (perfil instanceof PessoaFisica) {
+      const novoNome = dados.nome as string;
+      if (!novoNome || novoNome.trim() === "") {
+        throw new Error("Nome é obrigatório.");
+      }
+      if (novoNome.length < 3) {
+        throw new Error("Nome deve ter no mínimo 3 caracteres.");
+      }
+      if (novoNome.length > 100) {
+        throw new Error("Nome deve ter no máximo 100 caracteres.");
+      }
+      await this.pessoaRepo.atualizarNomePessoaFisica(perfil.cpf, novoNome);
+    } else if (perfil instanceof PessoaJuridica) {
+      const novaRazaoSocial = dados.razaoSocial as string;
+
+      if (!novaRazaoSocial || novaRazaoSocial.trim() === "") {
+        throw new Error("Razão Social é obrigatória.");
+      }
+      if (novaRazaoSocial.length < 3) {
+        throw new Error("Razão Social deve ter no mínimo 3 caracteres.");
+      }
+      if (novaRazaoSocial.length > 100) {
+        throw new Error("Razão Social deve ter no máximo 100 caracteres.");
+      }
+      await this.pessoaRepo.atualizarRazaoSocial(
+        perfil.cnpj,
+        novaRazaoSocial,
+      );
+    } else {
+      throw new Error("Tipo de pessoa inválido.");
+    }
+  }
+  public async atualizarCpf(novoCpf:string,pessoaId:number){
+      const cpfExistente = await this.pessoaRepo.verificarCpfExistente(
+        novoCpf!
+      );
+      if (cpfExistente) {
+        throw new Error(`CPF_EXISTENTE`);
+      };
+   let resultado =  await this.pessoaRepo.atualizarCpfPessoa(novoCpf,pessoaId);
+   return resultado
+  }
+  public async atualizarCNPJ(novoCnpj:string,pessoaId:number){
+    const cnpjExistente = await this.pessoaRepo.verificarCnpjExistente(novoCnpj!)
+    if (cnpjExistente ){
+      throw new Error(`CNPJ_EXISTENTE`)
+    };
+    if(ValidarCNPJ.isValid(novoCnpj,true)!){
+        throw new Error(`CNPJ_INVALIDO`)
+    }
+    let resultado = await this.pessoaRepo.atualizarCnpj(novoCnpj,pessoaId)
+    return resultado
+  }
+  public async atualizarInscricaoEstadual(novaIE:string,pessoaId:number){
+    let resultado = await this.pessoaRepo.atualizarInscricaoEstadualPorPessoaId(pessoaId,novaIE)
+    return resultado
   }
 };
 

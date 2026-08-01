@@ -7,8 +7,8 @@ class PessoaFisica extends PessoaBase {
   private _nome: string;
   private _cpf: string;
 
-  constructor(id: number | undefined, idAdministrador: number | null, nome: string, cpf: string, endereco: Endereco | null = null, dataCadastro: Date) {
-    super(id, idAdministrador, endereco, dataCadastro);
+  constructor(id: number | undefined, idAdministrador: number | null, nome: string, cpf: string, endereco: Endereco | null = null, dataCadastro: Date,papel:string | null) {
+    super(id, idAdministrador, endereco, dataCadastro, papel);
     this.validarNome(nome);
     this._nome = nome;
 
