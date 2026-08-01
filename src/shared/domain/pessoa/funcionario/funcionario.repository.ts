@@ -3,6 +3,7 @@ import Funcionario from "./funcionario.entity";
 import PessoaRepository from "../pessoa.repository";
 import Endereco from "../../endereco/endereco.vo";
 import PessoaFactory from "../pessoafactory.entity";
+import { BuscaPaginadaDTO, FuncionarioResponseDTO } from "../../../../features/pessoa/pessoa.dto";
 
 class FuncionarioRepository {
   constructor(
@@ -84,7 +85,7 @@ class FuncionarioRepository {
     return new Funcionario(pessoa, f.ctps, Number(f.salario));
   };
 
-public async listarFuncionarios(idAdministrador: number): Promise<Funcionario[] | null> {
+public async listarFuncionarios(idAdministrador: number, pagina: number, limite: number): Promise<BuscaPaginadaDTO> {
     const pessoas = await this.prisma.pessoas.findMany({
       where: { idAdministrador_FK: idAdministrador },
       include: {
@@ -92,9 +93,11 @@ public async listarFuncionarios(idAdministrador: number): Promise<Funcionario[] 
         enderecos: true,
         usuarios: true,
       },
+      skip: (pagina - 1) * limite,
+      take: limite
     });
 
-    if (!pessoas || pessoas.length === 0) return null;
+    if (!pessoas || pessoas.length === 0) return { pagina, limite, dados: [] };
 
     const pessoasIds = pessoas.map((p) => p.idPessoa_PK);
 
@@ -102,7 +105,7 @@ public async listarFuncionarios(idAdministrador: number): Promise<Funcionario[] 
       where: { idPeFisica_PFK: { in: pessoasIds } },
     });
 
-    const funcionarios: Funcionario[] = [];
+    const funcionarios: FuncionarioResponseDTO[] = [];
 
     pessoas.forEach((p) => {
       const funcData = funcionariosData.find((f) => f.idPeFisica_PFK === p.idPessoa_PK);
@@ -122,24 +125,20 @@ public async listarFuncionarios(idAdministrador: number): Promise<Funcionario[] 
             )
           : null;
 
-        const dados = {
+        funcionarios.push({
           id: p.idPessoa_PK,
           idAdministrador: p.idAdministrador_FK,
           dataCadastro: p.dataCadastro,
           endereco: endereco,
           nome: p.pessoasfisicas.nome,
           cpf: p.pessoasfisicas.cpf,
-        };
-
-        const pessoa = PessoaFactory.criarPessoa("fisica", dados);
-
-        funcionarios.push(
-          new Funcionario(pessoa, funcData.ctps, Number(funcData.salario))
-        );
+          ctps: funcData.ctps,
+          salario: Number(funcData.salario),
+        });
       }
     });
 
-    return funcionarios.length > 0 ? funcionarios : null;
+    return { pagina, limite, dados: funcionarios };
   }
 }
 export default FuncionarioRepository

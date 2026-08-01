@@ -24,7 +24,7 @@ class PrestadorRepository {
       return id;
     });
   };
-  public async buscarPrestadoresPorAdministrador(idAdministrador: number): Promise<Prestador[]> {
+  public async buscarPrestadoresPorAdministrador(idAdministrador: number, pagina: number, limite: number): Promise<{ pagina: number; limite: number; dados: Prestador[] }> {
     const prestadoresDb = await this.prisma.prestadoresdeservico.findMany({
       include: {
         pessoas: true
@@ -33,7 +33,9 @@ class PrestadorRepository {
       pessoas: {
           idAdministrador_FK: idAdministrador
         }
-      }
+      },
+      skip: (pagina - 1) * limite,
+      take: limite
     });
     const prestadores: Prestador[] = [];
     for (const p of prestadoresDb) {
@@ -42,7 +44,11 @@ class PrestadorRepository {
         prestadores.push(pessoa);
       }
     }
-    return prestadores;
+    return {
+      pagina,
+      limite,
+      dados: prestadores
+    };
   }
   public async buscarPorId(id: number): Promise<Prestador | null> {
     const m = await this.prisma.prestadoresdeservico.findUnique({

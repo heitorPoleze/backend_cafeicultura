@@ -24,7 +24,7 @@ class MeeiroRepository {
       return id;
     });
   };
-  public async buscarMeeirosPorAdministrador(idAdministrador: number): Promise<Meeiro[]> {
+  public async buscarMeeirosPorAdministrador(idAdministrador: number,pagina: number, limite: number): Promise<{ pagina: number; limite: number; dados: Meeiro[] }> {
     const meeirosDb = await this.prisma.meeiros.findMany({
       include: {
         pessoas: true
@@ -34,6 +34,8 @@ class MeeiroRepository {
           idAdministrador_FK: idAdministrador
         }
       },
+      skip: (pagina - 1) * limite,
+      take: limite
     });
     const meeiros: Meeiro[] = [];
     for (const m of meeirosDb) {
@@ -42,7 +44,11 @@ class MeeiroRepository {
         meeiros.push(pessoa);
       }
     }
-    return meeiros;
+    return {
+      pagina,
+      limite,
+      dados: meeiros
+    };
   }
   public async buscarPorId(id: number): Promise<Meeiro | null> {
     const m = await this.prisma.meeiros.findUnique({

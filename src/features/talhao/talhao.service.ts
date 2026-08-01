@@ -1,6 +1,6 @@
 import TalhaoRepository from './talhao.repository';
 import PropriedadeRepository from '../propriedade/propriedade.repository'; 
-import { CadastrarTalhaoDTO, EncerrarTalhaoDTO, ExcluirTalhaoDTO, VariedadesDTO } from './talhao.dto';
+import { BuscarTalhoesDTO, CadastrarTalhaoDTO, EncerrarTalhaoDTO, ExcluirTalhaoDTO, ResponseBuscarTalhoesDTO, VariedadesDTO } from './talhao.dto';
 import Talhao from './talhao.entity';
 import Tamanho from '../../shared/domain/tamanho/tamanho.entity';
 
@@ -110,17 +110,49 @@ class TalhaoService {
     };
     return tamanho.valor;
   };
-  public async buscarAtivosPorPropriedade(idPropriedade: number): Promise<Talhao[]> {
-    return await this.repository.buscarAtivosPorPropriedade(idPropriedade);
+  public async buscarAtivosPorPropriedade(idPropriedade: number, pagina: number, limite: number): Promise<ResponseBuscarTalhoesDTO> {
+    const resultado = await this.repository.buscarAtivosPorPropriedade(
+      idPropriedade,
+      pagina,
+      limite
+    );
+  return {
+    pagina: resultado.pagina,
+    limite: resultado.limite,
+    talhoes: resultado.dados, 
+  };
+}
+  public async buscarTodosPorPropriedade(idPropriedade: number, pagina: number, limite: number): Promise<ResponseBuscarTalhoesDTO> {
+    const resultado = await this.repository.buscarTodosPorPropriedade(
+      idPropriedade,
+      pagina,
+      limite
+    );
+  return {
+    pagina: resultado.pagina,
+    limite: resultado.limite,
+    talhoes: resultado.dados, 
+  };
   }
-  public async buscarTodosPorPropriedade(idPropriedade: number): Promise<Talhao[]> {
-    return await this.repository.buscarTodosPorPropriedade(idPropriedade);
-  }
-  public async buscarDesativadosPorPropriedade(idPropriedade: number): Promise<Talhao[]> {
-    return await this.repository.buscarDesativadosPorPropriedade(idPropriedade);
-  }
-  public async buscarFinalizadosPorPropriedade(idPropriedade: number): Promise<Talhao[]> {
-    return await this.repository.buscarFinalizadosPorPropriedade(idPropriedade);
+  public async buscarDesativadosPorPropriedade(idPropriedade: number, pagina: number, limite: number): Promise<ResponseBuscarTalhoesDTO> {
+    const resultado = await this.repository.buscarDesativadosPorPropriedade(
+      idPropriedade,
+      pagina,
+      limite
+    );
+  return {
+    pagina: resultado.pagina,
+    limite: resultado.limite,
+    talhoes: resultado.dados, 
+  };
+}
+  public async buscarFinalizadosPorPropriedade(idPropriedade: number, pagina: number, limite: number): Promise<ResponseBuscarTalhoesDTO> {
+    const resultado = await this.repository.buscarFinalizadosPorPropriedade(idPropriedade, pagina, limite);
+    return {
+      pagina: resultado.pagina,
+      limite: resultado.limite,
+      talhoes: resultado.dados
+    };
   }
 };
 

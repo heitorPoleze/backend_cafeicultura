@@ -72,8 +72,8 @@ class TalhaoRepository {
   }
 
   public async buscarAtivosPorPropriedade(
-    idPropriedade: number,
-  ): Promise<Talhao[]> {
+    idPropriedade: number, pagina: number, limite: number
+  ): Promise<{ pagina: number; limite: number; dados: Talhao[] }> {
     const talhoesDb = await this.prisma.talhoes.findMany({
       where: {
         idPropriedade_FK: idPropriedade,
@@ -85,14 +85,20 @@ class TalhaoRepository {
           include: { variedades: true },
         },
       },
+      skip: (pagina - 1) * limite,
+      take: limite,
     });
 
-    return talhoesDb.map((db) => this.mapToDomain(db));
+     let dados = talhoesDb.map((db) => this.mapToDomain(db));
+    return {
+      pagina,
+      limite,
+      dados
   }
-
+}
    public async buscarFinalizadosPorPropriedade(
-    idPropriedade: number,
-  ): Promise<Talhao[]> {
+    idPropriedade: number, pagina: number, limite: number
+  ): Promise<{ pagina: number; limite: number; dados: Talhao[] }> {
     const talhoesDb = await this.prisma.talhoes.findMany({
       where: {
         idPropriedade_FK: idPropriedade,
@@ -105,31 +111,47 @@ class TalhaoRepository {
           include: { variedades: true },
         },
       },
+      skip: (pagina - 1) * limite,
+      take: limite,
     });
 
-    return talhoesDb.map((db) => this.mapToDomain(db));
+    return {
+      pagina,
+      limite,
+      dados: talhoesDb.map((db) => this.mapToDomain(db))
+    };
   }
-  public async buscarDesativadosPorPropriedade(
-    idPropriedade: number,
-  ): Promise<Talhao[]> {
-    const talhoesDb = await this.prisma.talhoes.findMany({
-      where: {
-        idPropriedade_FK: idPropriedade,
-        arquivado: 1
+public async buscarDesativadosPorPropriedade(
+  idPropriedade: number, 
+  pagina: number, 
+  limite: number
+): Promise<{ pagina: number; limite: number; dados: Talhao[] }> {
+  const talhoesDb = await this.prisma.talhoes.findMany({
+    where: {
+      idPropriedade_FK: idPropriedade,
+      arquivado: 1
+    },
+    include: {
+      tamanhos: true,
+      variedadestalhoes: {
+        include: { variedades: true },
       },
-      include: {
-        tamanhos: true,
-        variedadestalhoes: {
-          include: { variedades: true },
-        },
-      },
-    });
+    },
+    skip: (pagina - 1) * limite, 
+    take: limite,
+  });
 
-    return talhoesDb.map((db) => this.mapToDomain(db));
-  }
+  const dados = talhoesDb.map((db) => this.mapToDomain(db));
+
+  return {
+    pagina,
+    limite,
+    dados,
+  };
+}
   public async buscarTodosPorPropriedade(
-    idPropriedade: number,
-  ): Promise<Talhao[]> {
+    idPropriedade: number, pagina: number, limite: number
+  ): Promise<{ pagina: number; limite: number; dados: Talhao[] }> {
     const talhoesDb = await this.prisma.talhoes.findMany({
       where: {
         idPropriedade_FK: idPropriedade,
@@ -140,9 +162,15 @@ class TalhaoRepository {
           include: { variedades: true },
         },
       },
+      skip: (pagina - 1) * limite,
+      take: limite,
     });
 
-    return talhoesDb.map((db) => this.mapToDomain(db));
+    return {
+      pagina,
+      limite,
+      dados: talhoesDb.map((db) => this.mapToDomain(db))
+    };
   }
   async buscarPorId(id: number): Promise<Talhao | null> {
     const talhaoDb = await this.prisma.talhoes.findFirst({

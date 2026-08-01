@@ -103,13 +103,14 @@ export class TalhaoController {
   public async ativosPorPropriedade(req: Request, res: Response) {
     const erros = validationResult(req);
     const idPropriedade = Number(req.params.idPropriedade);
-
+    const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
+    const limite = req.query.limite ? Number(req.query.limite) : 10;
     if (!erros.isEmpty()) {
       return res.status(400).json({ erros: erros.array() });
     }
 
     try {
-      const talhoes = await this.talhaoService.buscarAtivosPorPropriedade(idPropriedade);
+      const talhoes = await this.talhaoService.buscarAtivosPorPropriedade(idPropriedade, pagina, limite);
       res.status(200).json(talhoes);
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -120,11 +121,13 @@ export class TalhaoController {
   public async allTalhoesPorPropriedade(req: Request, res: Response) {
       const erros = validationResult(req);
       const idPropriedade = Number(req.params.idPropriedade);
+      const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
+      const limite = req.query.limite ? Number(req.query.limite) : 10;
       if(!erros.isEmpty()){
         return res.status(400).json({ erros: erros.array() });
       }
       try {
-        const talhoes = await this.talhaoService.buscarTodosPorPropriedade(idPropriedade);
+        const talhoes = await this.talhaoService.buscarTodosPorPropriedade(idPropriedade, pagina, limite);
         res.status(200).json(talhoes);
       } catch (error: unknown) {
         if (error instanceof Error) {
@@ -135,11 +138,13 @@ export class TalhaoController {
   public async desativadosPorPropriedade(req: Request, res: Response) {
     const erros = validationResult(req);
     const idPropriedade = Number(req.params.idPropriedade);
+    const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
+    const limite = req.query.limite ? Number(req.query.limite) : 10;
     if (!erros.isEmpty()) {
       return res.status(400).json({ erros: erros.array() });
     }
     try {
-      const talhoes = await this.talhaoService.buscarDesativadosPorPropriedade(idPropriedade);
+      const talhoes = await this.talhaoService.buscarDesativadosPorPropriedade(idPropriedade, pagina, limite);
       res.status(200).json(talhoes);
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -150,11 +155,13 @@ export class TalhaoController {
   public async finalizadosPorPropriedade(req: Request, res: Response) {
     const erros = validationResult(req);
     const idPropriedade = Number(req.params.idPropriedade);
+    const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
+    const limite = req.query.limite ? Number(req.query.limite) : 10;
     if (!erros.isEmpty()) {
       return res.status(400).json({ erros: erros.array() });
     }
     try {
-      const talhoes = await this.talhaoService.buscarFinalizadosPorPropriedade(idPropriedade);
+      const talhoes = await this.talhaoService.buscarFinalizadosPorPropriedade(idPropriedade, pagina, limite);
       res.status(200).json(talhoes);
     } catch (error: unknown) {
       if (error instanceof Error) {

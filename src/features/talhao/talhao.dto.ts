@@ -1,4 +1,4 @@
-import { Especie } from './talhao.entity';
+import Talhao, { Especie } from './talhao.entity';
 
 
 export type CadastrarTalhaoDTO = {
@@ -13,7 +13,17 @@ export type CadastrarTalhaoDTO = {
   variedadesIds: number[];
   dataInicio: Date;
 };
-
+export type BuscarTalhoesDTO = {
+  idPropriedade: number;
+  pagina: number;
+  limite: number;
+};
+export type ResponseBuscarTalhoesDTO = {
+  talhoes: Talhao[];
+  pagina: number;
+  total?: number;
+  limite: number;
+};
 export type EncerrarTalhaoDTO = {
   id: number;
   dataFim: Date;

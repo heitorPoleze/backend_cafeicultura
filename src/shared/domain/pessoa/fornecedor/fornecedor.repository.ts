@@ -9,7 +9,7 @@ class FornecedorRepository {
     private prisma: PrismaClient,
     private pessoaRepo: PessoaRepository,
   ) {}
-  public async buscarFornecedoresPorAdministrador(idAdministrador: number): Promise<Fornecedor[]> {
+  public async buscarFornecedoresPorAdministrador(idAdministrador: number,pagina: number, limite: number): Promise<{ pagina: number; limite: number; dados: Fornecedor[] }> {
     const fornecedoresDb = await this.prisma.fornecedores.findMany({
       include: {
         pessoas: true
@@ -19,6 +19,8 @@ class FornecedorRepository {
           idAdministrador_FK: idAdministrador
         }
       },
+      skip: (pagina - 1) * limite,
+      take: limite
     });
     const fornecedores: Fornecedor[] = [];
     for (const f of fornecedoresDb) {
@@ -27,7 +29,11 @@ class FornecedorRepository {
         fornecedores.push(pessoa);
       }
     }
-    return fornecedores;
+    return {
+      pagina,
+      limite,
+      dados: fornecedores
+    };
   }
   public async salvarComTransacao(f: Fornecedor): Promise<number> {
     // Inicia a transação (Unit of Work)

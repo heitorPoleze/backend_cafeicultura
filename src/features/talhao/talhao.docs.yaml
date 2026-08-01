@@ -263,15 +263,32 @@ paths:
           required: true
           schema:
             type: integer
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limite
+          schema:
+            type: integer
+            default: 10
       responses:
         '200':
           description: Talhões ativos retornados com sucesso.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TalhaoResumo'
+                type: object
+                properties:
+                  talhoes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TalhaoResumo'
+                  pagina:
+                    type: integer
+                  limite:
+                    type: integer
         '400':
           description: ID de propriedade inválido.
         '500':
@@ -290,15 +307,32 @@ paths:
           required: true
           schema:
             type: integer
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limite
+          schema:
+            type: integer
+            default: 10
       responses:
         '200':
           description: Talhões retornados com sucesso.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TalhaoResumo'
+                type: object
+                properties:
+                  talhoes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TalhaoResumo'
+                  pagina:
+                    type: integer
+                  limite:
+                    type: integer
         '400':
           description: ID de propriedade inválido.
         '500':
@@ -317,15 +351,32 @@ paths:
           required: true
           schema:
             type: integer
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limite
+          schema:
+            type: integer
+            default: 10
       responses:
         '200':
           description: Talhões desativados retornados com sucesso.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TalhaoResumo'
+                type: object
+                properties:
+                  talhoes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TalhaoResumo'
+                  pagina:
+                    type: integer
+                  limite:
+                    type: integer
         '400':
           description: ID de propriedade inválido.
         '500':
@@ -344,15 +395,32 @@ paths:
           required: true
           schema:
             type: integer
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limite
+          schema:
+            type: integer
+            default: 10
       responses:
         '200':
           description: Talhões finalizados retornados com sucesso.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TalhaoResumo'
+                type: object
+                properties:
+                  talhoes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TalhaoResumo'
+                  pagina:
+                    type: integer
+                  limite:
+                    type: integer
         '400':
           description: ID de propriedade inválido.
         '500':

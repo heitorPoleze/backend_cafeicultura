@@ -26,7 +26,7 @@ class ClienteRepository {
       return id;
     });
   };
-  public async buscarClientesPorAdministrador(idAdministrador: number): Promise<Cliente[]> {
+  public async buscarClientesPorAdministrador(idAdministrador: number, pagina: number, limite: number): Promise<{ pagina: number; limite: number; dados: Cliente[] }> {
     const clientesDb = await this.prisma.clientes.findMany({
       include: {
         pessoas: true
@@ -36,6 +36,8 @@ class ClienteRepository {
           idAdministrador_FK: idAdministrador
         }
       },
+      skip: (pagina - 1) * limite,
+      take: limite
     });
     const clientes: Cliente[] = [];
     for (const c of clientesDb) {
@@ -44,7 +46,11 @@ class ClienteRepository {
         clientes.push(pessoa);
       }
     }
-    return clientes;
+    return {
+      pagina,
+      limite,
+      dados: clientes
+    };
   }
   public async buscarPorId(id: number): Promise<Cliente | null> {
     const c = await this.prisma.clientes.findUnique({

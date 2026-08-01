@@ -57,8 +57,17 @@ export type PrestadorResponseDTO = PessoaFisicaResponseDTO | PessoaJuridicaRespo
 
 export type ClienteResponseDTO = PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO;
 export type FornecedorResponseDTO = PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO;
-
-export type ListarPessoasDTO = {
+export type BuscaPaginadaDTO = {
+  pagina: number;
+  limite: number;
+  dados: 
+    | ClienteResponseDTO[] 
+    | FornecedorResponseDTO[] 
+    | FuncionarioResponseDTO[] 
+    | MeeiroResponseDTO[] 
+    | PrestadorResponseDTO[];
+    
+};export type ListarPessoasDTO = {
     idAdministrador: number;
     pagina: number;
     limite: number;

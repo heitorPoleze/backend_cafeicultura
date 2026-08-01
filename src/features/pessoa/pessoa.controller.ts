@@ -208,9 +208,13 @@ class PessoaController {
   };
 
   public async buscarFuncionarioPorIdAdministrador(req: Request, res: Response) {
+    const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
+    const limite = req.query.limite ? Number(req.query.limite) : 10;
     try {
       const funcionarios = await this.service.buscarFuncionariosPorIdAdministrador(
-        req.session.idUsuario!
+        req.session.idUsuario!,
+        pagina,
+        limite
       );
       res.status(200).json(funcionarios);
     } catch (error: unknown) {
@@ -228,9 +232,13 @@ class PessoaController {
     };
   };
   public async buscarClientesPorIdAdministrador(req: Request, res: Response) {
+    const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
+    const limite = req.query.limite ? Number(req.query.limite) : 10;
     try {
       const clientes = await this.service.buscarClientesPorIdAdministrador(
-        req.session.idUsuario!
+        req.session.idUsuario!,
+        pagina,
+        limite
       );
       res.status(200).json(clientes);
     } catch (error: unknown) {
@@ -249,9 +257,13 @@ class PessoaController {
   };
 
   public async buscarMeeirosPorIdAdministrador(req: Request, res: Response) {
+    const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
+    const limite = req.query.limite ? Number(req.query.limite) : 10;
     try {
       const meeiros = await this.service.buscarMeeirosPorIdAdministrador(
-        req.session.idUsuario!
+        req.session.idUsuario!,
+        pagina,
+        limite
       );
       res.status(200).json(meeiros);
     } catch (error: unknown) {
@@ -270,9 +282,14 @@ class PessoaController {
   };
 
   public async buscarPrestadoresDeServicoPorIdAdministrador(req: Request, res: Response) {
+    const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
+    const limite = req.query.limite ? Number(req.query.limite) : 10;
     try {
       const meeiros = await this.service.buscarPrestadoresDeServicoPorIdAdministrador(
-        req.session.idUsuario!
+        req.session.idUsuario!,
+        pagina,
+        limite
+
       );
       res.status(200).json(meeiros);
     } catch (error: unknown) {
@@ -291,9 +308,13 @@ class PessoaController {
   };
 
   public async buscarFornecedoresPorIdAdministrador(req: Request, res: Response) {
+    const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
+    const limite = req.query.limite ? Number(req.query.limite) : 10;
     try {
       const fornecedores = await this.service.buscarFornecedoresPorIdAdministrador(
-        req.session.idUsuario!
+        req.session.idUsuario!,
+        pagina,
+        limite
       );
       res.status(200).json(fornecedores);
     } catch (error: unknown) {
