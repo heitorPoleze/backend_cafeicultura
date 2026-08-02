@@ -21,7 +21,6 @@ class Talhao {
   private _geolocalizacao: Geolocalizacao = null;
   private _dataInicio: Date;
   private _dataFim: Date | null;
-  private _arquivado: boolean;
   constructor(
     id: number | undefined,
     nome: string,
@@ -33,7 +32,6 @@ class Talhao {
     geolocalizacao: Geolocalizacao = null,
     dataInicio: Date,
     dataFim: Date | null = null,
-    arquivado: boolean = false,
   ) {
     if (!nome || nome.trim() === "") {
       throw new Error("O nome do talhão é obrigatório.");
@@ -68,7 +66,6 @@ class Talhao {
     this._geolocalizacao = geolocalizacao;
     this._dataInicio = dataInicio;
     this._dataFim = dataFim;
-    this._arquivado = arquivado;
   };
 
   public get id(): number | undefined {
@@ -101,10 +98,6 @@ class Talhao {
   public get dataFim(): Date | null {
     return this._dataFim;
   };
-  public get arquivado(): boolean {
-    return this._arquivado;
-  };
-
   public encerrar(dataFim: Date): void {
     if (dataFim < this._dataInicio) {
       throw new Error(
@@ -115,10 +108,6 @@ class Talhao {
       throw new Error("A data de fim do talhão não pode ser no futuro.");
     };
     this._dataFim = dataFim;
-  };
-
-  public arquivar(): void {
-    this._arquivado = true;
   };
 
   public toJSON() {
@@ -133,7 +122,6 @@ class Talhao {
       geolocalizacao: this._geolocalizacao,
       dataInicio: this._dataInicio,
       dataFim: this._dataFim,
-      arquivado: this._arquivado,
     };
   }
 }

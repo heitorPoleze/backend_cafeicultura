@@ -32,9 +32,8 @@ model armazens {
 }
 
 model clientes {
-  idCliente_PFK Int @id @unique(map: "idCliente_PFK_UNIQUE") @db.UnsignedInt
-  pessoas        pessoas @relation(fields: [idCliente_PFK], references: [idPessoa_PK])
-
+  idCliente_PFK Int     @id @unique(map: "idCliente_PFK_UNIQUE") @db.UnsignedInt
+  pessoas       pessoas @relation(fields: [idCliente_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_cliente")
 }
 
 model colheitas {
@@ -194,19 +193,15 @@ model formaspgto {
 }
 
 model fornecedores {
-  idFornecedor_PFK Int @id @unique(map: "idFornecedor_PFK_UNIQUE") @db.UnsignedInt
-  pessoas        pessoas @relation(fields: [idFornecedor_PFK], references: [idPessoa_PK])
-
-
+  idFornecedor_PFK Int     @id @unique(map: "idFornecedor_PFK_UNIQUE") @db.UnsignedInt
+  pessoas          pessoas @relation(fields: [idFornecedor_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_fornecedor")
 }
 
 model funcionarios {
   idPeFisica_PFK Int     @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
   ctps           String  @unique(map: "ctps_UNIQUE") @db.VarChar(14)
   salario        Decimal @db.Decimal(10, 2)
-  pessoas        pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK])
-
-  @@id([idPeFisica_PFK, ctps])
+  pessoasfisicas pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_funcionario")
 }
 
 model geolocalizacoes {
@@ -247,8 +242,8 @@ model itenstipos {
 }
 
 model meeiros {
-  idPeFisica_PFK Int @id @unique(map: "idPessoaFisica_PFK_UNIQUE") @db.UnsignedInt
-  pessoas        pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK])
+  idPeFisica_PFK Int     @id @unique(map: "idPessoaFisica_PFK_UNIQUE") @db.UnsignedInt
+  pessoas        pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_meeiro")
 }
 
 model metodosfermentacoes {
@@ -274,16 +269,16 @@ model pessoas {
   idAdministrador_FK    Int?                    @db.UnsignedInt
   idEndereco_FK         Int?                    @db.UnsignedInt
   dataCadastro          DateTime                @unique(map: "dataCadastro_UNIQUE") @db.DateTime(0)
+  clientes              clientes?
+  fornecedores          fornecedores?
+  funcionarios          funcionarios?
+  meeiros               meeiros?
   proprietarios         proprietarios?          @relation(fields: [idAdministrador_FK], references: [idProprietario_PFK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_administrador")
   enderecos             enderecos?              @relation(fields: [idEndereco_FK], references: [idEndereco_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_endereco")
   pessoaseventos        pessoaseventos[]
   pessoasfisicas        pessoasfisicas?
   pessoasjuridicas      pessoasjuridicas?
-  meeiros               meeiros?
-  funcionarios          funcionarios?
-  fornecedores          fornecedores?
-  clientes               clientes?
-  prestadoresdeservico     prestadoresdeservico?
+  prestadoresdeservico  prestadoresdeservico?
   transacoesfinanceiras transacoesfinanceiras[]
   usuarios              usuarios?
 
@@ -335,9 +330,8 @@ model presecagens {
 }
 
 model prestadoresdeservico {
-  idPeFisica_PFK Int @id @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
-  pessoas        pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK])
-
+  idPeFisica_PFK Int     @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
+  pessoasfisicas pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_prestador")
 }
 
 model propriedades {
@@ -413,7 +407,6 @@ model talhoes {
   especie           String              @db.Char(7)
   dataInicio        DateTime            @db.Date
   dataFim           DateTime?           @db.Date
-  arquivado         Int                 @db.TinyInt
   eventosagricolas  eventosagricolas[]
   propriedades      propriedades        @relation(fields: [idPropriedade_FK], references: [idPropriedade_PK], onDelete: NoAction, onUpdate: NoAction, map: "talhao_propriedade")
   tamanhos          tamanhos            @relation(fields: [idTamanho_FK], references: [idTamanho_PK], onDelete: NoAction, onUpdate: NoAction, map: "talhao_tamanho")
@@ -498,7 +491,7 @@ model usuarios {
   idUsuario_PFK       Int                  @unique(map: "idUsuario_PFK_UNIQUE") @db.UnsignedInt
   email               String               @unique(map: "email_UNIQUE") @db.VarChar(50)
   telefone            String               @unique(map: "telefone_UNIQUE") @db.Char(15)
-  senha               String               @db.VarChar(500)
+  senha               String               @db.Char(60)
   consultorestecnicos consultorestecnicos?
   proprietarios       proprietarios?
   pessoas             pessoas              @relation(fields: [idUsuario_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "usuario_pessoa")

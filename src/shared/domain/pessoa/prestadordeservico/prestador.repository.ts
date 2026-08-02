@@ -27,10 +27,14 @@ class PrestadorRepository {
   public async buscarPrestadoresPorAdministrador(idAdministrador: number, pagina: number, limite: number): Promise<{ pagina: number; limite: number; dados: Prestador[] }> {
     const prestadoresDb = await this.prisma.prestadoresdeservico.findMany({
       include: {
-        pessoas: true
+        pessoasfisicas: {
+          include: {
+            enderecos: true
+          }
+        }
       },
       where: {  
-      pessoas: {
+        pessoasfisicas: {
           idAdministrador_FK: idAdministrador
         }
       },
