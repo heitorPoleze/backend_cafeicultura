@@ -6,6 +6,7 @@ import {
   UpdateTamanhoPropriedadeDTO,
   PropriedadeResponseDTO,
   ListPropriedadesDTO,
+  ExcluirPropriedadeDTO,
 } from "./propriedade.dto";
 import Propriedade from "./propriedade.entity";
 import Tamanho from "../../shared/domain/tamanho/tamanho.entity";
@@ -134,12 +135,18 @@ class PropriedadeService {
     dto: ListPropriedadesDTO,
   ): Promise<PropriedadeResponseDTO[]> {
     const propriedades = await this.repo.listarPorProprietario(dto.idProprietario);
-
     if (!propriedades) {
       throw new Error("NAO_ENCONTRADA");
     };
-
     return propriedades
+  };
+
+  public async excluir(
+    dto: ExcluirPropriedadeDTO,
+    idUsuarioSessao: number,
+  ): Promise<void> {
+    const propriedade = await this.buscarPorId(dto.id, idUsuarioSessao);
+    await this.repo.excluir(propriedade.id!);
   };
 
   private calcularAreaEmM2(tamanho: Tamanho): number {

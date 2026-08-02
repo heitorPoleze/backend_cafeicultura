@@ -125,6 +125,29 @@ paths:
           description: Propriedade não encontrada
         '500':
           description: Erro interno ao buscar propriedade
+    delete:
+      summary: Exclui uma Propriedade se não houver atividades
+      tags:
+        - Propriedades
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Propriedade excluída com sucesso
+        '400':
+          description: Erro de sintaxe
+        '403':
+          description: Acesso negado ou propriedade possui atividades e não pode ser excluída
+        '404':
+          description: Propriedade não encontrada
+        '500':
+          description: Erro ao excluir propriedade
 
   /api/v1/propriedades/{id}/nome:
     patch:

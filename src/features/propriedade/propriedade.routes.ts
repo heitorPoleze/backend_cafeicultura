@@ -58,6 +58,12 @@ router.get(
   propriedadeController.buscarPorId.bind(propriedadeController)
 );
 
+router.delete(
+  "/:id",
+  exigeLogin(),
+  propriedadeController.excluir.bind(propriedadeController)
+);
+
 router.patch(
   "/:id/nome",
   exigeLogin(),
@@ -100,5 +106,6 @@ router.patch(
   ],
   propriedadeController.atualizarEndereco.bind(propriedadeController)
 );
+
 
 export default router;
