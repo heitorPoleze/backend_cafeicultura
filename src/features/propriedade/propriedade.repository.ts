@@ -107,6 +107,19 @@ class PropriedadeRepository {
     });
   };
 
+  public async excluir(idPropriedade: number): Promise<void> {
+    try {
+      await this.db.propriedades.delete({
+        where: { idPropriedade_PK: idPropriedade }
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new Error("PROPRIEDADE_POSSUI_ASSOCIACOES");
+      };
+      throw error;
+    };
+  };
+
   public async verificarNome(p: Propriedade, tx: Prisma.TransactionClient): Promise<boolean> {
     const propriedade = await tx.propriedades.findFirst({
       where: {

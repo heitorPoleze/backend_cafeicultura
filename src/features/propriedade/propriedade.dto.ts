@@ -29,3 +29,7 @@ export type UpdateEnderecoPropriedadeDTO = {
 export type ListPropriedadesDTO = {
   idProprietario: number;
 };
+
+export type ExcluirPropriedadeDTO = {
+  id: number;
+};

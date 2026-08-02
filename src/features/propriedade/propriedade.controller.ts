@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import PropriedadeService from "./propriedade.service";
-import { ListPropriedadesDTO } from "./propriedade.dto";
+import { ExcluirPropriedadeDTO, ListPropriedadesDTO } from "./propriedade.dto";
 
 class PropriedadeController {
   constructor(private service: PropriedadeService) {}
@@ -124,6 +124,29 @@ class PropriedadeController {
       };
     };
   };
+
+  public async excluir(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
+
+    try {
+      const dto: ExcluirPropriedadeDTO = {id: Number(req.params.id)};
+      await this.service.excluir(dto, req.session.idUsuario!);
+      res.status(200).json({ mensagem: "Propriedade excluída com sucesso!" });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === "NAO_ENCONTRADA") {
+          return res.status(404).json({ error: "Propriedade não encontrada" });
+        } else if (error.message === "ACESSO_NEGADO") {
+          return res.status(403).json({ error: "Acesso negado! Não foi possivel excluir a propriedade" });
+        } else if (error.message === "PROPRIEDADE_POSSUI_ASSOCIACOES") {
+          return res.status(403).json({ error: "Propriedade possui atividades e não pode ser excluída" });
+        };
+        return res.status(400).json({ error: error.message });
+      };
+      return res.status(500).json({ error: "Erro ao excluir propriedade" });
+    };
+    }
 };
 
 export default PropriedadeController;
