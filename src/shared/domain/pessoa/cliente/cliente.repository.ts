@@ -3,6 +3,8 @@ import Cliente from './cliente.entity';
 import PessoaRepository from "../pessoa.repository";
 import Endereco from "../../endereco/endereco.vo";
 import PessoaFactory from "../pessoafactory.entity";
+import PessoaJuridica from "../pessoajuridica.entity";
+import PessoaFisica from "../pessoafisica.entity";
 
 class ClienteRepository {
     constructor(
@@ -95,6 +97,36 @@ class ClienteRepository {
 
     return new Cliente(pessoa);
   };
+
+  public async excluir(cliente: Cliente): Promise<void> {
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.clientes.delete({
+          where: { idCliente_PFK: cliente.pessoa.id! }
+        });
+        if (cliente.pessoa instanceof PessoaJuridica) {
+          await tx.pessoasjuridicas.delete({
+            where: { idPeJuridica_PFK: cliente.pessoa.id! }
+          });
+        } else if (cliente.pessoa instanceof PessoaFisica) {
+          await tx.pessoasfisicas.delete({
+            where: { idPeFisica_PFK: cliente.pessoa.id! }
+          });
+        }
+        await this.pessoaRepo.excluirPessoa(cliente.pessoa, tx);
+        if (!await this.pessoaRepo.removerEndereco(cliente.pessoa.id!, tx)) {
+          throw new Error("ERRO_REMOVER_ENDERECO");
+        }
+        
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new Error("CLIENTE_POSSUI_ASSOCIACOES");
+      }
+      throw error;
+    }
+  };
+
 };
 
 export default ClienteRepository

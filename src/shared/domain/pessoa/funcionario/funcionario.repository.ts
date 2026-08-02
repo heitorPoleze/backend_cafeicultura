@@ -9,7 +9,7 @@ class FuncionarioRepository {
   constructor(
     private readonly prisma: PrismaClient,
     private readonly pessoaRepo: PessoaRepository,
-  ) {}
+  ) { }
 
   public async salvarComTransacao(f: Funcionario): Promise<number> {
     // Inicia a transação (Unit of Work)
@@ -60,14 +60,14 @@ class FuncionarioRepository {
 
     const endereco = e
       ? new Endereco(
-          e.cidade,
-          e.bairro,
-          e.cep,
-          e.uf,
-          e.pais,
-          e.logradouro,
-          e.idEndereco_PK,
-        )
+        e.cidade,
+        e.bairro,
+        e.cep,
+        e.uf,
+        e.pais,
+        e.logradouro,
+        e.idEndereco_PK,
+      )
       : null;
 
     const dados = {
@@ -85,7 +85,7 @@ class FuncionarioRepository {
     return new Funcionario(pessoa, f.ctps, Number(f.salario));
   };
 
-public async listarFuncionarios(idAdministrador: number, pagina: number, limite: number): Promise<BuscaPaginadaDTO> {
+  public async listarFuncionarios(idAdministrador: number, pagina: number, limite: number): Promise<BuscaPaginadaDTO> {
     const pessoas = await this.prisma.pessoas.findMany({
       where: { idAdministrador_FK: idAdministrador },
       include: {
@@ -115,14 +115,14 @@ public async listarFuncionarios(idAdministrador: number, pagina: number, limite:
 
         const endereco = e
           ? new Endereco(
-              e.cidade,
-              e.bairro,
-              e.cep,
-              e.uf,
-              e.pais,
-              e.logradouro,
-              e.idEndereco_PK,
-            )
+            e.cidade,
+            e.bairro,
+            e.cep,
+            e.uf,
+            e.pais,
+            e.logradouro,
+            e.idEndereco_PK,
+          )
           : null;
 
         funcionarios.push({
@@ -140,5 +140,27 @@ public async listarFuncionarios(idAdministrador: number, pagina: number, limite:
 
     return { pagina, limite, dados: funcionarios };
   }
+
+  public async excluir(funcionario: Funcionario): Promise<void> {
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.funcionarios.delete({
+          where: { idPeFisica_PFK: funcionario.pessoa.id! }
+        });
+        await tx.pessoasfisicas.delete({
+          where: { idPeFisica_PFK: funcionario.pessoa.id! }
+        });
+        await this.pessoaRepo.excluirPessoa(funcionario.pessoa, tx);
+        if (!await this.pessoaRepo.removerEndereco(funcionario.pessoa.id!, tx)) {
+          throw new Error("ERRO_REMOVER_ENDERECO");
+        }
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new Error("FUNCIONARIO_POSSUI_ASSOCIACOES");
+      }
+      throw error;
+    }
+  };
 }
 export default FuncionarioRepository

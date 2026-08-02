@@ -3,6 +3,8 @@ import Fornecedor from "./fornecedor.entity";
 import PessoaRepository from "../pessoa.repository";
 import Endereco from "../../endereco/endereco.vo";
 import PessoaFactory from "../pessoafactory.entity";
+import PessoaFisica from "../pessoafisica.entity";
+import PessoaJuridica from "../pessoajuridica.entity";
 
 class FornecedorRepository {
   constructor(
@@ -100,6 +102,34 @@ class FornecedorRepository {
     const pessoa = PessoaFactory.criarPessoa(tipoPessoa, dados);
 
     return new Fornecedor(pessoa);
+  };
+
+   public async excluir(fornecedor: Fornecedor): Promise<void> {
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.fornecedores.delete({
+          where: { idFornecedor_PFK: fornecedor.pessoa.id! }
+        });
+        if (fornecedor.pessoa instanceof PessoaJuridica) {
+          await tx.pessoasjuridicas.delete({
+            where: { idPeJuridica_PFK: fornecedor.pessoa.id! }
+          });
+        } else if (fornecedor.pessoa instanceof PessoaFisica) {
+          await tx.pessoasfisicas.delete({
+            where: { idPeFisica_PFK: fornecedor.pessoa.id! }
+          });
+        }
+        await this.pessoaRepo.excluirPessoa(fornecedor.pessoa, tx);
+        if (!await this.pessoaRepo.removerEndereco(fornecedor.pessoa.id!, tx)) {
+          throw new Error("ERRO_REMOVER_ENDERECO");
+        };
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new Error("FORNECEDOR_POSSUI_ASSOCIACOES");
+      }
+      throw error;
+    }
   };
 }
 

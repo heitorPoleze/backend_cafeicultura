@@ -72,3 +72,7 @@ export type BuscaPaginadaDTO = {
     pagina: number;
     limite: number;
 };
+
+export type ExcluirPessoaDTO = {
+    id: number;
+};

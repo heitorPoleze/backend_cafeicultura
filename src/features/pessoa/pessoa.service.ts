@@ -15,6 +15,7 @@ import {
   CreateMeeiroDTO,
   CreatePessoaDTO,
   CreatePrestadorDTO,
+  ExcluirPessoaDTO,
   FornecedorResponseDTO,
   FuncionarioResponseDTO,
   ListarPessoasDTO,
@@ -558,6 +559,61 @@ public async listarPessoas(dto: ListarPessoasDTO): Promise<ResultadoPaginacao<Pe
     let resultado = await this.pessoaRepo.atualizarInscricaoEstadualPorPessoaId(pessoaId,novaIE)
     return resultado
   }
+
+  public async excluirCliente(dto: ExcluirPessoaDTO, idUsuarioSessao: number): Promise<void> {
+    const c = await this.clienteRepo.buscarPorId(dto.id);
+    if (!c) {
+      throw new Error("NAO_ENCONTRADO");
+    };
+    if (c.pessoa.idAdministrador !== idUsuarioSessao) {
+      throw new Error("ACESSO_NEGADO");
+    };
+    await this.clienteRepo.excluir(c);
+  };
+
+  public async excluirFornecedor(dto: ExcluirPessoaDTO, idUsuarioSessao: number): Promise<void> {
+    const fornecedor = await this.fornecedorRepo.buscarPorId(dto.id);
+    if (!fornecedor) {
+      throw new Error("NAO_ENCONTRADO");
+    };
+    if (fornecedor.pessoa.idAdministrador !== idUsuarioSessao) {
+      throw new Error("ACESSO_NEGADO");
+    };
+    await this.fornecedorRepo.excluir(fornecedor);
+  };
+
+  public async excluirFuncionario(dto: ExcluirPessoaDTO, idUsuarioSessao: number): Promise<void> {
+    const funcionario = await this.funcionarioRepo.buscarPorId(dto.id);
+    if (!funcionario) {
+      throw new Error("NAO_ENCONTRADO");
+    };
+    if (funcionario.pessoa.idAdministrador !== idUsuarioSessao) {
+      throw new Error("ACESSO_NEGADO");
+    };
+    await this.funcionarioRepo.excluir(funcionario);
+  };
+
+  public async excluirMeeiro(dto: ExcluirPessoaDTO, idUsuarioSessao: number): Promise<void> {
+    const meeiro = await this.meeiroRepo.buscarPorId(dto.id);
+    if (!meeiro) {
+      throw new Error("NAO_ENCONTRADO");
+    };
+    if (meeiro.pessoa.idAdministrador !== idUsuarioSessao) {
+      throw new Error("ACESSO_NEGADO");
+    };
+    await this.meeiroRepo.excluir(meeiro);
+  };
+
+  public async excluirPrestador(dto: ExcluirPessoaDTO, idUsuarioSessao: number): Promise<void> {
+    const prestador = await this.prestadorRepo.buscarPorId(dto.id);
+    if (!prestador) {
+      throw new Error("NAO_ENCONTRADO");
+    }    ;
+    if (prestador.pessoa.idAdministrador !== idUsuarioSessao) {
+      throw new Error("ACESSO_NEGADO");
+    };
+    await this.prestadorRepo.excluir(prestador);
+  };
 };
 
 export default PessoaService;

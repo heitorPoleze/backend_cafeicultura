@@ -54,50 +54,37 @@ const validacaoPessoaFisicaEstrita = [
   body("cpf").custom((value) => validarCPF.isValid(value, true)).withMessage("O CPF informado é inválido")
 ];
 
-
-router.post(
-  "/clientes",
-  exigeLogin(),
-  validacaoPessoaMista,
-  pessoaController.cadastrarCliente.bind(pessoaController)
-);
-
 router.get(
-  "/clientes/:id",
-  exigeLogin(),
-  [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
-  pessoaController.buscarClientePorId.bind(pessoaController)
-);
-router.get(
-  "/funcionarios/id/",
+  "/funcionarios",
   // Só de estar logado já vai puxar o ID administrador do usuário logado.
   exigeLogin(),
   pessoaController.buscarFuncionarioPorIdAdministrador.bind(pessoaController)
 )
 router.get(
-  "/meeiros/id/",
+  "/meeiros",
   // Só de estar logado já vai puxar o ID administrador do usuário logado.
   exigeLogin(),
   pessoaController.buscarMeeirosPorIdAdministrador.bind(pessoaController)
 )
 router.get(
-  "/prestadores/id/",
+  "/prestadores",
   // Só de estar logado já vai puxar o ID administrador do usuário logado.
   exigeLogin(),
   pessoaController.buscarPrestadoresDeServicoPorIdAdministrador.bind(pessoaController)
 )
 router.get(
-  "/fornecedores/id/",
+  "/fornecedores",
   // Só de estar logado já vai puxar o ID administrador do usuário logado.
   exigeLogin(),
   pessoaController.buscarFornecedoresPorIdAdministrador.bind(pessoaController)
 )
 router.get(
-  "/clientes/id/",
+  "/clientes",
   // Só de estar logado já vai puxar o ID administrador do usuário logado.
   exigeLogin(),
   pessoaController.buscarClientesPorIdAdministrador.bind(pessoaController)
 )
+
 router.post(
   "/pessoa/cadastrar-endereco/:id",
   exigeLogin(),
@@ -152,6 +139,28 @@ router.delete(
   [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
   pessoaController.RemoverEnderecoPessoaGenerica.bind(pessoaController)
 )
+
+router.post(
+  "/clientes",
+  exigeLogin(),
+  validacaoPessoaMista,
+  pessoaController.cadastrarCliente.bind(pessoaController)
+);
+
+router.get(
+  "/clientes/:id",
+  exigeLogin(),
+  [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
+  pessoaController.buscarClientePorId.bind(pessoaController)
+);
+
+router.delete(
+  "/clientes/:id",
+  exigeLogin(),
+  [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
+  pessoaController.excluirCliente.bind(pessoaController)
+);
+
 router.post(
   "/fornecedores",
   exigeLogin(),
@@ -165,6 +174,14 @@ router.get(
   [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
   pessoaController.buscarFornecedorPorId.bind(pessoaController)
 );
+
+router.delete(
+  "/fornecedores/:id",
+  exigeLogin(),
+  [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
+  pessoaController.excluirFornecedor.bind(pessoaController)
+);
+
 
 router.post(
   "/funcionarios",
@@ -194,6 +211,13 @@ router.put(
   pessoaController.atualizarFuncionarioSalario.bind(pessoaController)
 );
 
+router.delete(
+  "/funcionarios/:id",
+  exigeLogin(),
+  [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
+  pessoaController.excluirFuncionario.bind(pessoaController)
+);
+
 router.post(
   "/meeiros",
   exigeLogin(),
@@ -206,6 +230,13 @@ router.get(
   exigeLogin(),
   [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
   pessoaController.buscarMeeiroPorId.bind(pessoaController)
+);
+
+router.delete(
+  "/meeiros/:id",
+  exigeLogin(),
+  [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
+  pessoaController.excluirMeeiro.bind(pessoaController)
 );
 
 router.post(
@@ -222,11 +253,19 @@ router.get(
   pessoaController.buscarPrestadorPorId.bind(pessoaController)
 );
 
+router.delete(
+  "/prestadores/:id",
+  exigeLogin(),
+  [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
+  pessoaController.excluirPrestador.bind(pessoaController)
+);
+
 router.get(
   "/pessoas",
   exigeLogin(),
   pessoaController.listarPessoas.bind(pessoaController)
 );
+
 router.patch(
   "/pessoas/identificacao/:id",
   exigeLogin(),
@@ -240,20 +279,23 @@ router.patch(
       .isString().withMessage("Razão Social deve ser uma string"),
   ],
 );
+
 router.patch("/pessoas-fisicas/cpf/:id",
   exigeLogin(),
   [
-    body("cpf").custom((value) => validarCPF.isValid(value, true)).withMessage("O CPF informado deve estar formatado corretamente. Ex: 000.000.000-00"),
+    body("cpf").custom((value) => validarCPF.isValid(value, true)).withMessage("O CPF informado é inválido"),
   ],
   pessoaController.atualizarCpf.bind(pessoaController)
 )
+
 router.patch("/pessoa-juridica/atualizar-cnpj/:id",
   exigeLogin(),
   [
-    body("cnpj").custom((value) => validarCNPJ.isValid(value, true)).withMessage("O CNPJ informado deve estar formatado corretamente. Ex: 00.000.000/0000-00"),
+    body("cnpj").custom((value) => validarCNPJ.isValid(value, true)).withMessage("O CNPJ informado é inválido"),
   ],
   pessoaController.atualizarCpnj.bind(pessoaController)
 )
+
 router.patch("/pessoa-juridica/atualizar-inscricaoEstadual/:id",
   exigeLogin(),
    [

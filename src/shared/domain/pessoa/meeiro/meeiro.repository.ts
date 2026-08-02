@@ -95,6 +95,28 @@ class MeeiroRepository {
 
     return new Meeiro(pessoa);
   };
+
+  public async excluir(meeiro: Meeiro): Promise<void> {
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.meeiros.delete({
+          where: { idPeFisica_PFK: meeiro.pessoa.id! }
+        });
+        await tx.pessoasfisicas.delete({
+          where: { idPeFisica_PFK: meeiro.pessoa.id! }
+        });
+        await this.pessoaRepo.excluirPessoa(meeiro.pessoa, tx);
+        if (!await this.pessoaRepo.removerEndereco(meeiro.pessoa.id!, tx)) {
+          throw new Error("ERRO_REMOVER_ENDERECO");
+        }
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new Error("MEEIRO_POSSUI_ASSOCIACOES");
+      }
+      throw error;
+    }
+  };
 }
 
 export default MeeiroRepository;

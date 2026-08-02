@@ -192,9 +192,10 @@ class PessoaRepository {
       enderecoAtualizado.idEndereco_PK,
     );
   };
+
   //retorna pessoa sem endereco
-  public async removerEndereco(pessoaId: number): Promise<PessoaDTO | null> {
-    const pessoa = await this.prisma.pessoas.findUnique({
+  public async removerEndereco(pessoaId: number, tx?: Prisma.TransactionClient): Promise<PessoaDTO | null> {
+    const pessoa = await (tx ?? this.prisma).pessoas.findUnique({
       where: { idPessoa_PK: pessoaId },
       select: { idEndereco_FK: true },
     });
@@ -205,19 +206,19 @@ class PessoaRepository {
 
     const enderecoId = pessoa.idEndereco_FK;
 
-    await this.prisma.pessoas.update({
+    await (tx ?? this.prisma).pessoas.update({
       where: { idPessoa_PK: pessoaId },
       data: { idEndereco_FK: null },
     });
 
     const [outrasPessoas, armazensCount, propriedadesCount] = await Promise.all([
-      this.prisma.pessoas.count({ where: { idEndereco_FK: enderecoId } }),
-      this.prisma.armazens.count({ where: { idEndereco_FK: enderecoId } }),
-      this.prisma.propriedades.count({ where: { idEndereco_FK: enderecoId } }),
+      (tx ?? this.prisma).pessoas.count({ where: { idEndereco_FK: enderecoId } }),
+      (tx ?? this.prisma).armazens.count({ where: { idEndereco_FK: enderecoId } }),
+      (tx ?? this.prisma).propriedades.count({ where: { idEndereco_FK: enderecoId } }),
     ]);
 
     if (outrasPessoas === 0 && armazensCount === 0 && propriedadesCount === 0) {
-      await this.prisma.enderecos.delete({ where: { idEndereco_PK: enderecoId } });
+      await (tx ?? this.prisma).enderecos.delete({ where: { idEndereco_PK: enderecoId } });
     }
 
     return this.buscarPessoaPorId(pessoaId);
@@ -480,15 +481,15 @@ public async listarPessoas(
     }
 
   }
-  public async buscarPessoaPorId(pessoaId: number): Promise<PessoaDTO | null> {
-    const pessoaBase = await this.prisma.pessoas.findUnique({
+  public async buscarPessoaPorId(pessoaId: number, tx?: Prisma.TransactionClient): Promise<PessoaDTO | null> {
+    const pessoaBase = await (tx ?? this.prisma).pessoas.findUnique({
       where: { idPessoa_PK: pessoaId },
       include: { pessoasfisicas: true, pessoasjuridicas: true }
     });
 
     if (!pessoaBase) return null;
 
-    const endereco = await this.prisma.enderecos.findUnique({
+    const endereco = await (tx ?? this.prisma).enderecos.findUnique({
       where: { idEndereco_PK: pessoaBase.idEndereco_FK || 0 },
     });
 
@@ -502,6 +503,12 @@ public async listarPessoas(
 
     return null;
   }
+
+  public async excluirPessoa(pessoa: PessoaBase, tx: Prisma.TransactionClient): Promise<void> {
+    await tx.pessoas.delete({
+      where: { idPessoa_PK: pessoa.id }
+    });
+  };
 
   private mapToPessoaDTO(pessoa: any, pessoaBase: any, endereco: any | null, tipo: 'PF' | 'PJ'): PessoaDTO {
     return {

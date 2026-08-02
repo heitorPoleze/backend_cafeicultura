@@ -109,9 +109,24 @@ class PropriedadeRepository {
 
   public async excluir(idPropriedade: number): Promise<void> {
     try {
-      await this.db.propriedades.delete({
-        where: { idPropriedade_PK: idPropriedade }
-      });
+       await this.db.$transaction(async (tx) => {
+        const p = await tx.propriedades.findUnique({
+          where: { idPropriedade_PK: idPropriedade },
+          include: {
+            tamanhos: true,
+            enderecos: true
+          }
+        });
+        await tx.propriedades.delete({
+          where: { idPropriedade_PK: p?.idPropriedade_PK }
+        });
+        await tx.tamanhos.delete({
+          where: { idTamanho_PK: p?.idTamanho_FK }
+        });
+        await tx.enderecos.delete({
+          where: { idEndereco_PK: p?.idEndereco_FK }
+        });
+       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
         throw new Error("PROPRIEDADE_POSSUI_ASSOCIACOES");
