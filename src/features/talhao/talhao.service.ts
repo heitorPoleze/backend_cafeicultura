@@ -1,5 +1,5 @@
 import TalhaoRepository from './talhao.repository';
-import PropriedadeRepository from '../propriedade/propriedade.repository'; 
+import PropriedadeRepository from '../propriedade/propriedade.repository';
 import { BuscarTalhoesDTO, CadastrarTalhaoDTO, EncerrarTalhaoDTO, ExcluirTalhaoDTO, ResponseBuscarTalhoesDTO, VariedadesDTO } from './talhao.dto';
 import Talhao from './talhao.entity';
 import Tamanho from '../../shared/domain/tamanho/tamanho.entity';
@@ -8,7 +8,7 @@ class TalhaoService {
   constructor(
     private readonly repository: TalhaoRepository,
     private readonly propriedadeRepo: PropriedadeRepository
-  ) {}
+  ) { }
 
   async cadastrarTalhao(dto: CadastrarTalhaoDTO, idUsuarioSessao: number): Promise<number> {
     const propriedade = await this.propriedadeRepo.buscarPorId(dto.idPropriedade);
@@ -26,7 +26,7 @@ class TalhaoService {
 
     const limiteMaximoM2 = this.calcularAreaEmM2(propriedade.tamanho);
     const areaNovoTalhaoM2 = this.calcularAreaEmM2(tamanhoNovoTalhao);
-    
+
     let areaUtilizadaM2 = 0;
     for (const t of talhoesExistentes) {
       areaUtilizadaM2 += this.calcularAreaEmM2(t.tamanho);
@@ -52,9 +52,8 @@ class TalhaoService {
       dto.especie,
       [], // variedades serão associadas posteriormente no repository
       null, // Geolocalização nula por especificação
-      new Date(dto.dataInicio), 
+      new Date(dto.dataInicio),
       null, // dataFim nula no cadastro
-      false // arquivado falso por padrão
     );
 
     return await this.repository.cadastrar(novoTalhao, dto.variedadesIds);
@@ -80,7 +79,7 @@ class TalhaoService {
     };
 
     talhao.encerrar(dto.dataFim);
-    
+
     await this.repository.encerrar(talhao);
   };
 
@@ -98,9 +97,6 @@ class TalhaoService {
     if (propriedade.idProprietario !== idUsuarioSessao) {
       throw new Error('ACESSO_NEGADO');
     };
-
-    talhao.arquivar();
-
     await this.repository.excluir(talhao);
   };
 
@@ -110,42 +106,25 @@ class TalhaoService {
     };
     return tamanho.valor;
   };
-  public async buscarAtivosPorPropriedade(idPropriedade: number, pagina: number, limite: number): Promise<ResponseBuscarTalhoesDTO> {
-    const resultado = await this.repository.buscarAtivosPorPropriedade(
-      idPropriedade,
-      pagina,
-      limite
-    );
-  return {
-    pagina: resultado.pagina,
-    limite: resultado.limite,
-    talhoes: resultado.dados, 
-  };
-}
+  public async buscarAbertosPorPropriedade(idPropriedade: number): Promise<ResponseBuscarTalhoesDTO> {
+    const resultado = await this.repository.buscarAbertosPorPropriedade(idPropriedade,);
+    return {
+      talhoes: resultado,
+    }
+  }
   public async buscarTodosPorPropriedade(idPropriedade: number, pagina: number, limite: number): Promise<ResponseBuscarTalhoesDTO> {
     const resultado = await this.repository.buscarTodosPorPropriedade(
       idPropriedade,
       pagina,
       limite
     );
-  return {
-    pagina: resultado.pagina,
-    limite: resultado.limite,
-    talhoes: resultado.dados, 
-  };
+    return {
+      pagina: resultado.pagina,
+      limite: resultado.limite,
+      talhoes: resultado.dados,
+    };
   }
-  public async buscarDesativadosPorPropriedade(idPropriedade: number, pagina: number, limite: number): Promise<ResponseBuscarTalhoesDTO> {
-    const resultado = await this.repository.buscarDesativadosPorPropriedade(
-      idPropriedade,
-      pagina,
-      limite
-    );
-  return {
-    pagina: resultado.pagina,
-    limite: resultado.limite,
-    talhoes: resultado.dados, 
-  };
-}
+
   public async buscarFinalizadosPorPropriedade(idPropriedade: number, pagina: number, limite: number): Promise<ResponseBuscarTalhoesDTO> {
     const resultado = await this.repository.buscarFinalizadosPorPropriedade(idPropriedade, pagina, limite);
     return {

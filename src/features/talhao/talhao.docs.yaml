@@ -99,9 +99,6 @@ components:
           format: date-time
           nullable: true
           example: null
-        arquivado:
-          type: boolean
-          example: false
         tamanho:
           $ref: '#/components/schemas/TamanhoTalhaoInput'
 
@@ -244,15 +241,15 @@ paths:
         '401':
           description: Acesso negado; usuário não pode excluir o talhão.
         '403':
-          description: Propriedade do talhão não encontrada.
+          description: Talhão não pode ser excluído pois possui eventos associados.
         '404':
-          description: Talhão não encontrado.
+          description: Talhão ou propriedade não encontrados.
         '500':
           description: Erro interno ao excluir talhão.
 
-  /api/v1/talhoes/propriedade/ativos/{idPropriedade}:
+  /api/v1/talhoes/propriedade/abertos/{idPropriedade}:
     get:
-      summary: Lista os talhões ativos de uma propriedade
+      summary: Lista os talhões abertos de uma propriedade
       tags:
         - Talhões
       security:
@@ -263,19 +260,9 @@ paths:
           required: true
           schema:
             type: integer
-        - in: query
-          name: pagina
-          schema:
-            type: integer
-            default: 1
-        - in: query
-          name: limite
-          schema:
-            type: integer
-            default: 10
       responses:
         '200':
-          description: Talhões ativos retornados com sucesso.
+          description: Talhões abertos retornados com sucesso.
           content:
             application/json:
               schema:
@@ -337,50 +324,6 @@ paths:
           description: ID de propriedade inválido.
         '500':
           description: Erro interno ao buscar talhões.
-
-  /api/v1/talhoes/propriedade/desativados/{idPropriedade}:
-    get:
-      summary: Lista os talhões desativados de uma propriedade
-      tags:
-        - Talhões
-      security:
-        - cookieAuth: []
-      parameters:
-        - in: path
-          name: idPropriedade
-          required: true
-          schema:
-            type: integer
-        - in: query
-          name: pagina
-          schema:
-            type: integer
-            default: 1
-        - in: query
-          name: limite
-          schema:
-            type: integer
-            default: 10
-      responses:
-        '200':
-          description: Talhões desativados retornados com sucesso.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  talhoes:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/TalhaoResumo'
-                  pagina:
-                    type: integer
-                  limite:
-                    type: integer
-        '400':
-          description: ID de propriedade inválido.
-        '500':
-          description: Erro interno ao buscar talhões desativados.
 
   /api/v1/talhoes/propriedade/finalizados/{idPropriedade}:
     get:

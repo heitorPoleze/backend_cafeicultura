@@ -93,31 +93,32 @@ export class TalhaoController {
         } else if (error.message === 'NAO_ENCONTRADO') {
           return res.status(404).json({ error: 'Talhão nao encontrado' });
         } else if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
-          return res.status(403).json({ error: 'Propriedade do talhão não encontrada' });
-        };
+          return res.status(404).json({ error: 'Propriedade do talhão não encontrada' });
+        } else if (error.message === 'TALHAO_POSSUI_EVENTOS') {
+          return res.status(403).json({ error: 'Talhão não pode ser excluído pois possui eventos associados' });
+        }
         return res.status(400).json({ error: error.message });
       };
       return res.status(500).json({ error: 'Erro ao excluir talhão' });
     };
   };  
-  public async ativosPorPropriedade(req: Request, res: Response) {
+
+  public async abertosPorPropriedade(req: Request, res: Response) {
     const erros = validationResult(req);
     const idPropriedade = Number(req.params.idPropriedade);
-    const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
-    const limite = req.query.limite ? Number(req.query.limite) : 10;
     if (!erros.isEmpty()) {
       return res.status(400).json({ erros: erros.array() });
     }
-
     try {
-      const talhoes = await this.talhaoService.buscarAtivosPorPropriedade(idPropriedade, pagina, limite);
+      const talhoes = await this.talhaoService.buscarAbertosPorPropriedade(idPropriedade);
       res.status(200).json(talhoes);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        return res.status(500).json({ error: 'Erro ao buscar talhões ativos' });
+        return res.status(500).json({ error: 'Erro ao buscar talhões abertos' });
       }
     }
   }
+
   public async allTalhoesPorPropriedade(req: Request, res: Response) {
       const erros = validationResult(req);
       const idPropriedade = Number(req.params.idPropriedade);
@@ -135,23 +136,7 @@ export class TalhaoController {
         }
       }
   }
-  public async desativadosPorPropriedade(req: Request, res: Response) {
-    const erros = validationResult(req);
-    const idPropriedade = Number(req.params.idPropriedade);
-    const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
-    const limite = req.query.limite ? Number(req.query.limite) : 10;
-    if (!erros.isEmpty()) {
-      return res.status(400).json({ erros: erros.array() });
-    }
-    try {
-      const talhoes = await this.talhaoService.buscarDesativadosPorPropriedade(idPropriedade, pagina, limite);
-      res.status(200).json(talhoes);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        return res.status(500).json({ error: 'Erro ao buscar talhões desativados' });
-      }
-    }
-  }
+
   public async finalizadosPorPropriedade(req: Request, res: Response) {
     const erros = validationResult(req);
     const idPropriedade = Number(req.params.idPropriedade);

@@ -18,12 +18,14 @@ export type BuscarTalhoesDTO = {
   pagina: number;
   limite: number;
 };
+
 export type ResponseBuscarTalhoesDTO = {
   talhoes: Talhao[];
-  pagina: number;
+  pagina?: number;
   total?: number;
-  limite: number;
+  limite?: number;
 };
+
 export type EncerrarTalhaoDTO = {
   id: number;
   dataFim: Date;
