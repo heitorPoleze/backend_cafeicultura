@@ -100,8 +100,7 @@ export class SafraService {
     if (propriedade.idProprietario !== idUsuarioSessao) {
       throw new Error('ACESSO_NEGADO');
     };
-    safra.arquivar();
-    await this.safraRepository.arquivar(safra);
+    await this.safraRepository.excluir(safra);
   };
 
   // ---- Relatórios -----

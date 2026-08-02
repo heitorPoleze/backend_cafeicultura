@@ -451,7 +451,6 @@ class TratoCulturalRepository {
       idPropriedade: eventoBase.safras.idPropriedade_FK,
       dataInicio: eventoBase.safras.dataInicio,
       dataFim: eventoBase.safras.dataFim,
-      arquivada: eventoBase.safras.arquivada,
     });
 
     const transacoes: Despesa[] = [];

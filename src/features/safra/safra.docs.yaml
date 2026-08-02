@@ -199,7 +199,7 @@ paths:
           description: Erro interno inesperado ao buscar safra.
 
     delete:
-      summary: Exclui ou arquiva uma safra
+      summary: Exclui uma safra se não houver atividades vinculadas
       tags:
         - Safras
       security:
@@ -225,9 +225,9 @@ paths:
         '400':
           description: ID da safra inválido.
         '403':
-          description: Acesso negado ou propriedade da safra não encontrada.
+          description: Acesso negado ou não é possível excluir safra com atividades vinculadas.
         '404':
-          description: Safra não encontrada.
+          description: Safra ou propriedade não encontrados.
         '500':
           description: Erro interno inesperado ao excluir safra.
 

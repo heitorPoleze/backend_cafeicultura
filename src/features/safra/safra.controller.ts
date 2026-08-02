@@ -131,8 +131,10 @@ class SafraController {
         } else if (error.message === 'NAO_ENCONTRADA') {
           return res.status(404).json({ error: 'Safra não encontrada' });
         } else if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
-          return res.status(403).json({ error: 'Propriedade da safra não encontrada' });
-        };
+          return res.status(404).json({ error: 'Propriedade da safra não encontrada' });
+        } else if (error.message === 'SAFRA_POSSUI_EVENTOS') {
+          return res.status(400).json({ error: 'Safra possui eventos vinculados e não pode ser excluída' });
+        }
         return res.status(500).json({ error: 'Erro interno inesperado ao excluir safra' });
       };
     };
