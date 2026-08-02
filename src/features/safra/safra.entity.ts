@@ -3,14 +3,12 @@ class Safra {
   private _idPropriedade: number;
   private _dataInicio: Date;
   private _dataFim?: Date | null;
-  private _arquivada: boolean;
 
   constructor(props: {
     id: number | undefined;
     idPropriedade: number;
     dataInicio: Date | string;
     dataFim?: Date | string | null;
-    arquivada?: boolean;
   }) {
     this._id = props.id;
     this._idPropriedade = props.idPropriedade;
@@ -27,7 +25,6 @@ class Safra {
       throw new Error("DATA_FIM_SUPERIOR");
     };
     this._dataFim = props.dataFim ? new Date(props.dataFim) : null;
-    this._arquivada = props.arquivada ?? false;
   };
 
   get id() {
@@ -42,12 +39,9 @@ class Safra {
   get dataFim() {
     return this._dataFim;
   };
-  get arquivada() {
-    return this._arquivada;
-  };
 
   public isAtiva(): boolean {
-    return !this._dataFim && !this._arquivada;
+    return !this._dataFim 
   };
 
   public finalizar(dataFim: Date | string): void {
@@ -62,11 +56,7 @@ class Safra {
 
     this._dataFim = dataEncerramento;
   };
-
-  public arquivar(): void {
-    this._arquivada = true;
-  };
-
+  
   public toJSON() {
     return {
       id: this._id!,

@@ -329,11 +329,6 @@ model presecagens {
   @@index([idTipoCafe_FK], map: "presecagem_tipocafe_idx")
 }
 
-model prestadoresdeservico {
-  idPeFisica_PFK Int     @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
-  pessoasfisicas pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_prestador")
-}
-
 model propriedades {
   idPropriedade_PK      Int                     @id @unique(map: "idPropriedade_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
   idEndereco_FK         Int                     @db.UnsignedInt
@@ -375,7 +370,6 @@ model safras {
   idPropriedade_FK Int          @db.UnsignedInt
   dataInicio       DateTime     @db.Date
   dataFim          DateTime?    @db.Date
-  arquivada        Boolean
   eventos          eventos[]
   propriedades     propriedades @relation(fields: [idPropriedade_FK], references: [idPropriedade_PK], onDelete: NoAction, onUpdate: NoAction, map: "safra_propriedade")
 
@@ -551,4 +545,11 @@ model pessoaseventos {
 
   @@id([idPessoa_PFK, idEvento_PFK])
   @@index([idEvento_PFK], map: "evento_evento_idx")
+}
+
+model prestadoresdeservico {
+  idPeFisica_PFK Int     @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
+  pessoas        pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_prestador")
+
+  @@index([idPeFisica_PFK], map: "pessoa_prestador_idx")
 }

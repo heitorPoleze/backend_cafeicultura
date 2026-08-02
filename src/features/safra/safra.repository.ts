@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import Safra from "./safra.entity";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 
 export class SafraRepository {
   constructor(private prisma: PrismaClient) {}
@@ -9,7 +10,6 @@ export class SafraRepository {
       where: {
         idPropriedade_FK: idPropriedade,
         dataFim: null,
-        arquivada: false,
       },
     });
   };
@@ -19,18 +19,17 @@ export class SafraRepository {
       data: {
         idPropriedade_FK: safra.idPropriedade,
         dataInicio: safra.dataInicio,
-        arquivada: safra.arquivada,
       },
     });
 
     return data.idSafra_PK;
   };
+  
   public async bucarAtivasPorPropriedade(idPropriedade: number): Promise<Safra[]> {
     const data = await this.prisma.safras.findMany({
       where: {
         idPropriedade_FK: idPropriedade,
         dataFim: null,
-        arquivada: false,
       },
     });
     return data.map((safra) => new Safra({
@@ -38,7 +37,6 @@ export class SafraRepository {
       idPropriedade: safra.idPropriedade_FK,
       dataInicio: safra.dataInicio,
       dataFim: safra.dataFim,
-      arquivada: safra.arquivada,
     }));
   }
 
@@ -46,7 +44,6 @@ export class SafraRepository {
     const data = await this.prisma.safras.findUnique({
       where: { 
         idSafra_PK: id,
-        arquivada: false
       },
     });
 
@@ -57,7 +54,6 @@ export class SafraRepository {
       idPropriedade: data.idPropriedade_FK,
       dataInicio: data.dataInicio,
       dataFim: data.dataFim,
-      arquivada: data.arquivada,
     });
   }
 
@@ -70,13 +66,19 @@ export class SafraRepository {
     });
   }
 
-  public async arquivar(safra: Safra): Promise<void> {
+  public async excluir(safra: Safra): Promise<void> {
     if (!safra.id) throw new Error("ID_OBRIGATORIO");
 
-    await this.prisma.safras.update({
-      where: { idSafra_PK: safra.id },
-      data: { arquivada: safra.arquivada },
-    });
+    try {
+      await this.prisma.safras.delete({
+        where: { idSafra_PK: safra.id },
+      });
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new Error("SAFRA_POSSUI_EVENTOS");
+      }
+      throw error;
+    }
   }
 }
 
