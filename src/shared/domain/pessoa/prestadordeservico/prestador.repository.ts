@@ -95,6 +95,28 @@ class PrestadorRepository {
 
     return new Prestador(pessoa);
   };
+
+  public async excluir(prestador: Prestador): Promise<void> {
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.prestadoresdeservico.delete({
+          where: { idPeFisica_PFK: prestador.pessoa.id! }
+        });
+        await tx.pessoasfisicas.delete({
+          where: { idPeFisica_PFK: prestador.pessoa.id! }
+        });
+        await this.pessoaRepo.excluirPessoa(prestador.pessoa, tx);
+        if (!await this.pessoaRepo.removerEndereco(prestador.pessoa.id!, tx)) {
+          throw new Error("ERRO_REMOVER_ENDERECO");
+        }
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new Error("PRESTADOR_POSSUI_ASSOCIACOES");
+      }
+      throw error;
+    }
+  };
 }
 
 export default PrestadorRepository;

@@ -146,7 +146,21 @@ paths:
           description: CPF ou CNPJ já cadastrado no sistema.
         '500':
           description: Erro interno do servidor.
-
+    
+    get:
+      summary: Busca todos os clientes ligados ao administrador autenticado
+      tags:
+        - Pessoas
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Clientes retornados com sucesso.
+        '400':
+          description: Erro ao processar os parâmetros de paginação.
+        '500':
+          description: Erro ao buscar clientes.
+    
   /api/v1/clientes/{id}:
     get:
       summary: Busca um cliente pelo ID
@@ -173,6 +187,36 @@ paths:
           description: Cliente não encontrado.
         '500':
           description: Erro ao buscar cliente.
+
+    delete:
+      summary: Exclui um cliente pelo ID
+      tags:
+        - Pessoas
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cliente excluído com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Cliente excluído com sucesso
+        '403':
+          description: Acesso negado ou usuário não pode excluir este cliente.
+        '404':
+          description: Cliente não encontrado.
+        '500':
+          description: Erro ao excluir cliente.
 
   /api/v1/fornecedores:
     post:
@@ -204,6 +248,22 @@ paths:
           description: CPF já cadastrado.
         '500':
           description: Erro interno do servidor.
+    
+    get:
+      summary: Lista fornecedores ligados ao administrador autenticado
+      tags:
+        - Pessoas
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Fornecedores retornados com sucesso.
+        '400':
+          description: Erro ao processar os parâmetros de paginação.
+        '403':
+          description: Acesso negado; usuário nao pode visualizar os fornecedores.
+        '500':
+          description: Erro ao buscar fornecedores.
 
   /api/v1/fornecedores/{id}:
     get:
@@ -231,6 +291,35 @@ paths:
           description: Fornecedor não encontrado.
         '500':
           description: Erro ao buscar fornecedor.
+    delete:
+      summary: Exclui um fornecedor pelo ID
+      tags:
+        - Pessoas
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Fornecedor excluído com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Fornecedor excluído com sucesso
+        '403':
+          description: Acesso negado ou usuário não pode excluir este fornecedor.
+        '404':
+          description: Fornecedor não encontrado.
+        '500':
+          description: Erro ao excluir fornecedor.
 
   /api/v1/funcionarios:
     post:
@@ -263,6 +352,44 @@ paths:
         '500':
           description: Erro interno.
 
+    get:
+      summary: Lista funcionários ligados ao administrador autenticado
+      tags:
+        - Pessoas
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limite
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Lista de funcionários retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pagina:
+                    type: integer
+                  limite:
+                    type: integer
+                  dados:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PessoaResponse'
+        '404':
+          description: Funcionário não encontrado.
+        '500':
+          description: Erro ao buscar funcionários.
+
   /api/v1/funcionarios/{id}:
     get:
       summary: Busca um funcionário pelo ID
@@ -289,6 +416,36 @@ paths:
           description: Funcionário não encontrado.
         '500':
           description: Erro ao buscar funcionário.
+
+    delete:
+      summary: Exclui um funcionário pelo ID
+      tags:
+        - Pessoas
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Funcionário excluído com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Funcionário excluído com sucesso
+        '403':  
+          description: Acesso negado ou usuário não pode excluir este funcionário.
+        '404':
+          description: Funcionário não encontrado.
+        '500':
+          description: Erro ao excluir funcionário.
 
   /api/v1/funcionarios/{id}/salario:
     put:
@@ -335,45 +492,6 @@ paths:
         '500':
           description: Erro ao atualizar salário.
 
-  /api/v1/funcionarios/id/:
-    get:
-      summary: Lista funcionários ligados ao administrador autenticado
-      tags:
-        - Pessoas
-      security:
-        - cookieAuth: []
-      parameters:
-        - in: query
-          name: pagina
-          schema:
-            type: integer
-            default: 1
-        - in: query
-          name: limite
-          schema:
-            type: integer
-            default: 10
-      responses:
-        '200':
-          description: Lista de funcionários retornada com sucesso.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  pagina:
-                    type: integer
-                  limite:
-                    type: integer
-                  dados:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/PessoaResponse'
-        '404':
-          description: Funcionário não encontrado.
-        '500':
-          description: Erro ao buscar funcionários.
-
   /api/v1/meeiros:
     post:
       summary: Cadastra um novo meeiro
@@ -405,34 +523,6 @@ paths:
         '500':
           description: Erro interno.
 
-  /api/v1/meeiros/{id}:
-    get:
-      summary: Busca um meeiro pelo ID
-      tags:
-        - Pessoas
-      security:
-        - cookieAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Dados do meeiro retornados com sucesso.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PessoaResponse'
-        '403':
-          description: Acesso negado; usuário não pode visualizar este meeiro.
-        '404':
-          description: Meeiro não encontrado.
-        '500':
-          description: Erro ao buscar meeiro.
-
-  /api/v1/meeiros/id/:
     get:
       summary: Lista meeiros ligados ao administrador autenticado
       tags:
@@ -471,6 +561,63 @@ paths:
         '500':
           description: Erro ao buscar meeiros.
 
+  /api/v1/meeiros/{id}:
+    get:
+      summary: Busca um meeiro pelo ID
+      tags:
+        - Pessoas
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dados do meeiro retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PessoaResponse'
+        '403':
+          description: Acesso negado; usuário não pode visualizar este meeiro.
+        '404':
+          description: Meeiro não encontrado.
+        '500':
+          description: Erro ao buscar meeiro.
+    
+    delete:
+      summary: Exclui um meeiro pelo ID
+      tags:
+        - Pessoas
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Meeiro excluído com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Meeiro excluído com sucesso
+        '403':
+          description: Acesso negado ou usuário não pode excluir este meeiro.
+        '404':
+          description: Meeiro não encontrado.
+        '500':
+          description: Erro ao excluir meeiro.
+
   /api/v1/prestadores:
     post:
       summary: Cadastra um novo prestador de serviço
@@ -501,35 +648,7 @@ paths:
           description: CPF já cadastrado.
         '500':
           description: Erro interno.
-
-  /api/v1/prestadores/{id}:
-    get:
-      summary: Busca um prestador pelo ID
-      tags:
-        - Pessoas
-      security:
-        - cookieAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Dados do prestador retornados com sucesso.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PessoaResponse'
-        '403':
-          description: Acesso negado; usuário não pode visualizar este prestador.
-        '404':
-          description: Prestador de Serviço não encontrado.
-        '500':
-          description: Erro ao buscar prestador.
-
-  /api/v1/prestadores/id/:
+    
     get:
       summary: Lista prestadores ligados ao administrador autenticado
       tags:
@@ -567,6 +686,63 @@ paths:
           description: Prestador não encontrado.
         '500':
           description: Erro ao buscar prestadores.
+
+  /api/v1/prestadores/{id}:
+    get:
+      summary: Busca um prestador pelo ID
+      tags:
+        - Pessoas
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dados do prestador retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PessoaResponse'
+        '403':
+          description: Acesso negado; usuário não pode visualizar este prestador.
+        '404':
+          description: Prestador de Serviço não encontrado.
+        '500':
+          description: Erro ao buscar prestador.
+    
+    delete:
+      summary: Exclui um prestador pelo ID
+      tags:
+        - Pessoas
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Prestador excluído com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Prestador excluído com sucesso
+        '403':
+          description: Acesso negado ou usuário não pode excluir este prestador.
+        '404':
+          description: Prestador de Serviço não encontrado.
+        '500':
+          description: Erro ao excluir prestador.
 
   /api/v1/pessoas:
     get:
