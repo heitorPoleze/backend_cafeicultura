@@ -141,7 +141,6 @@ class TratoCulturalRepository {
           eventos: {
             safras: {
               idPropriedade_FK: idPropriedade,
-              arquivada: false,
             },
           },
         },
@@ -191,7 +190,6 @@ class TratoCulturalRepository {
             safras: {
               idSafra_PK: idSafra,
               idPropriedade_FK: idPropriedade,
-              arquivada: false,
             },
           },
         },
@@ -243,7 +241,6 @@ class TratoCulturalRepository {
           eventos: {
             safras: {
               idPropriedade_FK: idPropriedade,
-              arquivada: false,
             },
           },
         },
@@ -297,7 +294,6 @@ class TratoCulturalRepository {
           safras: {
             idSafra_PK: idSafra,
             idPropriedade_FK: idPropriedade,
-            arquivada: false,
           },
         },
       },

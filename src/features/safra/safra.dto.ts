@@ -37,6 +37,12 @@ export type BuscarTodosEventosTalhaoDTO = {
   idTalhao: number;
 }
 
+export interface BuscarEventosPorModuloDTO {
+  idSafra: number;
+  idPropriedade: number;
+  modulo: string; // The macro category of the event, e.g., 'TRATO_CULTURAL'
+}
+
 export type EventoDTO = {
   id: number | undefined;
   idTalhao: number;
