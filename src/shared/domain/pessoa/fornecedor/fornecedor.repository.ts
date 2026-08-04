@@ -53,6 +53,9 @@ class FornecedorRepository {
   };
 
   public async buscarPorId(id: number): Promise<Fornecedor | null> {
+     if(!id || id <= 0 || !Number.isInteger(id)) {
+      throw new Error("ID_INVALIDO");
+    }
     const f = await this.prisma.fornecedores.findUnique({
       where: { idFornecedor_PFK: id },
     });

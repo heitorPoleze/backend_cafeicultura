@@ -188,8 +188,8 @@ router.post(
   exigeLogin(),
   [
     ...validacaoPessoaFisicaEstrita,
-    body("ctps").notEmpty().withMessage("A CTPS é obrigatória para funcionários"),
-    body("salario").isFloat({ gt: 0 }).withMessage("O salário deve ser um valor numérico maior que zero")
+    //body("ctps").notEmpty().withMessage("A CTPS é obrigatória para funcionários"),
+    //body("salario").isFloat({ gt: 0 }).withMessage("O salário deve ser um valor numérico maior que zero")
   ],
   pessoaController.cadastrarFuncionario.bind(pessoaController)
 );

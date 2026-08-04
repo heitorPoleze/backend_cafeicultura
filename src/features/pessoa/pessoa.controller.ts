@@ -285,9 +285,14 @@ class PessoaController {
   public async buscarPrestadoresDeServicoPorIdAdministrador(req: Request, res: Response) {
     const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
     const limite = req.query.limite ? Number(req.query.limite) : 10;
+    const idSessao = req.session.idUsuario!;
+    console.log("ID Sessão:", idSessao);
     try {
+      if(!idSessao) {
+        return res.status(401).json({ error: "Usuário não autenticado" });
+      }
       const meeiros = await this.service.buscarPrestadoresDeServicoPorIdAdministrador(
-        req.session.idUsuario!,
+        idSessao,
         pagina,
         limite
 

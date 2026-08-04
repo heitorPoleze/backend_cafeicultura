@@ -28,15 +28,12 @@ class Funcionario implements IPessoa {
 
     get ctps(): string  {
         if(!this._ctps || this._ctps.trim() === "") {
-            return "CTPS não informado";
+            return "CTPS vazio";
         }
         return this._ctps;
     };
 
-    get salario(): number | string  {
-        if(this._salario === 0) {
-            return "Salário não informado";
-        }
+    get salario(): number  {
         return this._salario;
     };
 
