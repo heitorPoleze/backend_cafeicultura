@@ -19,6 +19,7 @@ export class SafraRepository {
       data: {
         idPropriedade_FK: safra.idPropriedade,
         dataInicio: safra.dataInicio,
+        arquivada: false,
       },
     });
 
@@ -30,6 +31,19 @@ export class SafraRepository {
       where: {
         idPropriedade_FK: idPropriedade,
         dataFim: null,
+      },
+    });
+    return data.map((safra) => new Safra({
+      id: safra.idSafra_PK,
+      idPropriedade: safra.idPropriedade_FK,
+      dataInicio: safra.dataInicio,
+      dataFim: safra.dataFim,
+    }));
+  }
+  public async buscarSafrasPorPropriedade(idPropriedade: number): Promise<Safra[]> {
+    const data = await this.prisma.safras.findMany({
+      where: {
+        idPropriedade_FK: idPropriedade,
       },
     });
     return data.map((safra) => new Safra({

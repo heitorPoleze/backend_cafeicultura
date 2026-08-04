@@ -35,7 +35,7 @@ class SafraController {
         } else if (error.message === 'DATA_FIM_SUPERIOR') {
           return res.status(422).json({ error: 'Data de fim superior ao dia atual' });
         }
-        return res.status(500).json({ error: 'Erro interno inesperado ao cadastrar talhão' });
+        return res.status(500).json({ error: 'Erro interno inesperado ao cadastrar safra' });
       };
     };
   };
@@ -48,6 +48,27 @@ class SafraController {
       const idPropriedade = Number(req.params.idPropriedade);
       const idUsuario = req.session.idUsuario!;
       const safras = await this.safraService.buscarAtivasPorPropriedade(idPropriedade, idUsuario);
+      res.status(200).json(safras);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === 'ACESSO_NEGADO') {
+          return res.status(403).json({ error: 'Acesso negado! Não foi possível buscar safras' });
+        } else if (error.message === 'NAO_ENCONTRADA') {
+          return res.status(404).json({ error: 'Propriedade não encontrada' });
+        }
+        return res.status(500).json({ error: 'Erro interno inesperado ao buscar safras' });
+      }
+    };
+  }
+  public async buscarTodasPorPropriedade(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) {
+      return res.status(400).json({ erros: erros.array() });
+    }
+    try {
+      const idPropriedade = Number(req.params.idPropriedade);
+      const idUsuario = req.session.idUsuario!;
+      const safras = await this.safraService.buscarTodasSafrasPorPropriedade(idPropriedade, idUsuario);
       res.status(200).json(safras);
     } catch (error: unknown) {
       if (error instanceof Error) {

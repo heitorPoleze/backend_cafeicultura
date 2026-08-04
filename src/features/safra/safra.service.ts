@@ -77,7 +77,18 @@ export class SafraService {
     };
     return safra.toJSON();
   };
-
+  public async buscarTodasSafrasPorPropriedade(idPropriedade: number, idUsuarioSessao: number): Promise<SafraRespostaDTO[]> {
+    const propriedade = await this.propriedadeRepo.buscarPorId(idPropriedade);
+    if (!propriedade) {
+      throw new Error('NAO_ENCONTRADA');
+    }
+    if (propriedade.idProprietario !== idUsuarioSessao) {
+      throw new Error('ACESSO_NEGADO');
+    }
+    const safras = await this.safraRepository.buscarSafrasPorPropriedade(idPropriedade);
+    return safras.map((safra) => safra.toJSON());
+  }
+ 
   public async finalizar(dto: FinalizarSafraDTO, idUsuarioSessao: number): Promise<void> {
     const safra = await this.safraRepository.buscarPorId(dto.id);
     if (!safra) {

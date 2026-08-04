@@ -35,7 +35,14 @@ router.post(
   ],
   safraController.cadastrar.bind(safraController)
 );
-
+router.get(
+  '/propriedade/:idPropriedade/safras/todas',
+  exigeLogin(),
+  [
+    param('idPropriedade').isInt().withMessage('O ID da propriedade deve ser um número inteiro.'),
+  ],
+  safraController.buscarTodasPorPropriedade.bind(safraController)
+)
 router.get(
   '/propriedade/:id/safra/:idSafra/relatorio-financeiro',
   exigeLogin(),
