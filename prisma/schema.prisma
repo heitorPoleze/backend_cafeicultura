@@ -370,7 +370,6 @@ model safras {
   idPropriedade_FK Int          @db.UnsignedInt
   dataInicio       DateTime     @db.Date
   dataFim          DateTime?    @db.Date
-  arquivada        Boolean      @default(false)
   eventos          eventos[]
   propriedades     propriedades @relation(fields: [idPropriedade_FK], references: [idPropriedade_PK], onDelete: NoAction, onUpdate: NoAction, map: "safra_propriedade")
 
