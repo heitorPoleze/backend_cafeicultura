@@ -413,7 +413,7 @@ model talhoes {
 
 model tamanhos {
   idTamanho_PK Int            @id @unique(map: "idTamanho_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
-  valor        Float          @db.Float
+  valor        Decimal        @db.Decimal(12, 4)
   medida       String         @db.VarChar(7)
   propriedades propriedades[]
   talhoes      talhoes[]

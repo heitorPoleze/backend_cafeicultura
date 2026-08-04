@@ -183,7 +183,7 @@ class TalhaoRepository {
 
   private mapToDomain(db: TalhaoCompleto): Talhao {
     const tamanhoDomain = new Tamanho(
-      db.tamanhos.valor,
+      Number(db.tamanhos.valor),
       db.tamanhos.medida as "m2" | "hectare",
       db.tamanhos.idTamanho_PK,
     );

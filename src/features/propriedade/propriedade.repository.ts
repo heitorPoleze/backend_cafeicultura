@@ -49,7 +49,7 @@ class PropriedadeRepository {
 
     if (!prop) return null;
     
-    const tamanhoEntidade = new Tamanho(prop.tamanhos.valor, prop.tamanhos.medida as "hectare" | "m2", prop.tamanhos.idTamanho_PK);
+    const tamanhoEntidade = new Tamanho(Number(prop.tamanhos.valor), prop.tamanhos.medida as "hectare" | "m2", prop.tamanhos.idTamanho_PK);
     const enderecoEntidade = new Endereco(
       prop.enderecos.cidade, prop.enderecos.bairro, prop.enderecos.cep, 
       prop.enderecos.uf, prop.enderecos.pais, prop.enderecos.logradouro, 
@@ -97,7 +97,7 @@ class PropriedadeRepository {
     });
 
     return propriedades.map(p => {
-      const tamanho = new Tamanho(p.tamanhos.valor, p.tamanhos.medida as "hectare" | "m2", p.tamanhos.idTamanho_PK);
+      const tamanho = new Tamanho(Number(p.tamanhos.valor), p.tamanhos.medida as "hectare" | "m2", p.tamanhos.idTamanho_PK);
       const endereco = new Endereco(
         p.enderecos.cidade, p.enderecos.bairro, p.enderecos.cep, 
         p.enderecos.uf, p.enderecos.pais, p.enderecos.logradouro, 
