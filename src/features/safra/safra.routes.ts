@@ -23,7 +23,7 @@ const eventoRepository = new EventoRepository(prisma, despesaRepository);
 const eventoAgricolaRepository = new EventoAgricolaRepository(prisma);
 const propriedadeRepo = new PropriedadeRepo(prisma);
 const tratoRepository = new TratoRepository(prisma, eventoRepository, eventoAgricolaRepository, pessoaRepository, despesaRepository);
-const safraService = new SafraService(prisma, safraRepository, propriedadeRepo, tratoRepository);
+const safraService = new SafraService(prisma, safraRepository, propriedadeRepo, tratoRepository, despesaRepository);
 const safraController = new SafraController(safraService);
 
 router.post(
@@ -34,6 +34,16 @@ router.post(
     body('dataInicio').isISO8601().withMessage('A data de início é obrigatória e deve ser uma data válida.'),
   ],
   safraController.cadastrar.bind(safraController)
+);
+
+router.get(
+  '/propriedade/:id/safra/:idSafra/relatorio-financeiro',
+  exigeLogin(),
+  [
+    param('id').isInt({ gt: 0 }).withMessage('ID da propriedade inválido.'),
+    param('idSafra').isInt({ gt: 0 }).withMessage('ID da safra inválido.')
+  ],
+  safraController.relatorioFinanceiro.bind(safraController)
 );
 
 router.get(

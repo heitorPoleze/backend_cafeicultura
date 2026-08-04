@@ -10,9 +10,14 @@ import {
   EventoRelatorioDTO,
   TratoCulturalDTO,
   BuscarTodosEventosTalhaoDTO,
+  DespesaDTO,
+  TransacaoRelatorioWrapperDTO,
+  BuscarRelatorioFinanceiroDTO,
+  RelatorioFinanceiroSafraDTO,
 } from "./safra.dto";
 import { PrismaClient } from "@prisma/client";
 import TratoCulturalRepository from "../tratocultural/tratocultural.repository";
+import DespesaRepository from "../despesa/despesa.repository";
 
 export class SafraService {
   constructor(
@@ -20,6 +25,7 @@ export class SafraService {
     private readonly safraRepository: SafraRepository,
     private readonly propriedadeRepo: PropriedadeRepository,
     private readonly tratoCulturalRepo: TratoCulturalRepository,
+    private readonly despesaRepo: DespesaRepository,
   ) { }
 
   public async cadastrar(dto: CadastrarSafraDTO, idUsuarioSessao: number): Promise<number> {
@@ -104,6 +110,65 @@ export class SafraService {
   };
 
   // ---- Relatórios -----
+
+  public async gerarRelatorioFinanceiro(dto: BuscarRelatorioFinanceiroDTO, idUsuarioSessao: number): Promise<RelatorioFinanceiroSafraDTO> {
+    const propriedade = await this.propriedadeRepo.buscarPorId(dto.idPropriedade);
+    if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
+    if (propriedade.idProprietario !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
+
+    const safra = await this.safraRepository.buscarPorId(dto.idSafra);
+    if (!safra) throw new Error("NAO_ENCONTRADA");
+    if (safra.idPropriedade !== dto.idPropriedade) throw new Error("SAFRA_NAO_PERTENCE_PROPRIEDADE");
+
+    const limiteFim = safra.dataFim ? safra.dataFim : new Date();
+
+    const relatorio = await this.prisma.$transaction(async (tx) => {
+      
+      const [despesasEventos, despesasGerais] = await Promise.all([
+        this.despesaRepo.listarDespesasEventosConfirmadosSafra(dto.idSafra, dto.idPropriedade, tx),
+        this.despesaRepo.listarDespesasGeraisPorPeriodo(dto.idPropriedade, safra.dataInicio, limiteFim, tx)
+      ]);
+
+      const transacoesFormatadas: TransacaoRelatorioWrapperDTO[] = [];
+      let custoTotal = 0;
+
+      if (despesasEventos && despesasEventos.length > 0) {
+        for (const despesa of despesasEventos) {
+          custoTotal += despesa.valor;
+          transacoesFormatadas.push({
+            origem: 'EVENTO_CONFIRMADO',
+            dados: despesa
+          });
+        }
+      }
+
+      if (despesasGerais && despesasGerais.length > 0) {
+        for (const despesa of despesasGerais) {
+          custoTotal += despesa.valor;
+          transacoesFormatadas.push({
+            origem: 'DESPESA_GERAL',
+            dados: despesa
+          });
+        }
+      }
+
+      transacoesFormatadas.sort((a, b) => {
+        const dateA = new Date(a.dados.dataHora).getTime();
+        const dateB = new Date(b.dados.dataHora).getTime();
+        return dateB - dateA;
+      });
+
+      return {
+        custoTotal,
+        transacoes: transacoesFormatadas
+      };
+    });
+
+    if (!relatorio || !relatorio.transacoes || relatorio.transacoes.length === 0) throw new Error("SEM_TRANSACOES");
+
+    return relatorio;
+  }
+
   public async listarTodosEventos(dto: BuscarTodosEventosDTO, idUsuarioSessao: number): Promise<EventoRelatorioDTO[]> {
     const propriedade = await this.propriedadeRepo.buscarPorId(dto.idPropriedade);
     if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");

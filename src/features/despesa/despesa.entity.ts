@@ -27,11 +27,10 @@ class Despesa extends TransacaoFinanceira {
     public get beneficiado(): Pessoa { return this._beneficiado; }
     public get descricao(): string { return this._descricao; }
 
-    public toJSON(filhos?: object) {
+    public toJSON() {
         return super.toJSON({
             beneficiado: this._beneficiado.toJSON(),
-            descricao: this._descricao,
-            ...filhos
+            descricao: this._descricao
         });
     }
 }
