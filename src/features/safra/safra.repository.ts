@@ -19,7 +19,6 @@ export class SafraRepository {
       data: {
         idPropriedade_FK: safra.idPropriedade,
         dataInicio: safra.dataInicio,
-        arquivada: false,
       },
     });
 
