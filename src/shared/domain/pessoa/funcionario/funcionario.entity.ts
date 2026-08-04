@@ -9,21 +9,34 @@ class Funcionario implements IPessoa {
 
     constructor(pessoa: PessoaFisica | PessoaJuridica, ctps: string, salario: number) {
         this._pessoa = pessoa;
-        this.validarCTPS(ctps);
-        this._ctps = ctps;
-        this.validarSalario(salario);
-        this._salario = salario;
+        if(ctps){
+            this.validarCTPS(ctps);
+            this._ctps = ctps;
+        }else{
+            this._ctps = "";
+        }
+        if(salario){
+            this._salario = salario;
+        }else{
+            this._salario = 0;
+        }
     };
 
     get pessoa(): PessoaFisica | PessoaJuridica {
         return this._pessoa;
     };
 
-    get ctps(): string {
+    get ctps(): string  {
+        if(!this._ctps || this._ctps.trim() === "") {
+            return "CTPS não informado";
+        }
         return this._ctps;
     };
 
-    get salario(): number {
+    get salario(): number | string  {
+        if(this._salario === 0) {
+            return "Salário não informado";
+        }
         return this._salario;
     };
 

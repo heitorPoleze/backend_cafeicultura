@@ -49,7 +49,7 @@ export type PessoaJuridicaResponseDTO = PessoaResponseDTO & {
 
 export type FuncionarioResponseDTO = PessoaFisicaResponseDTO & {
     ctps: string;
-    salario: number;
+    salario: number | string;
 };
 
 export type MeeiroResponseDTO = PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO;
