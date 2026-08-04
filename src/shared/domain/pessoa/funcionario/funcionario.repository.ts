@@ -39,6 +39,9 @@ class FuncionarioRepository {
   };
 
   public async buscarPorId(id: number): Promise<Funcionario | null> {
+     if(!id || id <= 0 || !Number.isInteger(id)) {
+      throw new Error("ID_INVALIDO");
+    }
     const f = await this.prisma.funcionarios.findUnique({
       where: { idPeFisica_PFK: id },
     });

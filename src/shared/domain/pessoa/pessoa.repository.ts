@@ -482,6 +482,9 @@ public async listarPessoas(
 
   }
   public async buscarPessoaPorId(pessoaId: number, tx?: Prisma.TransactionClient): Promise<PessoaDTO | null> {
+     if(!pessoaId || pessoaId <= 0 || !Number.isInteger(pessoaId)) {
+      throw new Error("ID_INVALIDO");
+    }
     const pessoaBase = await (tx ?? this.prisma).pessoas.findUnique({
       where: { idPessoa_PK: pessoaId },
       include: { pessoasfisicas: true, pessoasjuridicas: true }

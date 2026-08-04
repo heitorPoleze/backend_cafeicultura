@@ -55,6 +55,9 @@ class ClienteRepository {
     };
   }
   public async buscarPorId(id: number): Promise<Cliente | null> {
+     if(!id || id <= 0 || !Number.isInteger(id)) {
+      throw new Error("ID_INVALIDO");
+    }
     const c = await this.prisma.clientes.findUnique({
       where: { idCliente_PFK: id }
     });

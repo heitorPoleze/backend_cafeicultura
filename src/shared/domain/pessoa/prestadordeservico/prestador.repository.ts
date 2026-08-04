@@ -51,6 +51,9 @@ class PrestadorRepository {
     };
   }
   public async buscarPorId(id: number): Promise<Prestador | null> {
+    if(!id || id <= 0 || !Number.isInteger(id)) {
+      throw new Error("ID_INVALIDO");
+    }
     const m = await this.prisma.prestadoresdeservico.findUnique({
       where: { idPeFisica_PFK: id },
     });

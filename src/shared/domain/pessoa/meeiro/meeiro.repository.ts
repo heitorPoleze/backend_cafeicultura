@@ -51,6 +51,9 @@ class MeeiroRepository {
     };
   }
   public async buscarPorId(id: number): Promise<Meeiro | null> {
+    if(!id || id <= 0 || !Number.isInteger(id)) {
+      throw new Error("ID_INVALIDO");
+    }
     const m = await this.prisma.meeiros.findUnique({
       where: { idPeFisica_PFK: id },
     });
