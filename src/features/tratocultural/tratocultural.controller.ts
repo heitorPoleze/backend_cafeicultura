@@ -95,10 +95,26 @@ class TratoCulturalController {
   }
 
   public async listarTodosPropriedade(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
+
     try {
-      const dto: ListarTratoPorPropriedadeDTO = { idPropriedade: Number(req.params.id) };
-      const tratos = await this.tratoCulturalService.listarTodosPropriedade(dto, req.session.idUsuario!);
-      res.status(200).json(tratos);
+      const dataInicioStr = req.query.dataInicio as string | undefined;
+      const dataFimStr = req.query.dataFim as string | undefined;
+      const paginaStr = req.query.pagina as string | undefined;
+      const limiteStr = req.query.limite as string | undefined;
+
+      const dto: ListarTratoPorPropriedadeDTO = { 
+        idPropriedade: Number(req.params.id),
+        dataInicio: dataInicioStr ? new Date(dataInicioStr) : undefined,
+        dataFim: dataFimStr ? new Date(dataFimStr) : undefined,
+        pagina: paginaStr ? Number(paginaStr) : 1, 
+        limite: limiteStr ? Number(limiteStr) : 25  
+      };
+
+      const resultado = await this.tratoCulturalService.listarTodosPropriedade(dto, req.session.idUsuario!);
+
+      res.status(200).json(resultado);
     } catch (error: unknown) {
       this.handleError(res, error, 'Erro ao listar tratos');
     }
