@@ -64,6 +64,7 @@ class PrestadorRepository {
       where: { idPessoa_PK: id },
       include: {
         pessoasfisicas: true,
+        pessoasjuridicas: true,
         enderecos: true
       },
     });
@@ -83,18 +84,38 @@ class PrestadorRepository {
           e.idEndereco_PK,
         )
       : null;
-
-    const dados = {
+      
+  let dados 
+  if(p.pessoasfisicas?.cpf){
+      dados = {
+        id: m.idPeFisica_PFK,
+        idAdministrador: p.idAdministrador_FK,
+        dataCadastro: p.dataCadastro,
+        endereco: endereco,
+        nome: p.pessoasfisicas?.nome,
+        cpf: p.pessoasfisicas?.cpf
+    }
+  }else{
+     dados = {
       id: m.idPeFisica_PFK,
       idAdministrador: p.idAdministrador_FK,
       dataCadastro: p.dataCadastro,
       endereco: endereco,
-      nome: p.pessoasfisicas?.nome,
-      cpf: p.pessoasfisicas?.cpf
-    };
+      razaoSocial:p.pessoasjuridicas?.razaoSocial,
+      inscrEstadual:p.pessoasjuridicas?.inscEstadual,
+      cnpj:p.pessoasjuridicas?.cnpj
+      
+    }
+  }
+    
 
     // 4. Delega a criação para a Factory
-    const pessoa = PessoaFactory.criarPessoa("fisica", dados);
+    let pessoa;
+    if(dados.cpf){
+       pessoa = PessoaFactory.criarPessoa("fisica", dados);
+    }else{
+      pessoa = PessoaFactory.criarPessoa("juridica", dados)
+    }
 
     return new Prestador(pessoa);
   };

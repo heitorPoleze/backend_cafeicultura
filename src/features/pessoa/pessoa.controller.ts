@@ -128,14 +128,14 @@ class PessoaController {
     try {
       req.body.idAdministrador = req.session.idUsuario!;
       await this.service.cadastrarPrestador(req.body);
-
-      res
-        .status(201)
-        .json({ mensagem: "Prestador de Serviço cadastrado com sucesso" });
+      res.status(201).json({ mensagem: "Prestador de Serviço cadastrado com sucesso" });
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "CPF_EXISTENTE") {
           return res.status(409).json({ error: "CPF já cadastrado" });
+        };
+        if (error.message === "CNPJ_EXISTENTE") {
+          return res.status(409).json({ error: "CNPJ já cadastrado" });
         };
         return res.status(500).json({ error: error.message });
       };
