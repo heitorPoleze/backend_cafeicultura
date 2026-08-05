@@ -276,20 +276,12 @@ public async listarPessoas(
   pagina: number = 1,
   limite: number = 10,
 ): Promise<ResultadoPaginacao<PessoaBase>> {
-  const { skip, take } = paginar(pagina, limite);
-
   const where = { idAdministrador_FK: idAdministrador };
-
-  const [pessoasDB, total] = await this.prisma.$transaction([
-    this.prisma.pessoas.findMany({
-      where,
-      include: searchPessoas,
-      skip,
-      take,
-    }),
-    this.prisma.pessoas.count({ where }),
-  ]);
-
+  const pessoasDB = await this.prisma.pessoas.findMany({
+    where,
+    include: searchPessoas,
+  });
+  
   const pessoas: PessoaBase[] = [];
   for (const p of pessoasDB) {
     const pessoaMapeada = this.mapToEntityComPapeis(p);
@@ -298,8 +290,20 @@ public async listarPessoas(
     }
   }
 
+  pessoas.sort((a, b) => {
+    const papelA = String(a.papel || "");
+    const papelB = String(b.papel || "");
+    return papelA.localeCompare(papelB);
+  });
+
+  const total = pessoas.length;
+  const startIndex = (pagina - 1) * limite;
+  const endIndex = startIndex + limite;
+  
+  const pessoasPaginadas = pessoas.slice(startIndex, endIndex);
+
   return {
-    data: pessoas,
+    data: pessoasPaginadas,
     total,
     pagina,
     totalPaginas: Math.ceil(total / limite),

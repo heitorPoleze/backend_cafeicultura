@@ -27,7 +27,13 @@ export type FinalizarSafraDTO = {
 export type ExcluirSafraDTO = {
   id: number;
 };
-
+export type ReativarSafraDTO = {
+  id: number;
+  idPropriedade: number;
+  dataInicio: Date;
+  dataFim: null;
+  }
+  
 // ----- Relatórios -----
 export type BuscarTodosEventosDTO = {
   idPropriedade: number;

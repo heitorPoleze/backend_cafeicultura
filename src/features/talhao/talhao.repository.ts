@@ -59,6 +59,9 @@ class TalhaoRepository {
         idPropriedade_FK: idPropriedade,
         dataFim: null,
       },
+      orderBy: {
+        idTalhao_PK: 'desc',
+      },
       include: {
         tamanhos: true,
         variedadestalhoes: {
@@ -77,6 +80,9 @@ class TalhaoRepository {
       where: {
         idPropriedade_FK: idPropriedade,
         dataFim: { not: null },
+      },
+      orderBy: {
+        idTalhao_PK: 'desc',
       },
       include: {
         tamanhos: true,
@@ -102,12 +108,16 @@ class TalhaoRepository {
       where: {
         idPropriedade_FK: idPropriedade,
       },
+      orderBy: {
+        idTalhao_PK: 'desc',
+      },
       include: {
         tamanhos: true,
         variedadestalhoes: {
           include: { variedades: true },
         },
       },
+      
       skip: (pagina - 1) * limite,
       take: limite,
     });

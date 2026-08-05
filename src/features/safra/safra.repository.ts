@@ -69,7 +69,21 @@ export class SafraRepository {
       dataFim: data.dataFim,
     });
   }
+public async reativar(safra: Safra): Promise<Safra | null> {
+  if (!safra.id) throw new Error("ID_OBRIGATORIO");
 
+  const data = await this.prisma.safras.update({
+    where: { idSafra_PK: safra.id },
+    data: { dataFim: null },
+  });
+
+  return new Safra({
+    id: data.idSafra_PK,
+    idPropriedade: data.idPropriedade_FK,
+    dataInicio: data.dataInicio,
+    dataFim: data.dataFim,
+  });
+}
   public async finalizar(safra: Safra): Promise<void> {
     if (!safra.id) throw new Error("ID_OBRIGATORIO");
 

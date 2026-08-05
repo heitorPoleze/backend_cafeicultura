@@ -14,6 +14,7 @@ import {
   TransacaoRelatorioWrapperDTO,
   BuscarRelatorioFinanceiroDTO,
   RelatorioFinanceiroSafraDTO,
+  ReativarSafraDTO,
 } from "./safra.dto";
 import { PrismaClient } from "@prisma/client";
 import TratoCulturalRepository from "../tratocultural/tratocultural.repository";
@@ -104,7 +105,34 @@ export class SafraService {
     safra.finalizar(dto.dataFim);
     await this.safraRepository.finalizar(safra);
   }
+public async reativarSafra(idSafra: number, idPropriedadeRequisicao?: number): Promise<SafraRespostaDTO> {
+  const safraAlvo = await this.safraRepository.buscarPorId(idSafra);
+  
+  if (!safraAlvo) {
+    throw new Error("NAO_ENCONTRADA");
+  }
 
+  if (idPropriedadeRequisicao && safraAlvo.idPropriedade !== idPropriedadeRequisicao) {
+    throw new Error("ACESSO_NEGADO"); 
+  }
+
+  const safraReativada = await this.safraRepository.reativar(safraAlvo);
+  
+  if (!safraReativada || !safraReativada.id) {
+    throw new Error("NAO_REATIVADA");
+  }
+
+  if (safraReativada.dataFim === null) {
+    return {
+      id: safraReativada.id,
+      idPropriedade: safraReativada.idPropriedade,
+      dataInicio: safraReativada.dataInicio,
+      dataFim: safraReativada.dataFim
+    };
+  }
+
+  throw new Error("NAO_REATIVADA");
+}
   public async excluir(dto: ExcluirSafraDTO, idUsuarioSessao: number): Promise<void> {
     const safra = await this.safraRepository.buscarPorId(dto.id);
     if (!safra) {

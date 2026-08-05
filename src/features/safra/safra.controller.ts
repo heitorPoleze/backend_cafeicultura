@@ -230,7 +230,28 @@ class SafraController {
       return res.status(500).json({ error: 'Erro interno ao gerar relatório de eventos' });
     }
   }
+public async reativarSafra(req: Request, res: Response) {
+  const erros = validationResult(req);
+  if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
 
+  try {
+    const id = Number(req.params.id);
+    const safraReativada = await this.safraService.reativarSafra(id); 
+    return res.status(200).json(safraReativada);
+    
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      if (error.message === 'ACESSO_NEGADO') {
+        return res.status(403).json({ error: 'Acesso negado! Não foi possível reativar safra' });
+      } else if (error.message === 'NAO_ENCONTRADA') {
+        return res.status(404).json({ error: 'Safra não encontrada' });
+      } else if (error.message === 'NAO_REATIVADA') {
+        return res.status(422).json({ error: 'Não foi possível concluir a reativação da safra' });
+      }
+    }
+    return res.status(500).json({ error: 'Erro interno inesperado ao reativar safra' });
+  }
+}
   public async relatorioEventosTalhao(req: Request, res: Response) {
     const erros = validationResult(req);
     if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
