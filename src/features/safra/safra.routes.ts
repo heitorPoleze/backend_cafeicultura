@@ -89,7 +89,14 @@ router.patch(
   ],
   safraController.finalizar.bind(safraController)
 );
-
+router.patch(
+  '/:id/reativar',
+  exigeLogin(),
+  [
+    param('id').isInt().withMessage('O ID da safra deve ser um número inteiro.'),
+  ],
+  safraController.reativarSafra.bind(safraController)
+);
 router.delete(
   '/:id',
   exigeLogin(),
