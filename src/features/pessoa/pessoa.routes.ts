@@ -242,7 +242,7 @@ router.delete(
 router.post(
   "/prestadores",
   exigeLogin(),
-  validacaoPessoaFisicaEstrita,
+  validacaoPessoaMista,
   pessoaController.cadastrarPrestador.bind(pessoaController)
 );
 
@@ -287,6 +287,7 @@ router.patch("/pessoas-fisicas/cpf/:id",
   ],
   pessoaController.atualizarCpf.bind(pessoaController)
 )
+
 
 router.patch("/pessoa-juridica/atualizar-cnpj/:id",
   exigeLogin(),
