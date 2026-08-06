@@ -199,7 +199,7 @@ model fornecedores {
 
 model funcionarios {
   idPeFisica_PFK Int     @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
-  ctps           String? @db.VarChar(14) 
+  ctps           String? @db.VarChar(14) @unique
   salario        Decimal @db.Decimal(10, 2)
   pessoasfisicas pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], map: "pessoa_funcionario")
 

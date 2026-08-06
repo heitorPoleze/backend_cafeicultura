@@ -26,9 +26,9 @@ class Funcionario implements IPessoa {
         return this._pessoa;
     };
 
-    get ctps(): string  {
+    get ctps(): string | null {
         if(!this._ctps || this._ctps.trim() === "") {
-            return "CTPS vazio";
+            return null;
         }
         return this._ctps;
     };
