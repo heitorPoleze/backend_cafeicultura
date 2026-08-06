@@ -84,5 +84,23 @@ class Formatador {
 
     return dadosLimpos;
   }
+
+   /**
+   * Normalizes a string by lowercasing, removing accents, removing spaces, 
+   * and mathematically parsing numbers to strip leading zeros.
+   * 
+   * Examples:
+   * "Talhão 01"   -> "talhao1"
+   * "talhao 1"    -> "talhao1"
+   * "Talhão 001"  -> "talhao1"
+   * "Talhao1"     -> "talhao1"
+   */
+   public static normalizarNome(nome: string): string {
+    return nome
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Removes accents
+      .replace(/\s+/g, '') // Removes all empty spaces
+      .replace(/\d+/g, (match) => parseInt(match, 10).toString()); // Removes leading zeros
+  }
 }
 export default Formatador;
