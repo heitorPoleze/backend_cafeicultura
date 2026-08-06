@@ -11,7 +11,7 @@ const router = Router();
 
 const propriedadeRepository = new PropriedadeRepository(prisma);
 const talhaoRepository = new TalhaoRepository(prisma);
-const talhaoService = new TalhaoService(talhaoRepository, propriedadeRepository);
+const talhaoService = new TalhaoService(prisma, talhaoRepository, propriedadeRepository);
 const talhaoController = new TalhaoController(talhaoService);
 
 router.post(
