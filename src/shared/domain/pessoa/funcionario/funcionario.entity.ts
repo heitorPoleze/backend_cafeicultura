@@ -7,7 +7,7 @@ class Funcionario implements IPessoa {
     private _ctps: string;
     private _salario: number;
 
-    constructor(pessoa: PessoaFisica | PessoaJuridica, ctps: string, salario: number) {
+    constructor(pessoa: PessoaFisica | PessoaJuridica, ctps: string | null, salario: number) {
         this._pessoa = pessoa;
         if(ctps){
             this.validarCTPS(ctps);
