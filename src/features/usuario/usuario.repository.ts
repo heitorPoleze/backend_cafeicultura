@@ -31,7 +31,14 @@ class UsuarioRepository {
     return !!existe;
   };
 
-  
+  public async verificarInscricaoEstadualExistente(inscricaoEstadual: string): Promise<boolean> {
+    const existe = await this.prisma.pessoasjuridicas.findFirst({
+      where: {
+        inscEstadual: inscricaoEstadual
+      }
+    })
+    return !!existe
+    };
   //revisar
   public async updateEmail(email:string, id:number){
     await this.prisma.usuarios.update({

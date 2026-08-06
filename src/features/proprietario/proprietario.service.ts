@@ -34,6 +34,15 @@ export default class ProprietarioService {
       if (cnpjExistente) {
         throw new Error(`CNPJ_EXISTENTE`);
       };
+      let inscricaoExistente;
+      if(dados.inscrEstadual != null){
+      inscricaoExistente = await this.usuarioRepo.verificarInscricaoEstadualExistente(
+      dados.inscrEstadual,
+    );}
+    if (inscricaoExistente) {
+      throw new Error(`INSCRICAO_EXISTENTE`);
+    };
+
     };
 
     const emailExistente = await this.usuarioRepo.verificarEmailExistente(
@@ -49,7 +58,8 @@ export default class ProprietarioService {
     if (telefoneExistente) {
       throw new Error(`TELEFONE_EXISTENTE`);
     };
-
+    
+   
     const perfil = PessoaFactory.criarPessoa(dados.tipoPessoa, dados);
 
     const credencial = new Usuario(

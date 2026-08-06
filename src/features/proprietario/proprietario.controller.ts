@@ -27,7 +27,9 @@ class ProprietarioController {
           return res.status(409).json({ error: "Email já cadastrado" });
         } else if (error.message === "TELEFONE_EXISTENTE") {
           return res.status(409).json({ error: "Telefone já cadastrado" });
-        };
+        } else if (error.message === "INSCRICAO_EXISTENTE"){
+          return res.status(409).json({error: "Inscrição estadual já cadastrada."})
+        }
         return res.status(500).json({ error: "Erro ao cadastrar proprietário" });
       }
     };
