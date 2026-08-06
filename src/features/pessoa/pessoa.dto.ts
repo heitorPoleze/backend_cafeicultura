@@ -48,7 +48,7 @@ export type PessoaJuridicaResponseDTO = PessoaResponseDTO & {
 };
 
 export type FuncionarioResponseDTO = PessoaFisicaResponseDTO & {
-    ctps: string;
+    ctps: string | null;
     salario: number | string;
 };
 
