@@ -58,7 +58,7 @@ class TalhaoService {
         );
       };
 
-      const nomeTalhao = `${dto.nome} ${new Date().getFullYear()}/${new Date().getMonth() + 1}`;
+      const nomeTalhao = `${dto.nome} ${new Date(dto.dataInicio).getFullYear()}/${String(new Date(dto.dataInicio).getMonth() + 1).padStart(2, '0')}`;
 
       const novoTalhao = new Talhao(
         undefined,
