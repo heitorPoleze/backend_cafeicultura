@@ -3,11 +3,14 @@ import PropriedadeRepository from '../propriedade/propriedade.repository';
 import { BuscarTalhoesDTO, CadastrarTalhaoDTO, EncerrarTalhaoDTO, ExcluirTalhaoDTO, ResponseBuscarTalhoesDTO, VariedadesDTO } from './talhao.dto';
 import Talhao from './talhao.entity';
 import Tamanho from '../../shared/domain/tamanho/tamanho.entity';
+import { PrismaClient } from '@prisma/client';
+import Formatador from '../../shared/utils/Formatador';
 
 class TalhaoService {
   constructor(
+    private readonly prisma: PrismaClient,
     private readonly repository: TalhaoRepository,
-    private readonly propriedadeRepo: PropriedadeRepository
+    private readonly propriedadeRepo: PropriedadeRepository,
   ) { }
 
   async cadastrarTalhao(dto: CadastrarTalhaoDTO, idUsuarioSessao: number): Promise<number> {
@@ -20,43 +23,58 @@ class TalhaoService {
       throw new Error('ACESSO_NEGADO');
     };
 
-    const talhoesExistentes = await this.repository.buscarAbertosPorPropriedade(dto.idPropriedade);
+    return await this.prisma.$transaction(async (tx) => {
 
-    const tamanhoNovoTalhao = new Tamanho(dto.tamanho.valor, dto.tamanho.medida);
+      const talhoesExistentes = await this.repository.buscarAbertosPorPropriedade(dto.idPropriedade, tx);
+      
+      const nomePadronizadoDto = Formatador.normalizarNome(dto.nome);
 
-    const limiteMaximoM2 = this.calcularAreaEmM2(propriedade.tamanho);
-    const areaNovoTalhaoM2 = this.calcularAreaEmM2(tamanhoNovoTalhao);
+      const nomeDuplicado = talhoesExistentes.some((t) => {
+        return Formatador.normalizarNome(t.nome) === nomePadronizadoDto;
+      });
 
-    let areaUtilizadaM2 = 0;
-    for (const t of talhoesExistentes) {
-      areaUtilizadaM2 += this.calcularAreaEmM2(t.tamanho);
-    };
+      if (nomeDuplicado) {
+        throw new Error('NOME_DUPLICADO');
+      };
 
-    const areaDisponivelM2 = limiteMaximoM2 - areaUtilizadaM2;
+      const tamanhoNovoTalhao = new Tamanho(dto.tamanho.valor, dto.tamanho.medida);
 
-    if (areaNovoTalhaoM2 > areaDisponivelM2) {
-      const disponivelHectares = areaDisponivelM2 / 10000;
-      const formatador = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 4, minimumFractionDigits: 0 });
-      throw new Error(
-        `Capacidade excedida! A propriedade possui apenas ${formatador.format(Math.round(areaDisponivelM2))} m² ` +
-        `(ou ${formatador.format(disponivelHectares)} hectares) disponíveis.`
+      const limiteMaximoM2 = this.calcularAreaEmM2(propriedade.tamanho);
+      const areaNovoTalhaoM2 = this.calcularAreaEmM2(tamanhoNovoTalhao);
+
+      let areaUtilizadaM2 = 0;
+      for (const t of talhoesExistentes) {
+        areaUtilizadaM2 += this.calcularAreaEmM2(t.tamanho);
+      };
+
+      const areaDisponivelM2 = limiteMaximoM2 - areaUtilizadaM2;
+
+      if (areaNovoTalhaoM2 > areaDisponivelM2) {
+        const disponivelHectares = areaDisponivelM2 / 10000;
+        const formatador = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 4, minimumFractionDigits: 0 });
+        throw new Error(
+          `Capacidade excedida! A propriedade possui apenas ${formatador.format(Math.round(areaDisponivelM2))} m² ` +
+          `(ou ${formatador.format(disponivelHectares)} hectares) disponíveis.`
+        );
+      };
+
+      const nomeTalhao = `${dto.nome} ${new Date().getFullYear()}/${new Date().getMonth() + 1}`;
+
+      const novoTalhao = new Talhao(
+        undefined,
+        nomeTalhao,
+        tamanhoNovoTalhao,
+        dto.idPropriedade,
+        dto.qtdPeCafe,
+        dto.especie,
+        [], // variedades serão associadas posteriormente no repository
+        null, // Geolocalização nula por especificação
+        new Date(dto.dataInicio),
+        null, // dataFim nula no cadastro
       );
-    };
 
-    const novoTalhao = new Talhao(
-      undefined,
-      dto.nome,
-      tamanhoNovoTalhao,
-      dto.idPropriedade,
-      dto.qtdPeCafe,
-      dto.especie,
-      [], // variedades serão associadas posteriormente no repository
-      null, // Geolocalização nula por especificação
-      new Date(dto.dataInicio),
-      null, // dataFim nula no cadastro
-    );
-
-    return await this.repository.cadastrar(novoTalhao, dto.variedadesIds);
+      return await this.repository.cadastrar(novoTalhao, dto.variedadesIds, tx);
+    });
   };
 
   public async buscarVariedades(): Promise<VariedadesDTO[]> {
@@ -106,12 +124,14 @@ class TalhaoService {
     };
     return tamanho.valor;
   };
+
   public async buscarAbertosPorPropriedade(idPropriedade: number): Promise<ResponseBuscarTalhoesDTO> {
-    const resultado = await this.repository.buscarAbertosPorPropriedade(idPropriedade,);
+    const resultado = await this.repository.buscarAbertosPorPropriedade(idPropriedade);
     return {
       talhoes: resultado,
     }
   }
+
   public async buscarTodosPorPropriedade(idPropriedade: number, pagina: number, limite: number): Promise<ResponseBuscarTalhoesDTO> {
     const resultado = await this.repository.buscarTodosPorPropriedade(
       idPropriedade,

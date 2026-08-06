@@ -139,6 +139,8 @@ paths:
           description: Acesso negado ao cadastrar talhão nesta propriedade.
         '404':
           description: Propriedade não encontrada.
+        '409':
+          description: O nome do talhão ja existe para um ativo na propriedade.
         '500':
           description: Erro interno ao cadastrar talhão.
 
