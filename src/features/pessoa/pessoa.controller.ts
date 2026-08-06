@@ -380,9 +380,7 @@ class PessoaController {
               error: "Acesso negado! Não pode visualizar prestador de serviço",
             });
         } else if (error.message === "ERRO_AO_BUSCAR") {
-          return res
-            .status(500)
-            .json({ error: "Erro ao buscar prestador de serviço" });
+          return res.status(500).json({ error: "Erro ao buscar prestador de serviço" });
         };
       };
     };
@@ -492,18 +490,44 @@ class PessoaController {
       res.status(500).json({ error: "Erro ao remover endereço" });
     }
   };
-  public async AtualizarNomeOuRazaoSocial(req: Request, res: Response) {
-    const erros = validationResult(req);
-    if (!erros.isEmpty()) {
-      return res.status(400).json({ erros: erros.array() })
-    } try {
-      const pessoaId = Number(req.params.id);
-      await this.service.atualizarNomeOuRazaoSocial(req.body, pessoaId);
-      res.status(200).json({ mensagem: "Nome ou Razão Social atualizadas com sucesso.", novaInformacao: req.body });
-    } catch (error: unknown) {
-      res.status(500).json({ mensagem: (error as Error).message })
+public async AtualizarNomeOuRazaoSocial(req: Request, res: Response) {
+  const erros = validationResult(req);
+  if (!erros.isEmpty()) {
+    return res.status(400).json({ erros: erros.array() });
+  } 
+  
+  try {
+    const pessoaId = Number(req.params.id);
+    await this.service.atualizarNomeOuRazaoSocial(req.body, pessoaId);
+    
+    return res.status(200).json({ 
+      mensagem: "Nome ou Razão Social atualizadas com sucesso.", 
+      novaInformacao: req.body 
+    });
+    
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      if (error.message.includes('não encontrado')) {
+        return res.status(404).json({ mensagem: error.message });
+      }
+      const errosPrevistos = [
+        "Nome é obrigatório.",
+        "Nome deve ter no mínimo 3 caracteres.",
+        "Nome deve ter no máximo 100 caracteres.",
+        "Razão Social é obrigatória.",
+        "Razão Social deve ter no mínimo 3 caracteres.",
+        "Razão Social deve ter no máximo 100 caracteres.",
+        "Tipo de pessoa inválido."
+      ];
+
+      if (errosPrevistos.includes(error.message)) {
+        return res.status(400).json({ mensagem: error.message });
+      }
+      
     }
+    return res.status(500).json({ mensagem: "Erro interno inesperado ao tentar atualizar." });
   }
+}
   public async atualizarCpf(req: Request, res: Response) {
     const erros = validationResult(req);
     if (!erros.isEmpty()) {
@@ -516,7 +540,7 @@ class PessoaController {
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "CPF_EXISTENTE") {
-          return res.status(404).json({ error: "CPF já cadastrado no sistema." });
+          return res.status(409).json({ error: "CPF já cadastrado no sistema." });
         }
       }
       res.status(500).json({ error: "Erro ao atualizar CPF." });
@@ -534,7 +558,7 @@ class PessoaController {
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "CNPJ_EXISTENTE") {
-          return res.status(404).json({ error: "CNPJ já cadastrado no sistema." });
+          return res.status(409).json({ error: "CNPJ já cadastrado no sistema." });
         }
         if (error.message === "CNPJ_INVALIDO") {
           return res.status(404).json({ error: "CNPJ em formato inválido." });
@@ -556,6 +580,9 @@ class PessoaController {
       if (error instanceof Error) {
         if (error.message === "INSCRICAO_INVALIDA") {
           return res.status(400).json({ error: "Inscrição estadual inválida." })
+        }
+        if(error.message === "INSCRICAO_EM_USO"){
+          return res.status(409).json({error: "Inscrição estadual já em uso."})
         }
       }
       res.status(500).json({ error: "Erro ao atualizar Inscrição Estadual." })

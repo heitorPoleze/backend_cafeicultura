@@ -500,7 +500,7 @@ public async listarPessoas(dto: ListarPessoasDTO): Promise<ResultadoPaginacao<Pe
     if (!pessoa) {
       throw new Error(`Pessoa com ID ${pessoaId} não encontrado.`);
     }
-
+    
     const perfil = pessoa
     if (perfil instanceof PessoaFisica) {
       const novoNome = dados.nome as string;

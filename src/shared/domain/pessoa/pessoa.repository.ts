@@ -281,7 +281,7 @@ public async listarPessoas(
     where,
     include: searchPessoas,
   });
-  
+
   const pessoas: PessoaBase[] = [];
   for (const p of pessoasDB) {
     const pessoaMapeada = this.mapToEntityComPapeis(p);
@@ -399,6 +399,9 @@ public async listarPessoas(
     if (!pessoaBase?.pessoasjuridicas) {
       throw new Error("Pessoa jurídica não encontrada para o ID informado.");
     }
+    if(pessoaBase?.pessoasjuridicas.inscEstadual === inscrEstadual){
+      throw new Error("INSCRICAO_EM_USO");
+      }
 
     await this.prisma.pessoasjuridicas.update({
       where: { idPeJuridica_PFK: pessoaBase.pessoasjuridicas.idPeJuridica_PFK },
