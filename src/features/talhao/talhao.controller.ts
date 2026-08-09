@@ -22,7 +22,9 @@ export class TalhaoController {
       });
     } catch (error: unknown) {
       if (error instanceof Error) {
-        if (error.message === 'NAO_ENCONTRADA') {
+        if (error.message === 'NOME_DUPLICADO') {
+          return res.status(409).json({ error: 'Nome de talhão já existe para um ativo' });
+        } else if (error.message === 'NAO_ENCONTRADA') {
           return res.status(404).json({ error: 'Propriedade não encontrada' });
         } else if (error.message === 'ACESSO_NEGADO') {
           return res.status(401).json({ error: 'Acesso negado! Não foi possível cadastrar talhão' });
