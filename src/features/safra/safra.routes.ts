@@ -44,6 +44,15 @@ router.get(
   safraController.buscarTodasPorPropriedade.bind(safraController)
 )
 router.get(
+  '/propriedade/:id/safra/:idSafra/custo',
+  exigeLogin(),
+  [
+    param('id').isInt({ gt: 0 }).withMessage('ID da propriedade inválido.'),
+    param('idSafra').isInt({ gt: 0 }).withMessage('ID da safra inválido.')
+  ],
+  safraController.custoAtualSafra.bind(safraController)
+);
+router.get(
   '/propriedade/:id/safra/:idSafra/relatorio-financeiro',
   exigeLogin(),
   [

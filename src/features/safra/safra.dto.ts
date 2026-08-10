@@ -33,6 +33,15 @@ export type ReativarSafraDTO = {
   dataInicio: Date;
   dataFim: null;
   }
+
+export type ObterCustoSafraDTO ={
+  idPropriedade: number;
+  idSafra: number;
+}
+
+export type CustoSafraDTO ={
+  custoTotal: number;
+}
   
 // ----- Relatórios -----
 export type BuscarTodosEventosDTO = {

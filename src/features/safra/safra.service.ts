@@ -15,6 +15,8 @@ import {
   BuscarRelatorioFinanceiroDTO,
   RelatorioFinanceiroSafraDTO,
   ReativarSafraDTO,
+  ObterCustoSafraDTO,
+  CustoSafraDTO,
 } from "./safra.dto";
 import { PrismaClient } from "@prisma/client";
 import TratoCulturalRepository from "../tratocultural/tratocultural.repository";
@@ -204,6 +206,47 @@ public async reativarSafra(idSafra: number, idPropriedadeRequisicao?: number): P
     });
 
     if (!relatorio || !relatorio.transacoes || relatorio.transacoes.length === 0) throw new Error("SEM_TRANSACOES");
+
+    return relatorio;
+  }
+
+  public async obterCustoSafra(dto: ObterCustoSafraDTO, idUsuarioSessao: number): Promise<CustoSafraDTO> {
+    const propriedade = await this.propriedadeRepo.buscarPorId(dto.idPropriedade);
+    if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
+    if (propriedade.idProprietario !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
+
+    const safra = await this.safraRepository.buscarPorId(dto.idSafra);
+    if (!safra) throw new Error("NAO_ENCONTRADA");
+    if (safra.idPropriedade !== dto.idPropriedade) throw new Error("SAFRA_NAO_PERTENCE_PROPRIEDADE");
+
+    const limiteFim = safra.dataFim ? safra.dataFim : new Date();
+
+    const relatorio = await this.prisma.$transaction(async (tx) => {
+      
+      const [despesasEventos, despesasGerais] = await Promise.all([
+        this.despesaRepo.listarDespesasEventosConfirmadosSafra(dto.idSafra, dto.idPropriedade, tx),
+        this.despesaRepo.listarDespesasGeraisPorPeriodo(dto.idPropriedade, safra.dataInicio, limiteFim, tx)
+      ]);
+
+      let custoTotal = 0;
+
+      if (despesasEventos && despesasEventos.length > 0) {
+        for (const despesa of despesasEventos) {
+          custoTotal += despesa.valor;
+        }
+      }
+
+      if (despesasGerais && despesasGerais.length > 0) {
+        for (const despesa of despesasGerais) {
+          custoTotal += despesa.valor;
+        }
+      }
+      return {
+        custoTotal
+      };
+    });
+
+    if (!relatorio) throw new Error("SEM_TRANSACOES");
 
     return relatorio;
   }

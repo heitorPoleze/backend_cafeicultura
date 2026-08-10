@@ -33,7 +33,7 @@ model armazens {
 
 model clientes {
   idCliente_PFK Int     @id @unique(map: "idCliente_PFK_UNIQUE") @db.UnsignedInt
-  pessoas       pessoas @relation(fields: [idCliente_PFK], references: [idPessoa_PK], map: "pessoa_cliente")
+  pessoas       pessoas @relation(fields: [idCliente_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_cliente")
 }
 
 model colheitas {
@@ -194,16 +194,14 @@ model formaspgto {
 
 model fornecedores {
   idFornecedor_PFK Int     @id @unique(map: "idFornecedor_PFK_UNIQUE") @db.UnsignedInt
-  pessoas          pessoas @relation(fields: [idFornecedor_PFK], references: [idPessoa_PK], map: "pessoa_fornecedor")
+  pessoas          pessoas @relation(fields: [idFornecedor_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_fornecedor")
 }
 
 model funcionarios {
-  idPeFisica_PFK Int     @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
-  ctps           String? @db.VarChar(14) @unique
-  salario        Decimal @db.Decimal(10, 2)
-  pessoasfisicas pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], map: "pessoa_funcionario")
-
-  @@id([idPeFisica_PFK])
+  idPeFisica_PFK Int      @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
+  ctps           String?  @db.VarChar(14)
+  salario        Decimal? @db.Decimal(10, 2)
+  pessoasfisicas pessoas  @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_funcionario")
 }
 
 model geolocalizacoes {
@@ -213,9 +211,9 @@ model geolocalizacoes {
 
 model insumos {
   idInsumo_PK         Int                   @id @unique(map: "idInsumo_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
+  idProprietario_FK   Int                   @db.UnsignedInt
   descricao           String                @db.VarChar(25)
   medida              String                @db.VarChar(3)
-  idProprietario_FK   Int                   @db.UnsignedInt
   comprasinsumos      comprasinsumos[]
   insumosfermentacoes insumosfermentacoes[]
   tratosinsumos       tratosinsumos[]
@@ -245,7 +243,7 @@ model itenstipos {
 
 model meeiros {
   idPeFisica_PFK Int     @id @unique(map: "idPessoaFisica_PFK_UNIQUE") @db.UnsignedInt
-  pessoas        pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], map: "pessoa_meeiro")
+  pessoas        pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_meeiro")
 }
 
 model metodosfermentacoes {
@@ -372,7 +370,6 @@ model safras {
   idPropriedade_FK Int          @db.UnsignedInt
   dataInicio       DateTime     @db.Date
   dataFim          DateTime?    @db.Date
-  arquivada        Boolean
   eventos          eventos[]
   propriedades     propriedades @relation(fields: [idPropriedade_FK], references: [idPropriedade_PK], onDelete: NoAction, onUpdate: NoAction, map: "safra_propriedade")
 
@@ -415,7 +412,7 @@ model talhoes {
 
 model tamanhos {
   idTamanho_PK Int            @id @unique(map: "idTamanho_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
-  valor        Float          @db.Float
+  valor        Decimal        @db.Decimal(12, 4)
   medida       String         @db.VarChar(7)
   propriedades propriedades[]
   talhoes      talhoes[]
@@ -488,7 +485,7 @@ model usuarios {
   idUsuario_PFK       Int                  @unique(map: "idUsuario_PFK_UNIQUE") @db.UnsignedInt
   email               String               @unique(map: "email_UNIQUE") @db.VarChar(50)
   telefone            String               @unique(map: "telefone_UNIQUE") @db.Char(15)
-  senha               String               @db.VarChar(500)
+  senha               String               @db.Char(60)
   consultorestecnicos consultorestecnicos?
   proprietarios       proprietarios?
   pessoas             pessoas              @relation(fields: [idUsuario_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "usuario_pessoa")
@@ -551,6 +548,8 @@ model pessoaseventos {
 }
 
 model prestadoresdeservico {
-  idPeFisica_PFK Int     @id @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
-  pessoas        pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], map: "pessoa_prestador")
+  idPeFisica_PFK Int     @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
+  pessoas        pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_prestador")
+
+  @@index([idPeFisica_PFK], map: "pessoa_prestador_idx")
 }

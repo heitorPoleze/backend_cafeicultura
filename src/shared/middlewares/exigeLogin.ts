@@ -3,7 +3,7 @@ import { Request, Response, NextFunction, RequestHandler } from "express";
 export default function exigeLogin(): RequestHandler {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     if (!req.session?.idUsuario) {
-      res.status(403).json({ error: "Acesso não autorizado. Por favor, faça o login." });
+      res.status(401).json({ error: "Acesso não autorizado. Por favor, faça o login." });
       return;
     };
 
