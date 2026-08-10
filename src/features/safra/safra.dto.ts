@@ -6,6 +6,7 @@ import { FormaPagamento, TipoOperacao } from "../../shared/domain/transacaofinan
 import Despesa from "../despesa/despesa.entity";
 import { TipoTrato } from "../tratocultural/tratocultural.entity";
 import Safra from "./safra.entity";
+import { TransacaoRelatorioWrapperDTO } from "../transacaofinanceira/transacaofinanceira.dto";
 
 export type CadastrarSafraDTO = {
   idPropriedade: number;
@@ -49,7 +50,7 @@ export type BuscarTodosEventosDTO = {
   idSafra: number;
 }
 
-export type BuscarRelatorioFinanceiroDTO = {
+export type BuscarRelatorioFinanceiroSafraDTO = {
   idSafra: number;
   idPropriedade: number;
 }
@@ -81,25 +82,6 @@ export type TratoCulturalDTO = EventoDTO & {
 export type EventoRelatorioDTO = 
   | { modulo: 'TRATO_CULTURAL'; dados: TratoCulturalDTO }
 
-export type TransacaoFinanceiraDTO = {
-  id: number | undefined;
-  idEvento: number | null;
-  idPropriedade: number;
-  dataHora: Date | string;
-  valor: number;
-  formaPagamento: FormaPagamento;
-  tipoOperacao: TipoOperacao;
-}
-
-export type DespesaDTO = TransacaoFinanceiraDTO & {
-  beneficiado: PessoaBase;
-  descricao: string;
-};
-
-export type TransacaoRelatorioWrapperDTO = {
-  origem: 'EVENTO_CONFIRMADO' | 'DESPESA_GERAL';
-  dados: DespesaDTO;
-};
 
 export type RelatorioFinanceiroSafraDTO = {
   custoTotal: number;

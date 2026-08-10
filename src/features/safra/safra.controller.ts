@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import SafraService from './safra.service';
-import { BuscarRelatorioFinanceiroDTO, BuscarTodosEventosDTO, BuscarTodosEventosTalhaoDTO, ObterCustoSafraDTO } from './safra.dto';
+import { BuscarRelatorioFinanceiroSafraDTO, BuscarTodosEventosDTO, BuscarTodosEventosTalhaoDTO, ObterCustoSafraDTO } from './safra.dto';
 
 class SafraController {
     constructor(private readonly safraService: SafraService) {};
@@ -202,7 +202,7 @@ class SafraController {
     if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
 
     try {
-      const dto: BuscarRelatorioFinanceiroDTO = {
+      const dto: BuscarRelatorioFinanceiroSafraDTO = {
         idPropriedade: Number(req.params.id),
         idSafra: Number(req.params.idSafra)
       };

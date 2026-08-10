@@ -10,17 +10,16 @@ import {
   EventoRelatorioDTO,
   TratoCulturalDTO,
   BuscarTodosEventosTalhaoDTO,
-  DespesaDTO,
-  TransacaoRelatorioWrapperDTO,
-  BuscarRelatorioFinanceiroDTO,
-  RelatorioFinanceiroSafraDTO,
   ReativarSafraDTO,
   ObterCustoSafraDTO,
   CustoSafraDTO,
+  BuscarRelatorioFinanceiroSafraDTO,
+  RelatorioFinanceiroSafraDTO,
 } from "./safra.dto";
 import { PrismaClient } from "@prisma/client";
 import TratoCulturalRepository from "../tratocultural/tratocultural.repository";
 import DespesaRepository from "../despesa/despesa.repository";
+import { TransacaoRelatorioWrapperDTO } from "../transacaofinanceira/transacaofinanceira.dto";
 
 export class SafraService {
   constructor(
@@ -152,7 +151,7 @@ public async reativarSafra(idSafra: number, idPropriedadeRequisicao?: number): P
 
   // ---- Relatórios -----
 
-  public async gerarRelatorioFinanceiro(dto: BuscarRelatorioFinanceiroDTO, idUsuarioSessao: number): Promise<RelatorioFinanceiroSafraDTO> {
+  public async gerarRelatorioFinanceiro(dto: BuscarRelatorioFinanceiroSafraDTO, idUsuarioSessao: number): Promise<RelatorioFinanceiroSafraDTO> {
     const propriedade = await this.propriedadeRepo.buscarPorId(dto.idPropriedade);
     if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
     if (propriedade.idProprietario !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
@@ -167,7 +166,7 @@ public async reativarSafra(idSafra: number, idPropriedadeRequisicao?: number): P
       
       const [despesasEventos, despesasGerais] = await Promise.all([
         this.despesaRepo.listarDespesasEventosConfirmadosSafra(dto.idSafra, dto.idPropriedade, tx),
-        this.despesaRepo.listarDespesasGeraisPorPeriodo(dto.idPropriedade, safra.dataInicio, limiteFim, tx)
+        this.despesaRepo.listarDespesasGerais(dto.idPropriedade, safra.dataInicio, limiteFim, tx)
       ]);
 
       const transacoesFormatadas: TransacaoRelatorioWrapperDTO[] = [];
@@ -225,7 +224,7 @@ public async reativarSafra(idSafra: number, idPropriedadeRequisicao?: number): P
       
       const [despesasEventos, despesasGerais] = await Promise.all([
         this.despesaRepo.listarDespesasEventosConfirmadosSafra(dto.idSafra, dto.idPropriedade, tx),
-        this.despesaRepo.listarDespesasGeraisPorPeriodo(dto.idPropriedade, safra.dataInicio, limiteFim, tx)
+        this.despesaRepo.listarDespesasGerais(dto.idPropriedade, safra.dataInicio, limiteFim, tx)
       ]);
 
       let custoTotal = 0;
