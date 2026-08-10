@@ -87,7 +87,7 @@ class Formatador {
 
    /**
    * Normaliza uma string convertendo para minúsculas, removendo acentos,
-   * removendo padrões de data (ano/mês ou mês/ano), removendo espaços,
+   * removendo espaços,
    * e analisando os números matematicamente para remover zeros à esquerda.
    * 
    * Exemplos:
@@ -95,14 +95,11 @@ class Formatador {
    * "talhao 1"            -> "talhao1"
    * "Talhão 001"          -> "talhao1"
    * "Talhao1"             -> "talhao1"
-   * "Talhão 01 2026/05"   -> "talhao1"
-   * "Talhão 1 05-2026"    -> "talhao1"
    */
   public static normalizarNome(nome: string): string {
     return nome
       .toLowerCase()
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove acentos
-      .replace(/\b(?:\d{4}[\/-]\d{2}|\d{2}[\/-]\d{4})\b/g, '') // Remove formatos de data (ex: 2026/05 ou 05-2026)
       .replace(/\s+/g, '') // Remove todos os espaços em branco
       .replace(/\d+/g, (match) => parseInt(match, 10).toString()); // Remove zeros à esquerda dos números restantes
   }
