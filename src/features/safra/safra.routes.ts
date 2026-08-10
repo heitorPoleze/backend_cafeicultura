@@ -52,7 +52,6 @@ router.get(
   ],
   safraController.relatorioFinanceiro.bind(safraController)
 );
-
 router.get(
   '/propriedade/:id/safra/:idSafra/eventos',
   exigeLogin(),
