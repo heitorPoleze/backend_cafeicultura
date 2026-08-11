@@ -407,10 +407,6 @@ class TratoCulturalRepository {
     });
   };
 
-  public async inserirResponsaveis(trato: TratoCultural): Promise<void> {
-    await this.eventoRepo.inserirResponsaveis(trato);
-  };
-
   public async finalizarTrato(trato: TratoCultural): Promise<void> {
     await this.eventoRepo.finalizar(trato);
   };
@@ -419,12 +415,12 @@ class TratoCulturalRepository {
     await this.eventoRepo.confirmar(trato);
   };
 
-  public async excluirTransacoes(trato: TratoCultural): Promise<void> {
-    await this.eventoRepo.excluirTransacoes(trato);
+  public async editarResponsaveis(trato: TratoCultural): Promise<void> {
+    await this.eventoRepo.editarResponsaveis(trato, this.prisma);
   };
 
-  public async excluirResponsaveis(trato: TratoCultural): Promise<void> {
-    await this.eventoRepo.excluirResponsaveis(trato);
+  public async excluirTransacoes(trato: TratoCultural): Promise<void> {
+    await this.eventoRepo.excluirTransacoes(trato);
   };
 
   public async excluirInsumos(trato: TratoCultural): Promise<void> {

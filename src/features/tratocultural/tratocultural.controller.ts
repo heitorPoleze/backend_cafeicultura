@@ -3,9 +3,8 @@ import { validationResult } from 'express-validator';
 import TratoCulturalService from './tratocultural.service';
 import {
   AtualizarDescricaoDTO, BuscarTratoPorIdDTO, CadastrarTratoCulturalDTO,
-  ConfirmarTratoCulturalDTO, ExcluirInsumosTratoDTO, ExcluirResponsaveisTratoDTO,
-  ExcluirTransacoesTratoDTO, FinalizarTratoCulturalDTO, InserirInsumosTratoDTO,
-  InserirResponsaveisTratoDTO, ListarTratoPorPropriedadeDTO, ListarTratoPorSafraDTO,
+  ConfirmarTratoCulturalDTO, EditarResponsaveisTratoDTO, ExcluirInsumosTratoDTO,
+  ExcluirTransacoesTratoDTO, FinalizarTratoCulturalDTO, InserirInsumosTratoDTO, ListarTratoPorPropriedadeDTO, ListarTratoPorSafraDTO,
   ListarTratoPorTalhaoDTO
 } from './tratocultural.dto';
 import { TipoTrato } from './tratocultural.entity';
@@ -124,11 +123,11 @@ class TratoCulturalController {
     }
   }
 
-  public async inserirResponsaveis(req: Request, res: Response) {
+  public async editarResponsaveis(req: Request, res: Response) {
     try {
-      const dto: InserirResponsaveisTratoDTO = { idTrato: Number(req.params.id), responsaveisIds: req.body.responsaveisIds };
-      await this.tratoCulturalService.inserirResponsaveis(dto, req.session.idUsuario!);
-      res.status(201).json({ mensagem: 'Novos responsáveis inseridos com sucesso' });
+      const dto: EditarResponsaveisTratoDTO = { idTrato: Number(req.params.id), responsaveisIds: req.body.responsaveisIds };
+      await this.tratoCulturalService.editarResponsaveis(dto, req.session.idUsuario!);
+      res.status(201).json({ mensagem: 'Responsáveis editados com sucesso' });
     } catch (error: unknown) {
       this.handleError(res, error, 'Erro ao inserir responsáveis');
     }
@@ -151,16 +150,6 @@ class TratoCulturalController {
       res.status(200).json({ mensagem: 'Transações excluídas com sucesso' });
     } catch (error: unknown) {
       this.handleError(res, error, 'Erro ao excluir transações');
-    }
-  }
-
-  public async excluirResponsaveis(req: Request, res: Response) {
-    try {
-      const dto: ExcluirResponsaveisTratoDTO = { idTrato: Number(req.params.id), idResponsaveis: req.body.idResponsaveis };
-      await this.tratoCulturalService.excluirResponsaveis(dto, req.session.idUsuario!);
-      res.status(200).json({ mensagem: 'Responsáveis excluídos com sucesso' });
-    } catch (error: unknown) {
-      this.handleError(res, error, 'Erro ao excluir responsáveis');
     }
   }
 

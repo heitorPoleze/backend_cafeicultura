@@ -60,7 +60,7 @@ export type InserirInsumosTratoDTO = {
   }[];
 }
 
-export type InserirResponsaveisTratoDTO = {
+export type EditarResponsaveisTratoDTO = {
   idTrato: number;
   responsaveisIds: number[];
 }
@@ -68,11 +68,6 @@ export type InserirResponsaveisTratoDTO = {
 export type ExcluirInsumosTratoDTO = {
   idTrato: number;
   idInsumos: number[];
-}
-
-export type ExcluirResponsaveisTratoDTO = {
-  idTrato: number;
-  idResponsaveis: number[];
 }
 
 export type ExcluirTransacoesTratoDTO = {

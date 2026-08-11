@@ -6,7 +6,7 @@ class EventoRepository {
   constructor(
     private prisma: PrismaClient,
     private despesaRepo: DespesaRepository
-  ) {};
+  ) { };
 
   public async cadastrar(
     evento: Evento,
@@ -24,14 +24,14 @@ class EventoRepository {
         pessoaseventos:
           evento.responsaveis && evento.responsaveis.length > 0
             ? {
-                createMany: {
-                  data: evento.responsaveis
-                    .filter((resp) => resp.id !== undefined)
-                    .map((resp) => ({
-                      idPessoa_PFK: resp.id as number,
-                    })),
-                },
-              }
+              createMany: {
+                data: evento.responsaveis
+                  .filter((resp) => resp.id !== undefined)
+                  .map((resp) => ({
+                    idPessoa_PFK: resp.id as number,
+                  })),
+              },
+            }
             : undefined,
         confirmado: evento.confirmado ? 1 : 0,
       },
@@ -48,7 +48,7 @@ class EventoRepository {
     await client.eventos.update({
       where: { idEvento_PK: evento.id },
       data: { descricao: evento.descricao },
-    });   
+    });
   };
 
   public async finalizar(
@@ -81,29 +81,44 @@ class EventoRepository {
     });
   };
 
-  public async inserirResponsaveis(evento: Evento): Promise<void> {
-    if (!evento.responsaveis || evento.responsaveis.length === 0) {
-      return;
-    };
+  public async editarResponsaveis(evento: Evento, tx: Prisma.TransactionClient): Promise<void> {
+    if (!evento.id) throw new Error("ID_OBRIGATORIO");
 
-    await this.prisma.pessoaseventos.createMany({
-      data: evento.responsaveis.map((resp) => ({
-        idPessoa_PFK: resp.id as number,
-        idEvento_PFK: evento.id as number,
-      })),
-    });
-  };
+    const responsaveisIncomingIds = evento.responsaveis 
+      ? evento.responsaveis.map((resp) => resp.id as number) 
+      : [];
 
-  public async excluirResponsaveis(evento: Evento, tx?: Prisma.TransactionClient): Promise<void> {
-    const client = tx || this.prisma;
-
-    await client.pessoaseventos.deleteMany({
-      where: { 
+    await tx.pessoaseventos.deleteMany({
+      where: {
         idEvento_PFK: evento.id,
-        idPessoa_PFK: { notIn: evento.responsaveis!.map((resp) => resp.id as number) }
+        ...(responsaveisIncomingIds.length > 0 && {
+          idPessoa_PFK: { notIn: responsaveisIncomingIds }
+        })
       },
     });
-  };
+
+    if (responsaveisIncomingIds.length === 0) {
+      return;
+    }
+
+    const registrosExistentes = await tx.pessoaseventos.findMany({
+      where: { idEvento_PFK: evento.id },
+      select: { idPessoa_PFK: true }
+    });
+    
+    const idsNoBanco = registrosExistentes.map(reg => reg.idPessoa_PFK);
+
+    const idsParaCriar = responsaveisIncomingIds.filter(id => !idsNoBanco.includes(id));
+
+    if (idsParaCriar.length > 0) {
+      await tx.pessoaseventos.createMany({
+        data: idsParaCriar.map(idPessoa => ({
+          idEvento_PFK: evento.id!,
+          idPessoa_PFK: idPessoa,
+        })),
+      });
+    }
+  }
 };
 
 export default EventoRepository;
