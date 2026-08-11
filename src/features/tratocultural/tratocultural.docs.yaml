@@ -283,8 +283,8 @@ paths:
 
   /api/v1/tratosculturais/{id}/responsaveis:
     patch:
-      summary: Adiciona novos responsáveis
-      description: Insere novos colaboradores/funcionários como responsáveis pelo trato cultural.
+      summary: Edita os responsáveis
+      description: Edita os responsáveis pelo trato cultural.
       tags: 
         - Tratos Culturais
       security:
@@ -311,43 +311,11 @@ paths:
                   example: [2, 7]
       responses:
         '201':
-          description: Novos responsáveis inseridos com sucesso.
+          description: Responsáveis editados com sucesso
         '400':
-          description: Erro de validação.
+          description: Erro de validação
         '404':
-          description: Trato Cultural ou Pessoa não encontrada.
-    delete:
-      summary: Remove responsáveis
-      description: Remove os colaboradores especificados da lista de responsáveis do trato cultural.
-      tags: 
-        - Tratos Culturais
-      security:
-        - cookieAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - idResponsaveis
-              properties:
-                idResponsaveis:
-                  type: array
-                  items:
-                    type: integer
-                  example: [2, 7]
-      responses:
-        '200':
-          description: Responsáveis excluídos com sucesso.
-        '404':
-          description: Trato Cultural não encontrado.
+          description: Trato Cultural ou Pessoa não encontrada
 
   /api/v1/tratosculturais/{id}/insumos:
     patch:

@@ -68,14 +68,10 @@ abstract class Evento {
 
     public set descricao(descricao: string) { this._descricao = descricao; };
     
-    public inserirResponsaveis(responsaveis: Pessoa[]): void {
+    public editarResponsaveis(responsaveis: Pessoa[]): void {
         if (!this._responsaveis)
             this._responsaveis = [];
         this._responsaveis = responsaveis;
-    };
-
-    public excluirResponsaveis(idResponsaveis: number[]): void {
-        this._responsaveis = this._responsaveis?.filter(responsavel => !idResponsaveis.includes(responsavel.id as number));
     };
 
     public excluirTransacoes(idTransacoes: number[]): void {

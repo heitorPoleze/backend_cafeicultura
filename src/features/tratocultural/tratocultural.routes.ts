@@ -153,7 +153,7 @@ router.patch(
     body('responsaveisIds').isArray().withMessage('Os responsáveis devem ser enviados em formato de lista.'),
     body('responsaveisIds.*').isInt({ gt: 0 }).withMessage('ID de responsável inválido.')
   ],
-  tratoCulturalController.inserirResponsaveis.bind(tratoCulturalController)
+  tratoCulturalController.editarResponsaveis.bind(tratoCulturalController)
 );
 
 router.patch(
@@ -177,17 +177,6 @@ router.delete(
     body('idTransacoes.*').isInt({ gt: 0 })
   ],
   tratoCulturalController.excluirTransacoes.bind(tratoCulturalController)
-);
-
-router.delete(
-  '/:id/responsaveis',
-  exigeLogin(),
-  [
-    param('id').isInt({ gt: 0 }),
-    body('idResponsaveis').isArray().withMessage('idResponsaveis deve ser um array.'),
-    body('idResponsaveis.*').isInt({ gt: 0 })
-  ],
-  tratoCulturalController.excluirResponsaveis.bind(tratoCulturalController)
 );
 
 router.delete(

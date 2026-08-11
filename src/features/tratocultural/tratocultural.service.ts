@@ -6,12 +6,11 @@ import {
   BuscarTratoPorIdDTO,
   CadastrarTratoCulturalDTO,
   ConfirmarTratoCulturalDTO,
+  EditarResponsaveisTratoDTO,
   ExcluirInsumosTratoDTO,
-  ExcluirResponsaveisTratoDTO,
   ExcluirTransacoesTratoDTO,
   FinalizarTratoCulturalDTO,
   InserirInsumosTratoDTO,
-  InserirResponsaveisTratoDTO,
   ListarTratoPorPropriedadeDTO,
   ListarTratoPorSafraDTO,
   ListarTratoPorTalhaoDTO,
@@ -103,7 +102,7 @@ class TratoCulturalService {
     await this.tratoCulturalRepo.atualizarDescricao(trato);
   }
 
-  public async inserirResponsaveis(dto: InserirResponsaveisTratoDTO, idUsuarioSessao: number): Promise<void> {   
+  public async editarResponsaveis(dto: EditarResponsaveisTratoDTO, idUsuarioSessao: number): Promise<void> {   
     const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);
     
     const responsaveis: Pessoa[] = await Promise.all(
@@ -114,8 +113,8 @@ class TratoCulturalService {
       })
     );
 
-    trato.inserirResponsaveis(responsaveis);
-    await this.tratoCulturalRepo.inserirResponsaveis(trato);
+    trato.editarResponsaveis(responsaveis);
+    await this.tratoCulturalRepo.editarResponsaveis(trato);
   }
 
   public async inserirInsumos(dto: InserirInsumosTratoDTO, idUsuarioSessao: number): Promise<void> {   
@@ -178,12 +177,6 @@ class TratoCulturalService {
     const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);
     trato.excluirTransacoes(dto.idTransacoes);
     await this.tratoCulturalRepo.excluirTransacoes(trato);
-  }
-
-  public async excluirResponsaveis(dto: ExcluirResponsaveisTratoDTO, idUsuarioSessao: number): Promise<void> {
-    const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);
-    trato.excluirResponsaveis(dto.idResponsaveis);
-    await this.tratoCulturalRepo.excluirResponsaveis(trato);
   }
 
   public async excluirInsumos(dto: ExcluirInsumosTratoDTO, idUsuarioSessao: number): Promise<void> {
