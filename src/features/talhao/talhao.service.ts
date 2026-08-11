@@ -76,7 +76,7 @@ class TalhaoService {
       return await this.repository.cadastrar(novoTalhao, dto.variedadesIds, tx);
     });
   };
-
+ 
   public async buscarVariedades(): Promise<VariedadesDTO[]> {
     return await this.repository.buscarVariedades();
   };
@@ -86,7 +86,10 @@ class TalhaoService {
     if (!talhao) {
       throw new Error('NAO_ENCONTRADO');
     };
-
+    const eventosPosteriores = await this.repository.buscarEventosPosterioresEncerramento(dto.id, dto.dataFim);
+    if (eventosPosteriores.length > 0) {
+      throw new Error('EXISTE_EVENTO_POSTERIOR_AO_ENCERRAMENTO');
+    }
     const propriedade = await this.propriedadeRepo.buscarPorId(talhao.idPropriedade);
     if (!propriedade) {
       throw new Error('PROPRIEDADE_NAO_ENCONTRADA');

@@ -28,7 +28,7 @@ export class TalhaoController {
           return res.status(404).json({ error: 'Propriedade não encontrada' });
         } else if (error.message === 'ACESSO_NEGADO') {
           return res.status(401).json({ error: 'Acesso negado! Não foi possível cadastrar talhão' });
-        };
+        }
         return res.status(400).json({ error: error.message });
       };
       return res.status(500).json({ error: 'Erro ao cadastrar talhão' });
@@ -70,7 +70,9 @@ export class TalhaoController {
         } else if (error.message === 'NAO_ENCONTRADO') {
           return res.status(404).json({ error: 'Talhão nao encontrado' });
         } else if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
-          return res.status(403).json({ error: 'Propriedade do talhão não encontrada' });
+          return res.status(404).json({ error: 'Propriedade do talhão não encontrada' });
+        } else if (error.message === 'EXISTE_EVENTO_POSTERIOR_AO_ENCERRAMENTO'){
+          return res.status(409).json({ error: 'Não é possível cadastrar talhão pois existe eventos em aberto relacionados a este talhão posteriores a data de encerramento.' });
         }
         return res.status(400).json({ error: error.message });
       };

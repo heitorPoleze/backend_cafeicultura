@@ -73,6 +73,24 @@ class TalhaoRepository {
 
     return talhoesDb.map((db) => this.mapToDomain(db));
   }
+public async buscarEventosPosterioresEncerramento(
+  talhaoId: number,
+  dataFechamento: Date,
+) {
+  const eventosPosteriores = await this.prisma.eventosagricolas.findMany({
+    where: {
+      idTalhao_FK: talhaoId,
+      eventos: {
+        dataInicio: { gt: dataFechamento },
+      },
+    },
+    include: {
+      eventos: true,
+    },
+  });
+
+  return eventosPosteriores;
+}
 
   public async buscarFinalizadosPorPropriedade(
     idPropriedade: number, pagina: number, limite: number
@@ -118,7 +136,7 @@ class TalhaoRepository {
           include: { variedades: true },
         },
       },
-      
+
       skip: (pagina - 1) * limite,
       take: limite,
     });
@@ -178,11 +196,9 @@ class TalhaoRepository {
       }
       throw error;
     }
-  } 
-  
-  public async buscarVariedades(): Promise<
-    { id: number; descricao: string; especie: Especie }[]
-  > {
+  }
+
+  public async buscarVariedades(): Promise<{ id: number; descricao: string; especie: Especie }[]> {
     const variedades = await this.prisma.variedades.findMany();
 
     return variedades.map((variedade) => ({
