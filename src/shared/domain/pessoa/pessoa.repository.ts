@@ -141,7 +141,18 @@ class PessoaRepository {
       );
     });
   }
-
+  public async verificarInscricaoEstadualExistente(ie: string,idProprietario: number): Promise<boolean> {
+    const existe = await this.prisma.pessoasjuridicas.findUnique({
+      where: { inscEstadual: ie,
+        idAdministrador_FK: idProprietario
+       },
+    });
+    if (existe) {
+      return true;
+    }else{
+      return false;
+    }
+  }
   private async resolverIdEnderecoDaPessoaEmTransacao(
     tx: Prisma.TransactionClient,
     pessoaId: number,

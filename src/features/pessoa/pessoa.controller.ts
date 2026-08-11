@@ -24,7 +24,9 @@ class PessoaController {
           return res.status(409).json({ error: "CPF já cadastrado" });
         } else if (error.message === "CNPJ_EXISTENTE") {
           return res.status(409).json({ error: "CNPJ já cadastrado" });
-        };
+        } else if (error.message === "INSCRICAO_ESTADUAL_EXISTENTE") {
+          return res.status(409).json({ error: "Inscrição estadual já cadastrada" });
+        }
         return res.status(500).json({ error: error.message });
       };
     };
@@ -44,7 +46,12 @@ class PessoaController {
       if (error instanceof Error) {
         if (error.message === "CPF_EXISTENTE") {
           return res.status(409).json({ error: "CPF já cadastrado" });
+        }else if (error.message === "CNPJ_EXISTENTE") {
+          return res.status(409).json({ error: "CNPJ já cadastrado" });
+        } else if (error.message === "INSCRICAO_ESTADUAL_EXISTENTE") {
+          return res.status(409).json({ error: "Inscrição estadual já cadastrada" });
         }
+
         return res.status(500).json({ error: error.message });
       };
     }
@@ -64,7 +71,11 @@ class PessoaController {
       if (error instanceof Error) {
         if (error.message === "CPF_EXISTENTE") {
           return res.status(409).json({ error: "CPF já cadastrado" });
-        };
+        }else if (error.message === "CNPJ_EXISTENTE") {
+          return res.status(409).json({ error: "CNPJ já cadastrado" });
+        }else if (error.message === "INSCRICAO_ESTADUAL_EXISTENTE") {
+          return res.status(409).json({ error: "Inscrição estadual já cadastrada" });
+        }
         return res.status(500).json({ error: error.message });
       };
     };
@@ -114,6 +125,10 @@ class PessoaController {
       if (error instanceof Error) {
         if (error.message === "CPF_EXISTENTE") {
           return res.status(409).json({ error: "CPF já cadastrado" });
+        } else if (error.message === "CNPJ_EXISTENTE") {
+          return res.status(409).json({ error: "CNPJ já cadastrado" });
+        }else if (error.message === "INSCRICAO_ESTADUAL_EXISTENTE") {
+          return res.status(409).json({ error: "Inscrição estadual já cadastrada" });
         }
         return res.status(500).json({ error: error.message });
       };
@@ -136,7 +151,9 @@ class PessoaController {
         };
         if (error.message === "CNPJ_EXISTENTE") {
           return res.status(409).json({ error: "CNPJ já cadastrado" });
-        };
+        }else if (error.message === "INSCRICAO_ESTADUAL_EXISTENTE") {
+          return res.status(409).json({ error: "Inscrição estadual já cadastrada" });
+        }
         return res.status(500).json({ error: error.message });
       };
     };

@@ -58,9 +58,15 @@ class PessoaService {
       const cnpjExistente = await this.pessoaRepo.verificarCnpjExistente(
         dados.cnpj!,
       );
+      const inscricaoExistente = await this.pessoaRepo.verificarInscricaoEstadualExistente(
+        dados.inscrEstadual!,
+        dados.idAdministrador!
+      );
       if (cnpjExistente) {
         throw new Error(`CNPJ_EXISTENTE`);
-      };
+      }else if( inscricaoExistente){
+        throw new Error(`INSCRICAO_ESTADUAL_EXISTENTE`);
+      }
     };
   };
 
@@ -558,6 +564,12 @@ public async listarPessoas(dto: ListarPessoasDTO): Promise<ResultadoPaginacao<Pe
   public async atualizarInscricaoEstadual(novaIE:string,pessoaId:number){
     let resultado = await this.pessoaRepo.atualizarInscricaoEstadualPorPessoaId(pessoaId,novaIE)
     return resultado
+  }
+  public async verificarInscricaoEstadualExistente(ie:string,idAdministrador:number){
+    const ieExistente = await this.pessoaRepo.verificarInscricaoEstadualExistente(ie,idAdministrador)
+    if (ieExistente) {
+      throw new Error(`INSCRICAO_ESTADUAL_EXISTENTE`);
+    }
   }
 
   public async excluirCliente(dto: ExcluirPessoaDTO, idUsuarioSessao: number): Promise<void> {
