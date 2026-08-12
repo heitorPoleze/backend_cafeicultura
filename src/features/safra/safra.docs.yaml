@@ -127,6 +127,73 @@ paths:
         '404':
           description: Propriedade, safra não encontrada ou safra sem eventos.
 
+  paths:
+  /api/v1/safras/propriedade/{id}/safra/{idSafra}/eventos/tipo/{modulo}:
+    get:
+      summary: Linha do Tempo Filtrada por Tipo de Evento (Módulo)
+      description: Retorna uma lista de eventos de uma safra específica, restrita a um único módulo/macro-categoria (ex. apenas Tratos Culturais). Permite ao front-end quantificar instâncias de categorias operacionais específicas.
+      tags: 
+        - Safras
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID da Propriedade rural.
+        - in: path
+          name: idSafra
+          required: true
+          schema:
+            type: integer
+          description: ID da Safra a ser analisada.
+        - in: path
+          name: modulo
+          required: true
+          schema:
+            type: string
+          description: O módulo do evento desejado (ex. 'TRATO_CULTURAL').
+      responses:
+        '200':
+          description: Eventos retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - modulo
+                    - dados
+                  properties:
+                    modulo:
+                      type: string
+                      example: "TRATO_CULTURAL"
+                    dados:
+                      type: object
+                      description: O payload rigorosamente tipado da entidade filtrada (ex. TratoCulturalDTO).
+                      properties:
+                        id: { type: integer, example: 45 }
+                        idTalhao: { type: integer, example: 3 }
+                        dataInicio: { type: string, format: date-time }
+                        dataFim: { type: string, format: date-time, nullable: true }
+                        descricao: { type: string }
+                        dataCadastro: { type: string, format: date-time }
+                        safra: { type: object }
+                        tipoTrato: { type: string, example: "Capina" }
+                        insumosUtilizados: { type: array, items: { type: object } }
+                        transacoesFinanceiras: { type: array, items: { type: object } }
+                        responsaveis: { type: array, items: { type: object } }
+                        confirmado: { type: boolean, example: true }
+        '400':
+          description: Módulo informado é inválido.
+        '401':
+          description: Acesso negado. Usuário não é proprietário da fazenda.
+        '404':
+          description: Propriedade ou Safra não encontrada.
+
   /api/v1/safras/propriedade/{id}/safra/{idSafra}/talhao/{idTalhao}/eventos:
     get:
       summary: Relatório de eventos da safra por talhão

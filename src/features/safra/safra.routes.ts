@@ -54,6 +54,17 @@ router.get(
 );
 
 router.get(
+  '/propriedade/:id/safra/:idSafra/eventos/tipo/:modulo',
+  exigeLogin(),
+  [
+    param('id').isInt({ gt: 0 }).withMessage('ID da propriedade inválido.'),
+    param('idSafra').isInt({ gt: 0 }).withMessage('ID da safra inválido.'),
+    param('modulo').isString().notEmpty().withMessage('O tipo de evento (módulo) é obrigatório.')
+  ],
+  safraController.listarEventosPorModulo.bind(safraController)
+);
+
+router.get(
   '/propriedade/:id/safra/:idSafra/talhao/:idTalhao/eventos',
   exigeLogin(),
   [
