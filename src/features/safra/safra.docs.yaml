@@ -92,6 +92,80 @@ paths:
         '500':
           description: Erro interno inesperado ao cadastrar safra.
 
+  paths:
+  /api/v1/safras/propriedade/{id}/safra/{idSafra}/relatorio-financeiro:
+    get:
+      summary: Relatório Financeiro da Safra
+      description: Retorna o custo total da safra, agregando as despesas vinculadas a eventos confirmados e as despesas gerais da fazenda ocorridas estritamente dentro do período de duração da safra (timestamp).
+      tags: 
+        - Safras
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID da Propriedade rural.
+        - in: path
+          name: idSafra
+          required: true
+          schema:
+            type: integer
+          description: ID da Safra a ser analisada.
+      responses:
+        '200':
+          description: Relatório financeiro gerado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - custoTotal
+                  - transacoes
+                properties:
+                  custoTotal:
+                    type: number
+                    format: float
+                    description: Soma de todas as despesas vinculadas e gerais do período.
+                    example: 15450.75
+                  transacoes:
+                    type: array
+                    description: Lista encapsulada e ordenada cronologicamente de transações financeiras.
+                    items:
+                      type: object
+                      required:
+                        - origem
+                        - dados
+                      properties:
+                        origem: 
+                          type: string
+                          description: Metadado do relatório indicando a fonte da despesa.
+                          example: "EVENTO_CONFIRMADO"
+                          enum:
+                            - EVENTO_CONFIRMADO
+                            - DESPESA_GERAL
+                        dados:
+                          type: object
+                          description: O objeto DTO puro da Despesa gerado pela entidade.
+                          properties:
+                            id: { type: integer, example: 102 }
+                            idEvento: { type: integer, nullable: true }
+                            idPropriedade: { type: integer, example: 1 }
+                            dataHora: { type: string, format: date-time }
+                            valor: { type: number, format: float, example: 1200.50 }
+                            formaPagamento: { type: string, example: "PIX" }
+                            tipoOperacao: { type: string, example: "DESPESA" }
+                            descricao: { type: string, example: "Compra de Fertilizante NPK" }
+                            beneficiado: { type: object }
+        '400':
+          description: Erro de validação nos parâmetros.
+        '403':
+          description: Acesso negado. O usuário logado não é o proprietário da fazenda.
+        '404':
+          description: Propriedade, Safra ou Transações não encontradas.
+
   /api/v1/safras/propriedade/{id}/safra/{idSafra}/eventos:
     get:
       summary: Relatório unificado de eventos da safra

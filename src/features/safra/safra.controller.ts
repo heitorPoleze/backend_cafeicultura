@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import SafraService from './safra.service';
-import { BuscarEventosPorModuloDTO, BuscarTodosEventosDTO, BuscarTodosEventosTalhaoDTO } from '../evento/evento.dto';
+import { BuscarEventosPorModuloDTO,BuscarTodosEventosDTO, BuscarTodosEventosTalhaoDTO } from '../evento/evento.dto';
+import { BuscarRelatorioFinanceiroDTO } from './safra.dto';
 
 class SafraController {
     constructor(private readonly safraService: SafraService) {};
@@ -162,6 +163,43 @@ class SafraController {
   };
 
   // ---- Relatórios -----
+
+  public async relatorioFinanceiro(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
+
+    try {
+      const dto: BuscarRelatorioFinanceiroDTO = {
+        idPropriedade: Number(req.params.id),
+        idSafra: Number(req.params.idSafra)
+      };
+      
+      const relatorio = await this.safraService.gerarRelatorioFinanceiro(dto, req.session.idUsuario!);
+      
+      res.status(200).json(relatorio);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === 'SEM_TRANSACOES') {
+          return res.status(404).json({ error: 'Safra não possui transações' });
+        }
+        if (error.message === 'NAO_ENCONTRADA') {
+          return res.status(404).json({ error: 'Safra não encontrada' });
+        }
+        if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
+          return res.status(404).json({ error: 'Propriedade não encontrada' });
+        }
+        if (error.message === 'ACESSO_NEGADO') {
+          return res.status(403).json({ error: 'Acesso negado à propriedade' });
+        }
+        if (error.message === 'SAFRA_NAO_PERTENCE_PROPRIEDADE') {
+          return res.status(403).json({ error: 'A safra informada não pertence a esta propriedade' });
+        }
+        return res.status(400).json({ error: error.message });
+      }
+      return res.status(500).json({ error: 'Erro interno ao gerar o relatório financeiro' });
+    }
+  }
+  
   public async relatorioEventosSafra(req: Request, res: Response) {
     const erros = validationResult(req);
     if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
