@@ -91,8 +91,51 @@ paths:
           description: "Erro de processamento: duas safras ativas ou data inicial futura."
         '500':
           description: Erro interno inesperado ao cadastrar safra.
+  
+  /api/v1/safras/propriedade/{id}/safra/{idSafra}/custo:
+    get:
+      summary: Custo Atual da Safra (Widget do Dashboard)
+      description: Retorna estritamente o valor consolidado do custo atual da safra, reutilizando a regra de negócios do relatório financeiro. Otimizado para consumo rápido por widgets de dashboard.
+      tags: 
+        - Dashboard
+        - Safras
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID da Propriedade rural.
+        - in: path
+          name: idSafra
+          required: true
+          schema:
+            type: integer
+          description: ID da Safra ativa no dashboard.
+      responses:
+        '200':
+          description: Custo calculado e retornado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  custoTotal:
+                    type: number
+                    format: float
+                    description: Custo financeiro total da safra até o momento.
+                    example: 15450.75
+        '400':
+          description: Safra não pertence a propriedade.
+        '403':
+          description: Acesso negado.
+        '404':
+          description: Propriedade ou Safra não encontradas.
+        '500':
+          description: Erro interno inesperado ao calcular custo.
 
-  paths:
   /api/v1/safras/propriedade/{id}/safra/{idSafra}/relatorio-financeiro:
     get:
       summary: Relatório Financeiro da Safra
@@ -196,7 +239,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/EventoSafraResponse'
-        '401':
+        '403':
           description: Acesso negado à propriedade.
         '404':
           description: Propriedade, safra não encontrada ou safra sem eventos.
@@ -304,7 +347,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/EventoSafraResponse'
-        '401':
+        '403':
           description: Acesso negado à propriedade.
         '404':
           description: Propriedade, safra ou talhão não encontrado, ou sem eventos.

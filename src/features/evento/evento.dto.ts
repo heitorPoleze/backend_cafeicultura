@@ -12,22 +12,6 @@ export type BuscarEventosPropriedadeDTO = {
   limite: number;
 }
 
-export type BuscarTodosEventosDTO = {
-  idPropriedade: number;
-  idSafra: number;
-}
-
-export type BuscarEventosPorModuloDTO = {
-  idPropriedade: number;
-  idSafra: number;
-  modulo: string;
-}
-
-export type BuscarTodosEventosTalhaoDTO = {
-  idSafra: number;
-  idPropriedade: number;
-  idTalhao: number;
-}
 
 export type EventoDTO = {
   id: number | undefined;

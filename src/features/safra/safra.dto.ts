@@ -33,10 +33,26 @@ export type ReativarSafraDTO = {
   dataInicio: Date;
   dataFim: null;
   }
+
+export type ObterCustoSafraDTO ={
+  idPropriedade: number;
+  idSafra: number;
+}
+
+export type CustoSafraDTO ={
+  custoTotal: number;
+}
+  
 // ----- Relatórios -----
 export type BuscarTodosEventosDTO = {
   idPropriedade: number;
   idSafra: number;
+}
+
+export type BuscarEventosPorModuloDTO = {
+  idPropriedade: number;
+  idSafra: number;
+  modulo: string;
 }
 
 export type BuscarRelatorioFinanceiroDTO = {
@@ -49,27 +65,6 @@ export type BuscarTodosEventosTalhaoDTO = {
   idPropriedade: number;
   idTalhao: number;
 }
-
-export type EventoDTO = {
-  id: number | undefined;
-  idTalhao: number;
-  dataInicio: Date;
-  dataFim: Date | null;
-  descricao: string;
-  dataCadastro: Date;
-  safra: Safra;
-  transacoesFinanceiras: Despesa[] | undefined;
-  responsaveis: Pessoa[] | undefined;
-  confirmado: boolean | undefined;
-}
-
-export type TratoCulturalDTO = EventoDTO & {
-  tipoTrato: TipoTrato;
-  insumosUtilizados: TratoInsumo[] | undefined;
-}
-
-export type EventoRelatorioDTO = 
-  | { modulo: 'TRATO_CULTURAL'; dados: TratoCulturalDTO }
 
 export type TransacaoFinanceiraDTO = {
   id: number | undefined;

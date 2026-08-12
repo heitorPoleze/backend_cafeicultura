@@ -135,9 +135,10 @@ class DespesaRepository {
         transacoesfinanceiras: {
           idPropriedade_FK: idPropriedade,
           eventos: {
-          safras: {
-            idSafra_PK: idSafra,
-          },
+            confirmado: 1,
+            safras: {
+              idSafra_PK: idSafra,
+           },
         },
         }
       },

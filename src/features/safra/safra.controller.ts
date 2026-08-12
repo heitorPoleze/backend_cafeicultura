@@ -1,8 +1,7 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import SafraService from './safra.service';
-import { BuscarEventosPorModuloDTO,BuscarTodosEventosDTO, BuscarTodosEventosTalhaoDTO } from '../evento/evento.dto';
-import { BuscarRelatorioFinanceiroDTO } from './safra.dto';
+import { BuscarEventosPorModuloDTO, BuscarRelatorioFinanceiroDTO, BuscarTodosEventosDTO, BuscarTodosEventosTalhaoDTO, ObterCustoSafraDTO } from './safra.dto';
 
 class SafraController {
     constructor(private readonly safraService: SafraService) {};
@@ -164,6 +163,40 @@ class SafraController {
 
   // ---- Relatórios -----
 
+
+  public async custoAtualSafra(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
+
+    try {
+      const dto: ObterCustoSafraDTO = {
+        idPropriedade: Number(req.params.id),
+        idSafra: Number(req.params.idSafra)
+      };
+      
+      const resultado = await this.safraService.obterCustoSafra(dto, req.session.idUsuario!);
+      
+      res.status(200).json(resultado);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === 'NAO_ENCONTRADA') {
+          return res.status(404).json({ error: 'Safra não encontrada' });
+        }
+        if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
+          return res.status(404).json({ error: 'Propriedade não encontrada' });
+        }
+        if (error.message === 'ACESSO_NEGADO') {
+          return res.status(403).json({ error: 'Acesso negado à propriedade' });
+        }
+        if (error.message === 'SAFRA_NAO_PERTENCE_PROPRIEDADE') {
+          return res.status(400).json({ error: 'A safra informada não pertence a esta propriedade' });
+        }
+        return res.status(400).json({ error: error.message });
+      }
+      return res.status(500).json({ error: 'Erro interno ao buscar custo da safra para o dashboard' });
+    }
+  }
+
   public async relatorioFinanceiro(req: Request, res: Response) {
     const erros = validationResult(req);
     if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
@@ -224,7 +257,7 @@ class SafraController {
           return res.status(404).json({ error: 'Propriedade não encontrada' });
         };
         if (error.message === 'ACESSO_NEGADO') {
-          return res.status(401).json({ error: 'Acesso negado à propriedade' });
+          return res.status(403).json({ error: 'Acesso negado à propriedade' });
         };
         return res.status(400).json({ error: error.message });
       }
@@ -313,7 +346,7 @@ public async reativarSafra(req: Request, res: Response) {
           return res.status(404).json({ error: 'Propriedade não encontrada' });
         }
         if (error.message === 'ACESSO_NEGADO') {
-          return res.status(401).json({ error: 'Acesso negado à propriedade' });
+          return res.status(403).json({ error: 'Acesso negado à propriedade' });
         }
         return res.status(400).json({ error: error.message });
       }
