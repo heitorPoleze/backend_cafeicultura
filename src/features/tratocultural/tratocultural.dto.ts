@@ -77,7 +77,14 @@ export type ExcluirTransacoesTratoDTO = {
 
 export type BuscarTratoPorIdDTO = { idTrato: number };
 
-export type ListarTratoPorPropriedadeDTO = { idPropriedade: number };
+export type ListarTratoPorPropriedadeDTO = { 
+  idPropriedade: number 
+  dataInicio?: Date;
+  dataFim?: Date;
+  pagina: number;
+  limite: number;
+};
+
 export type ListarTratoPorSafraDTO = {
   idSafra: number;
   idPropriedade: number;

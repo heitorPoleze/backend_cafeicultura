@@ -136,11 +136,33 @@ class TratoCulturalService {
     return await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);
   }
 
-  public async listarTodosPropriedade(dto: ListarTratoPorPropriedadeDTO, idUsuarioSessao: number): Promise<ResponseTratoCulturalDTO[]> {
+  public async listarTodosPropriedade(
+    dto: ListarTratoPorPropriedadeDTO, 
+    idUsuarioSessao: number
+  ): Promise<{ tratos: ResponseTratoCulturalDTO[], total: number, totalPaginas: number, paginaAtual: number }> {
+    
     await this.validarAcessoPropriedade(dto.idPropriedade, idUsuarioSessao);
-    const tratos = await this.tratoCulturalRepo.listarTodosPropriedade(dto.idPropriedade);
+
+    const skip = (dto.pagina - 1) * dto.limite;
+
+    const { total, tratos } = await this.tratoCulturalRepo.listarTodosPropriedade(
+      dto.idPropriedade,
+      skip,
+      dto.limite,
+      dto.dataInicio,
+      dto.dataFim
+    );
+
+    const totalPaginas = Math.ceil(total / dto.limite);
+    
     if (!tratos || tratos.length === 0) throw new Error("TRATOS_NAO_ENCONTRADOS");
-    return tratos;
+
+    return { 
+      tratos: tratos, 
+      total, 
+      totalPaginas: totalPaginas === 0 ? 1 : totalPaginas,
+      paginaAtual: dto.pagina 
+    };
   }
 
   public async listarTodosSafra(dto: ListarTratoPorSafraDTO, idUsuarioSessao: number): Promise<ResponseTratoCulturalDTO[]> {

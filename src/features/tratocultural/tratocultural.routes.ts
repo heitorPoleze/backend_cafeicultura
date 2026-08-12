@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import exigeLogin from "../../shared/middlewares/exigeLogin"; 
 import TratoCulturalController from './tratocultural.controller';
 import TratoCulturalService from './tratocultural.service';
@@ -52,7 +52,11 @@ router.get(
   '/propriedade/:id',
   exigeLogin(),
   [
-    param('id').isInt({ gt: 0 }).withMessage('O ID da propriedade informado na URL é inválido.')
+    param('id').isInt({ gt: 0 }).withMessage('ID da propriedade inválido.'),
+    query('dataInicio').optional().isISO8601().withMessage('O formato da dataInicio deve ser yyyy-mm-dd.').withMessage('O formato da dataInicio deve ser yyyy-mm-dd.'),
+    query('dataFim').optional().isISO8601().withMessage('O formato da dataFim deve ser yyyy-mm-dd.'),
+    query('pagina').optional().isInt({ gt: 0 }).withMessage('A página deve ser maior que zero.'),
+    query('limite').optional().isInt({ gt: 0 }).withMessage('O limite deve ser maior que zero.')
   ],
   tratoCulturalController.listarTodosPropriedade.bind(tratoCulturalController)
 );

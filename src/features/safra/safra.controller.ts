@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import SafraService from './safra.service';
-import { BuscarEventosPorModuloDTO, BuscarTodosEventosDTO, BuscarTodosEventosTalhaoDTO } from './safra.dto';
+import { BuscarEventosPorModuloDTO, BuscarTodosEventosDTO, BuscarTodosEventosTalhaoDTO } from '../evento/evento.dto';
 
 class SafraController {
     constructor(private readonly safraService: SafraService) {};
@@ -23,7 +23,7 @@ class SafraController {
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === 'ACESSO_NEGADO') {
-          return res.status(403).json({ error: 'Acesso negado! Não foi possível cadastrar safra' });
+          return res.status(401).json({ error: 'Acesso negado! Não foi possível cadastrar safra' });
         } else if (error.message === 'NAO_ENCONTRADA') {
           return res.status(404).json({ error: 'Propriedade da safra não encontrada' });
         } else if (error.message === 'DUAS_ATIVAS') {
@@ -52,7 +52,7 @@ class SafraController {
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === 'ACESSO_NEGADO') {
-          return res.status(403).json({ error: 'Acesso negado! Não foi possível buscar safras' });
+          return res.status(401).json({ error: 'Acesso negado! Não foi possível buscar safras' });
         } else if (error.message === 'NAO_ENCONTRADA') {
           return res.status(404).json({ error: 'Propriedade não encontrada' });
         }
@@ -94,11 +94,11 @@ class SafraController {
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === 'ACESSO_NEGADO') {
-          return res.status(403).json({ error: 'Acesso negado! Não foi possível buscar safra' });
+          return res.status(401).json({ error: 'Acesso negado! Não foi possível buscar safra' });
         } else if (error.message === 'NAO_ENCONTRADA') {
           return res.status(404).json({ error: 'Safra nao encontrada' });
         } else if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
-          return res.status(403).json({ error: 'Propriedade da safra não encontrada' });
+          return res.status(404).json({ error: 'Propriedade da safra não encontrada' });
         };
         return res.status(500).json({ error: 'Erro interno inesperado ao buscar safra' });
       };
@@ -120,11 +120,11 @@ class SafraController {
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === 'ACESSO_NEGADO') {
-          return res.status(403).json({ error: 'Acesso negado! Não foi possível finalizar safra' });
+          return res.status(401).json({ error: 'Acesso negado! Não foi possível finalizar safra' });
         } else if (error.message === 'NAO_ENCONTRADA') {
           return res.status(404).json({ error: 'Safra não encontrada' });
         } else if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
-          return res.status(403).json({ error: 'Propriedade da safra não encontrada' });
+          return res.status(404).json({ error: 'Propriedade da safra não encontrada' });
         } else if (error.message === 'DATA_FIM_SUPERIOR') {
           return res.status(422).json({ error: 'Data fim superior ao dia atual' });
         } else if (error.message === 'DATA_FIM_ANTERIOR') {
@@ -148,7 +148,7 @@ class SafraController {
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === 'ACESSO_NEGADO') {
-          return res.status(403).json({ error: 'Acesso negado! Não foi possível excluir safra' });
+          return res.status(401).json({ error: 'Acesso negado! Não foi possível excluir safra' });
         } else if (error.message === 'NAO_ENCONTRADA') {
           return res.status(404).json({ error: 'Safra não encontrada' });
         } else if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {

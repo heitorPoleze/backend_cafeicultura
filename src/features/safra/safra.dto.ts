@@ -1,9 +1,3 @@
-import TratoInsumo from "../../shared/domain/insumo/tratoinsumo/tratoinsumo.entity";
-import Pessoa from "../../shared/domain/pessoa/pessoa.interface";
-import Despesa from "../despesa/despesa.entity";
-import { TipoTrato } from "../tratocultural/tratocultural.entity";
-import Safra from "./safra.entity";
-
 export type CadastrarSafraDTO = {
   idPropriedade: number;
   dataInicio: Date | string;
@@ -30,7 +24,6 @@ export type ReativarSafraDTO = {
   dataInicio: Date;
   dataFim: null;
   }
-  
 // ----- Relatórios -----
 export type BuscarTodosEventosDTO = {
   idPropriedade: number;
@@ -41,12 +34,6 @@ export type BuscarTodosEventosTalhaoDTO = {
   idSafra: number;
   idPropriedade: number;
   idTalhao: number;
-}
-
-export interface BuscarEventosPorModuloDTO {
-  idSafra: number;
-  idPropriedade: number;
-  modulo: string; // The macro category of the event, e.g., 'TRATO_CULTURAL'
 }
 
 export type EventoDTO = {

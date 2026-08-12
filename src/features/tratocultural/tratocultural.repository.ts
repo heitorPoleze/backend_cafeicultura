@@ -134,49 +134,75 @@ class TratoCulturalRepository {
 
   public async listarTodosPropriedade(
     idPropriedade: number,
-  ): Promise<TratoCultural[]> {
-    const tratos = await this.prisma.tratosculturais.findMany({
-      where: {
-        eventosagricolas: {
-          eventos: {
-            safras: {
-              idPropriedade_FK: idPropriedade,
-            },
+    skip: number,
+    take: number,
+    dataInicio?: Date,
+    dataFim?: Date,
+    tx: Prisma.TransactionClient = this.prisma
+  ): Promise<{ total: number; tratos: TratoCultural[] }> {
+
+    const whereClause: Prisma.tratosculturaisWhereInput = {
+      eventosagricolas: {
+        talhoes: {
+          idPropriedade_FK: idPropriedade,
+        },
+        eventos: {
+          dataInicio: {
+            ...(dataInicio && { gte: dataInicio }),
+            ...(dataFim && { lte: dataFim }),
           },
         },
       },
-      include: {
-        tipostratos: true,
-        tratosinsumos: {
-          include: {
-            insumos: true,
+    };
+
+    const [total, tratosDb] = await Promise.all([
+      tx.tratosculturais.count({ where: whereClause }),
+      tx.tratosculturais.findMany({
+        where: whereClause,
+        orderBy: {
+          eventosagricolas: {
+            eventos: {
+              dataInicio: 'desc',
+            },
           },
         },
-        eventosagricolas: {
-          include: {
-            eventos: {
-              include: {
-                safras: true,
-                pessoaseventos: {
-                  include: {
-                    pessoas: true,
+        skip,
+        take,
+        include: {
+          tipostratos: true,
+          tratosinsumos: {
+            include: {
+              insumos: true,
+            },
+          },
+          eventosagricolas: {
+            include: {
+              eventos: {
+                include: {
+                  safras: true,
+                  pessoaseventos: {
+                    include: {
+                      pessoas: true,
+                    },
                   },
-                },
-                transacoesfinanceiras: {
-                  include: {
-                    formaspgto: true,
-                    despesas: true,
+                  transacoesfinanceiras: {
+                    include: {
+                      formaspgto: true,
+                      despesas: true,
+                    },
                   },
                 },
               },
             },
           },
         },
-      },
-    });
+      }),
+    ]);
 
-    return await Promise.all(tratos.map((trato) => this.mapToEntity(trato)));
-  }
+    const tratosMapeados = await Promise.all(tratosDb.map((t) => this.mapToEntity(t, tx)));
+
+    return { total, tratos: tratosMapeados };
+  };
 
   public async listarTodosSafra(
     idSafra: number,
@@ -321,10 +347,10 @@ class TratoCulturalRepository {
     },
   });
 
-  return await Promise.all(
-    tratos.map((trato) => this.mapToEntity(trato, tx))
-  );
-}
+    return await Promise.all(
+      tratos.map((trato) => this.mapToEntity(trato, tx))
+    );
+  }
 
   public async buscarTiposTratos(): Promise<
     { id: number; descricao: string }[]

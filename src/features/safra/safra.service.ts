@@ -6,13 +6,15 @@ import {
   SafraRespostaDTO,
   ExcluirSafraDTO,
   FinalizarSafraDTO,
-  BuscarTodosEventosDTO,
-  EventoRelatorioDTO,
-  TratoCulturalDTO,
-  BuscarTodosEventosTalhaoDTO,
-  BuscarEventosPorModuloDTO,
-  ReativarSafraDTO,
 } from "./safra.dto";
+
+import { 
+  BuscarTodosEventosDTO, 
+  BuscarEventosPorModuloDTO,
+  BuscarTodosEventosTalhaoDTO, 
+  EventoRelatorioDTO, 
+  TratoCulturalDTO 
+} from "../evento/evento.dto";
 import { PrismaClient } from "@prisma/client";
 import TratoCulturalRepository from "../tratocultural/tratocultural.repository";
 
@@ -22,7 +24,7 @@ export class SafraService {
     private readonly safraRepository: SafraRepository,
     private readonly propriedadeRepo: PropriedadeRepository,
     private readonly tratoCulturalRepo: TratoCulturalRepository,
-  ) { }
+  ) {};
 
   public async cadastrar(dto: CadastrarSafraDTO, idUsuarioSessao: number): Promise<number> {
     const propriedade = await this.propriedadeRepo.buscarPorId(dto.idPropriedade);

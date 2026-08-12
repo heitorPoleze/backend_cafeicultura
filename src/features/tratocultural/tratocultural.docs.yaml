@@ -422,8 +422,8 @@ paths:
 
   /api/v1/tratosculturais/propriedade/{id}:
     get:
-      summary: Listar Tratos por Propriedade
-      description: Retorna todos os tratos culturais pertencentes a uma propriedade específica.
+      summary: Listar Tratos Culturais da Propriedade (Paginado e Filtrado)
+      description: Retorna uma lista paginada de tratos culturais de uma propriedade, ordenados do mais recente para o mais antigo, com suporte a filtros temporais opcionais.
       tags: 
         - Tratos Culturais
       security:
@@ -434,14 +434,46 @@ paths:
           required: true
           schema:
             type: integer
-          description: ID numérico da Propriedade.
+          description: ID da Propriedade.
+        - in: query
+          name: dataInicio
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: Data inicial do filtro temporal (ISO8601).
+        - in: query
+          name: dataFim
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: Data final do filtro temporal (ISO8601).
+        - in: query
+          name: pagina
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Número da página desejada.
+        - in: query
+          name: limite
+          required: false
+          schema:
+            type: integer
+            default: 25
+          description: Quantidade de registros por página.
       responses:
-        '200':
-          description: Lista de tratos retornada com sucesso.
+        '200': 
+          description: Lista de tratos culturais retornada com sucesso.
+        '400':
+          description: Erro de validação nos parâmetros enviados.
         '401':
-          description: Acesso negado.
+          description: Acesso negado. Usuário não tem permissão para a propriedade.
         '404':
-          description: Propriedade ou tratos culturais não encontrados.
+          description: tratos ou propriedade não encontrados.
+        '500':
+          description: Erro interno inesperado ao buscar tratos culturais.
 
   /api/v1/tratosculturais/propriedade/{id}/safra/{idSafra}:
     get:
