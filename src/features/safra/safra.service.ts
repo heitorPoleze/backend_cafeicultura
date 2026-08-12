@@ -8,14 +8,11 @@ import {
   FinalizarSafraDTO,
   BuscarTodosEventosDTO,
   BuscarTodosEventosTalhaoDTO,
-  DespesaDTO,
-  TransacaoRelatorioWrapperDTO,
-  BuscarRelatorioFinanceiroDTO,
-  RelatorioFinanceiroSafraDTO,
   ReativarSafraDTO,
   ObterCustoSafraDTO,
   CustoSafraDTO,
-  BuscarEventosPorModuloDTO,
+  BuscarRelatorioFinanceiroSafraDTO,
+  RelatorioFinanceiroSafraDTO,
 } from "./safra.dto";
 
 import { 
@@ -25,6 +22,7 @@ import {
 import { PrismaClient } from "@prisma/client";
 import TratoCulturalRepository from "../tratocultural/tratocultural.repository";
 import DespesaRepository from "../despesa/despesa.repository";
+import { TransacaoRelatorioWrapperDTO } from "../transacaofinanceira/transacaofinanceira.dto";
 
 export class SafraService {
   constructor(
@@ -156,7 +154,7 @@ public async reativarSafra(idSafra: number, idPropriedadeRequisicao?: number): P
 
   // ---- Relatórios -----
 
-  public async gerarRelatorioFinanceiro(dto: BuscarRelatorioFinanceiroDTO, idUsuarioSessao: number): Promise<RelatorioFinanceiroSafraDTO> {
+  public async gerarRelatorioFinanceiro(dto: BuscarRelatorioFinanceiroSafraDTO, idUsuarioSessao: number): Promise<RelatorioFinanceiroSafraDTO> {
     const propriedade = await this.propriedadeRepo.buscarPorId(dto.idPropriedade);
     if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
     if (propriedade.idProprietario !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
@@ -171,7 +169,7 @@ public async reativarSafra(idSafra: number, idPropriedadeRequisicao?: number): P
       
       const [despesasEventos, despesasGerais] = await Promise.all([
         this.despesaRepo.listarDespesasEventosConfirmadosSafra(dto.idSafra, dto.idPropriedade, tx),
-        this.despesaRepo.listarDespesasGeraisPorPeriodo(dto.idPropriedade, safra.dataInicio, limiteFim, tx)
+        this.despesaRepo.listarDespesasGerais(dto.idPropriedade, safra.dataInicio, limiteFim, tx)
       ]);
 
       const transacoesFormatadas: TransacaoRelatorioWrapperDTO[] = [];
@@ -229,7 +227,7 @@ public async reativarSafra(idSafra: number, idPropriedadeRequisicao?: number): P
       
       const [despesasEventos, despesasGerais] = await Promise.all([
         this.despesaRepo.listarDespesasEventosConfirmadosSafra(dto.idSafra, dto.idPropriedade, tx),
-        this.despesaRepo.listarDespesasGeraisPorPeriodo(dto.idPropriedade, safra.dataInicio, limiteFim, tx)
+        this.despesaRepo.listarDespesasGerais(dto.idPropriedade, safra.dataInicio, limiteFim, tx)
       ]);
 
       let custoTotal = 0;
@@ -288,56 +286,6 @@ public async reativarSafra(idSafra: number, idPropriedadeRequisicao?: number): P
     if (!eventos || eventos.length === 0) throw new Error("SEM_EVENTOS");
 
     return eventos;
-  }
-
-
-  public async listarEventosPorModulo(dto: BuscarEventosPorModuloDTO, idUsuarioSessao: number): Promise<EventoRelatorioDTO[]> {
-    const propriedade = await this.propriedadeRepo.buscarPorId(dto.idPropriedade);
-    if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
-    if (propriedade.idProprietario !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
-
-    const safra = await this.safraRepository.buscarPorId(dto.idSafra);
-    if (!safra) throw new Error("SAFRA_NAO_ENCONTRADA");
-    if (safra.idPropriedade !== dto.idPropriedade) throw new Error("SAFRA_NAO_PERTENCE_PROPRIEDADE");
-
-    return await this.prisma.$transaction(async (tx) => {
-      let eventosRelatorio: EventoRelatorioDTO[] = [];
-
-      const moduloSanitizado = dto.modulo.trim().toUpperCase();
-
-      switch (moduloSanitizado) {
-        case 'TRATO_CULTURAL': {
-          console.log(dto)
-          const tratos = await this.tratoCulturalRepo.listarTodosSafra(dto.idSafra, dto.idPropriedade, tx);
-          eventosRelatorio = tratos.map((trato) => ({
-            modulo: 'TRATO_CULTURAL' as const,
-            dados: trato.toJSON() as TratoCulturalDTO
-          }));
-          break;
-        }
-
-        // FUTURE SCALABILITY POINT
-        // case 'COLHEITA': {
-        //   const colheitas = await this.colheitaRepo.listarTodosSafra(dto.idSafra, dto.idPropriedade, tx);
-        //   eventosRelatorio = colheitas.map((colheita) => ({
-        //     modulo: 'COLHEITA' as const,
-        //     dados: colheita.toJSON() as unknown as ColheitaDTO
-        //   }));
-        //   break;
-        // }
-
-        default:
-          throw new Error("MODULO_EVENTO_INVALIDO");
-      }
-
-      eventosRelatorio.sort((a, b) => {
-        const dateA = new Date(a.dados.dataInicio).getTime();
-        const dateB = new Date(b.dados.dataInicio).getTime();
-        return dateB - dateA;
-      });
-
-      return eventosRelatorio;
-    });
   }
 
   public async listarTodosEventosTalhao(dto: BuscarTodosEventosTalhaoDTO, idUsuarioSessao: number): Promise<EventoRelatorioDTO[]> {

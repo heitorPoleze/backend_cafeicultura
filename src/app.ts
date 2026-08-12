@@ -23,6 +23,7 @@ import comprasinsumosRotas from "./features/comprainsumo/comprainsumo.routes";
 import eventosRotas from "./features/evento/evento.routes";
 
 // --- Configuração do servidor ---
+import transacaoRotas from "./features/transacaofinanceira/transacaofinanceira.routes";
 dotenv.config(); // Carrega as variáveis de ambiente do .env
 
 const app = express();
@@ -108,5 +109,6 @@ app.use(`${API_VERSION}/insumos`, insumosRotas);
 app.use(`${API_VERSION}/despesas`, despesasRotas);
 app.use(`${API_VERSION}/comprasinsumos`, comprasinsumosRotas);
 app.use(`${API_VERSION}/eventos`, eventosRotas);
+app.use(`${API_VERSION}/extratos`, transacaoRotas);
 
 export default app;

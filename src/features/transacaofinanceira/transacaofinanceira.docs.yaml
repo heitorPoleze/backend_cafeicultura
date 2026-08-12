@@ -1,0 +1,71 @@
+paths:
+  /api/v1/extratos/propriedade/{id}:
+    get:
+      summary: Extrato Financeiro Geral da Propriedade (Paginado)
+      description: Retorna um balanço geral com lucro líquido, total de despesas e receitas, acompanhado da lista paginada de transações. Omitir as datas retorna o histórico total da propriedade.
+      tags: 
+        - Extratos
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID da Propriedade rural.
+        - in: query
+          name: dataInicio
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: dataFim
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: pagina
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limite
+          required: false
+          schema:
+            type: integer
+            default: 25
+      responses:
+        '200':
+          description: Extrato financeiro retornado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalRegistros:
+                    type: integer
+                  paginaAtual:
+                    type: integer
+                  totalPaginas:
+                    type: integer
+                  resumo:
+                    type: object
+                    properties:
+                      totalDespesas: { type: number, format: float }
+                      # totalReceitas: { type: number, format: float }
+                      # lucroLiquido: { type: number, format: float }
+                  transacoes:
+                    type: array
+                    items:
+                      type: object
+                      description: DTO da transação financeira.
+        '401':
+          description: Acesso negado.
+        '404':
+          description: Propriedade não encontrada.
+        '500':
+          description: Erro interno inesperado ao buscar extrato.

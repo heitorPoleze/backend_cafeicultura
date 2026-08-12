@@ -25,7 +25,7 @@ class DespesaRepository {
     private prisma: PrismaClient,
     private transacaoRepo: TransacaoFinanceiraRepository,
     private pessoaRepo: PessoaRepository,
-  ) {}
+  ) { }
 
   public async cadastrar(
     despesa: Despesa,
@@ -125,6 +125,37 @@ class DespesaRepository {
     return despesas.filter((d): d is Despesa => d !== null);
   }
 
+  public async listarDespesasEventosConfirmados(
+    idPropriedade: number,
+    dataInicio?: Date,
+    dataFim?: Date,
+    tx: Prisma.TransactionClient = this.prisma,
+  ): Promise<Despesa[] | null> {
+    const despesasDB = await tx.despesas.findMany({
+      where: {
+        transacoesfinanceiras: {
+          idPropriedade_FK: idPropriedade,
+          ...(dataInicio || dataFim ? {
+            dataHora: {
+              ...(dataInicio && { gte: dataInicio }),
+              ...(dataFim && { lte: dataFim }),
+            }
+          } : {}),
+          eventos: {
+            confirmado: 1,
+          },
+        }
+      },
+      include: despesaInclude,
+    });
+
+    const despesas = await Promise.all(
+      despesasDB.map((d) => this.mapToEntity(d, tx)),
+    );
+
+    return despesas.filter((d): d is Despesa => d !== null);
+  }
+
   public async listarDespesasEventosConfirmadosSafra(
     idSafra: number,
     idPropriedade: number,
@@ -138,8 +169,8 @@ class DespesaRepository {
             confirmado: 1,
             safras: {
               idSafra_PK: idSafra,
-           },
-        },
+            },
+          },
         }
       },
       include: despesaInclude,
@@ -152,10 +183,10 @@ class DespesaRepository {
     return despesas.filter((d): d is Despesa => d !== null);
   }
 
-  public async listarDespesasGeraisPorPeriodo(
+  public async listarDespesasGerais(
     idPropriedade: number,
-    dataInicio: Date,
-    dataFim: Date,
+    dataInicio?: Date,
+    dataFim?: Date,
     tx: Prisma.TransactionClient = this.prisma,
   ): Promise<Despesa[] | null> {
     const despesasDB = await tx.despesas.findMany({
@@ -163,10 +194,12 @@ class DespesaRepository {
         transacoesfinanceiras: {
           idPropriedade_FK: idPropriedade,
           idEvento_FK: null,
-          dataHora: {
-            gte: dataInicio,
-            lte: dataFim,
-          },
+          ...(dataInicio || dataFim ? {
+            dataHora: {
+              ...(dataInicio && { gte: dataInicio }),
+              ...(dataFim && { lte: dataFim }),
+            }
+          } : {})
         },
       },
       include: despesaInclude,
