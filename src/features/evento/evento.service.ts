@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import PropriedadeRepository from "../propriedade/propriedade.repository";
 import TratoCulturalRepository from "../tratocultural/tratocultural.repository";
-import { BuscarEventosPropriedadeDTO, RelatorioEventosPaginadoDTO, EventoRelatorioDTO, TratoCulturalDTO } from "./evento.dto";
+import { BuscarEventosPropriedadeDTO, EventoRelatorioDTO, TratoCulturalDTO } from "./evento.dto";
 import { StatusTrato } from "../tratocultural/tratocultural.dto";
 
 export class EventoService {
@@ -14,19 +14,17 @@ export class EventoService {
   public async listarEventosPropriedade(
     dto: BuscarEventosPropriedadeDTO, 
     idUsuarioSessao: number
-  ): Promise<RelatorioEventosPaginadoDTO> {
+  ): Promise<EventoRelatorioDTO[]> {
     
     const propriedade = await this.propriedadeRepo.buscarPorId(dto.idPropriedade);
     if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
     if (propriedade.idProprietario !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
-
-    const skip = (dto.pagina - 1) * dto.limite;
     
     return await this.prisma.$transaction(async (tx) => {
-      const { total, tratos } = await this.tratoCulturalRepo.listarTodosPropriedade(
+      const { tratos } = await this.tratoCulturalRepo.listarTodosPropriedade(
         dto.idPropriedade,
-        skip,
-        dto.limite,
+        undefined,
+        undefined,
         dto.dataInicio,
         dto.dataFim,
         StatusTrato.TODOS,
@@ -43,14 +41,12 @@ export class EventoService {
         const dateB = new Date(b.dados.dataInicio).getTime();
         return dateB - dateA;
       });
-      const totalPaginas = Math.ceil(total / dto.limite);
+      
+      if (!eventosRelatorio || eventosRelatorio.length === 0) {
+        throw new Error("SEM_EVENTOS");
+      }
 
-      return {
-        totalRegistros: total,
-        paginaAtual: dto.pagina,
-        totalPaginas: totalPaginas === 0 ? 1 : totalPaginas,
-        eventos: eventosRelatorio
-      };
+      return eventosRelatorio;
     });
   }
 }

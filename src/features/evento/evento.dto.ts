@@ -6,10 +6,8 @@ import Safra from "../safra/safra.entity";
 
 export type BuscarEventosPropriedadeDTO = {
   idPropriedade: number;
-  dataInicio?: Date;
-  dataFim?: Date;
-  pagina: number;
-  limite: number;
+  dataInicio: Date;
+  dataFim: Date;
 }
 
 export type EventoDTO = {
@@ -31,10 +29,3 @@ export type TratoCulturalDTO = EventoDTO & {
 
 export type EventoRelatorioDTO =
   | { modulo: 'TRATO_CULTURAL'; dados: TratoCulturalDTO }
-
-export type RelatorioEventosPaginadoDTO = {
-  totalRegistros: number;
-  paginaAtual: number;
-  totalPaginas: number;
-  eventos: EventoRelatorioDTO[];
-}

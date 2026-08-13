@@ -1,8 +1,8 @@
 paths:
   /api/v1/eventos/propriedade/{id}:
     get:
-      summary: Relatório de Eventos da Propriedade (Com Filtro Temporal e Paginação)
-      description: Retorna uma lista de todos os eventos ocorridos em uma propriedade, ordenados do mais recente para o mais antigo. Suporta filtros por intervalo de datas e paginação fixa em 25 itens por página.
+      summary: Relatório de Eventos da Propriedade (Com Filtro Temporal)
+      description: Retorna uma lista de todos os eventos ocorridos em uma propriedade, ordenados do mais recente para o mais antigo, dentro de um intervalo de datas.
       tags: 
         - Eventos Gerais
       security:
@@ -16,60 +16,24 @@ paths:
           description: ID da Propriedade rural.
         - in: query
           name: dataInicio
-          required: false
+          required: true
           schema:
             type: string
             format: date-time
-          description: Data inicial do filtro temporal. Se não enviada, busca desde o início dos registros.
+          description: Data inicial do filtro temporal.
         - in: query
           name: dataFim
-          required: false
+          required: true
           schema:
             type: string
             format: date-time
-          description: Data final do filtro temporal. Se não enviada, busca até o momento atual.
-        - in: query
-          name: pagina
-          required: false
-          schema:
-            type: integer
-            default: 1
-          description: Número da página desejada.
+          description: Data final do filtro temporal.
       responses:
         '200':
           description: Lista de eventos retornada com sucesso.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  totalRegistros:
-                    type: integer
-                    example: 145
-                  paginaAtual:
-                    type: integer
-                    example: 1
-                  totalPaginas:
-                    type: integer
-                    example: 6
-                  eventos:
-                    type: array
-                    description: Matriz contendo no máximo 25 eventos.
-                    items:
-                      type: object
-                      required:
-                        - modulo
-                        - dados
-                      properties:
-                        modulo:
-                          type: string
-                          example: "TRATO_CULTURAL"
-                        dados:
-                          type: object
-                          description: Dados reais do evento extraído (DTO puro).
-        '401':
+        '403':
           description: Acesso negado. Usuário não tem permissão para a propriedade.
         '404':
-          description: Propriedade não encontrada.
+          description: Propriedade ou Eventos não encontrados.
         '500':
           description: Erro interno ao listar eventos.
