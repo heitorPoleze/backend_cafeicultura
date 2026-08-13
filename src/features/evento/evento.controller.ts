@@ -11,16 +11,13 @@ export class EventoController {
     if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
 
     try {
-      const dataInicioStr = req.query.dataInicio as string | undefined;
-      const dataFimStr = req.query.dataFim as string | undefined;
-      const paginaStr = req.query.pagina as string | undefined;
+      const dataInicioStr = req.query.dataInicio as string;
+      const dataFimStr = req.query.dataFim as string;
 
       const dto: BuscarEventosPropriedadeDTO = {
         idPropriedade: Number(req.params.id),
-        dataInicio: dataInicioStr ? new Date(dataInicioStr) : undefined,
-        dataFim: dataFimStr ? new Date(dataFimStr) : undefined,
-        pagina: paginaStr ? Number(paginaStr) : 1,
-        limite: 25
+        dataInicio: new Date(dataInicioStr),
+        dataFim: new Date(dataFimStr),
       };
       
       const relatorio = await this.eventoService.listarEventosPropriedade(dto, req.session.idUsuario!);
@@ -28,6 +25,9 @@ export class EventoController {
       res.status(200).json(relatorio);
     } catch (error: unknown) {
       if (error instanceof Error) {
+        if (error.message === 'SEM_EVENTOS') {
+          return res.status(404).json({ error: 'Nenhum evento encontrado' });
+        }
         if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
           return res.status(404).json({ error: 'Propriedade não encontrada' });
         }

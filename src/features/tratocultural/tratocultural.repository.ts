@@ -217,7 +217,7 @@ class TratoCulturalRepository {
     ]);
 
     const tratosMapeados = await Promise.all(
-      tratosDb.map((t) => this.mapToEntity(t, tx as PrismaClient))
+      tratosDb.map((t) => this.mapToEntity(t, tx))
     );
 
     return { total, tratos: tratosMapeados };

@@ -29,9 +29,8 @@ router.get(
   exigeLogin(),
   [
     param('id').isInt({ gt: 0 }).withMessage('ID da propriedade inválido.'),
-    query('dataInicio').optional().isISO8601().withMessage('Formato de dataInicio inválido. Deve ser yyyy-mm-dd.'),
-    query('dataFim').optional().isISO8601().withMessage('Formato de dataFim inválido. Deve ser yyyy-mm-dd.'),
-    query('pagina').optional().isInt({ gt: 0 }).withMessage('A página deve ser um número inteiro maior que zero.')
+    query('dataInicio').isISO8601().withMessage('Formato de dataInicio inválido. Deve ser yyyy-mm-dd.'),
+    query('dataFim').isISO8601().withMessage('Formato de dataFim inválido. Deve ser yyyy-mm-dd.'),
   ],
   eventoController.listarEventosPorPropriedade.bind(eventoController)
 );
