@@ -23,7 +23,6 @@ export type EventoDTO = {
   safra: Safra;
   transacoesFinanceiras: Despesa[] | undefined;
   responsaveis: Pessoa[] | undefined;
-  confirmado: boolean | undefined;
 }
 
 export type TratoCulturalDTO = EventoDTO & {

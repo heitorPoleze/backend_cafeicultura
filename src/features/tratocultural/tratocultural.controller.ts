@@ -80,19 +80,6 @@ class TratoCulturalController {
     }
   }
 
-  public async confirmar(req: Request, res: Response) {
-    const erros = validationResult(req);
-    if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
-
-    try {
-      const dto: ConfirmarTratoCulturalDTO = { idTrato: Number(req.params.id) };
-      await this.tratoCulturalService.confirmarTrato(dto, req.session.idUsuario!);
-      res.status(200).json({ mensagem: 'Trato Cultural confirmado com sucesso' });
-    } catch (error: unknown) {
-      this.handleError(res, error, 'Erro ao confirmar trato cultural');
-    }
-  }
-
   public async listarTodosPropriedade(req: Request, res: Response) {
     const erros = validationResult(req);
     if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });

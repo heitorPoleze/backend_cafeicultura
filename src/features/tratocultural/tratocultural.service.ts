@@ -89,8 +89,7 @@ class TratoCulturalService {
     const novoTrato = new TratoCultural(
       undefined, dto.idTalhao, new Date(dto.dataInicio),
       dto.dataFim ? new Date(dto.dataFim) : null,
-      dto.descricao || "", new Date(), safra, despesasDomain, responsaveisDomain,
-      false, dto.tipoTrato, insumosDomain
+      dto.descricao || "", new Date(), safra, despesasDomain, responsaveisDomain, dto.tipoTrato, insumosDomain
     );
 
     return await this.tratoCulturalRepo.cadastrar(novoTrato, dto.idTipoTrato);
@@ -187,12 +186,6 @@ class TratoCulturalService {
     const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);
     trato.finalizar(dto.dataFim);
     await this.tratoCulturalRepo.finalizarTrato(trato);
-  }
-
-  public async confirmarTrato(dto: ConfirmarTratoCulturalDTO, idUsuarioSessao: number): Promise<void> {
-    const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);
-    trato.confirmar();
-    await this.tratoCulturalRepo.confirmarTrato(trato);
   }
 
   public async excluirTransacoes(dto: ExcluirTransacoesTratoDTO, idUsuarioSessao: number): Promise<void> {

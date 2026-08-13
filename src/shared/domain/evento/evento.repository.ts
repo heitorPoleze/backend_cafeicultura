@@ -33,7 +33,6 @@ class EventoRepository {
               },
             }
             : undefined,
-        confirmado: evento.confirmado ? 1 : 0,
       },
     });
     return eventoDB.idEvento_PK;
@@ -60,18 +59,6 @@ class EventoRepository {
     await client.eventos.update({
       where: { idEvento_PK: evento.id },
       data: { dataFim: evento.dataFim },
-    });
-  };
-
-  public async confirmar(
-    evento: Evento,
-    tx?: Prisma.TransactionClient,
-  ): Promise<void> {
-    const client = tx || this.prisma;
-
-    await client.eventos.update({
-      where: { idEvento_PK: evento.id },
-      data: { confirmado: evento.confirmado ? 1 : 0 },
     });
   };
 

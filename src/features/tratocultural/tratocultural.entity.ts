@@ -26,7 +26,6 @@ class TratoCultural extends EventoAgricola {
         safra: Safra,
         transacoesFinanceiras: Despesa[] | undefined,
         responsaveis: Pessoa[] | undefined,
-        confirmado: boolean | undefined,
         tipoTrato: TipoTrato,
         insumosUtilizados?: TratoInsumo[]
     ) {
@@ -40,7 +39,6 @@ class TratoCultural extends EventoAgricola {
             safra,
             transacoesFinanceiras,
             responsaveis,
-            confirmado
         );
 
         if (!tipoTrato) throw new Error('O tipo de trato cultural é obrigatório.');

@@ -11,7 +11,6 @@ abstract class Evento {
     private _safra: Safra;
     private _transacoesFinanceiras?: Despesa[];
     private _responsaveis?: Pessoa[];
-    private _confirmado?: boolean;
 
     constructor(
         id: number | undefined,
@@ -22,7 +21,6 @@ abstract class Evento {
         safra: Safra,
         transacoesFinanceiras?: Despesa[],
         responsaveis?: Pessoa[],
-        confirmado?: boolean
     ) {
         if (id && id <= 0) throw new Error('O id do evento deve ser maior que zero.');
         this._id = id;
@@ -50,10 +48,6 @@ abstract class Evento {
             if (!(responsaveis[0] instanceof Pessoa)) throw new Error('Os responsáveis do evento é inválido.');
         };
         this._responsaveis = responsaveis;
-
-        if (confirmado === undefined) 
-            confirmado = false;
-        this._confirmado = confirmado;
     };
 
     public get id(): number | undefined { return this._id; };
@@ -64,7 +58,6 @@ abstract class Evento {
     public get safra(): Safra { return this._safra; };
     public get transacoesFinanceiras(): Despesa[] | undefined { return this._transacoesFinanceiras; };
     public get responsaveis(): Pessoa[] | undefined { return this._responsaveis; }
-    public get confirmado(): boolean | undefined { return this._confirmado; };
 
     public set descricao(descricao: string) { this._descricao = descricao; };
     
@@ -84,10 +77,6 @@ abstract class Evento {
         this._dataFim = dataFim;
     };
 
-    public confirmar(): void {
-        this._confirmado = true;
-    };
-
     public toJSON(filhos?: object) {
         return {
             id: this._id,
@@ -98,7 +87,6 @@ abstract class Evento {
             safra: this._safra.toJSON(),
             transacoesFinanceiras: this._transacoesFinanceiras?.map(transacao => transacao.toJSON()),
             responsaveis: this._responsaveis?.map(responsavel => responsavel.toJSON()),
-            confirmado: this._confirmado,
             ...filhos
         };
     };

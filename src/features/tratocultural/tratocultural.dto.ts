@@ -38,7 +38,6 @@ export type ResponseTratoCulturalDTO = {
   safra: Safra;
   transacoesFinanceiras: Despesa[] | undefined;
   responsaveis: Pessoa[] | undefined;
-  confirmado: boolean | undefined;
   tipoTrato: TipoTrato;
   insumosUtilizados: TratoInsumo[] | undefined;
 };
