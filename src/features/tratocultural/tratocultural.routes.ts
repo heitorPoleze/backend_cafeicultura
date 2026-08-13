@@ -76,7 +76,8 @@ router.get(
   exigeLogin(),
   [
     param('id').isInt({ gt: 0 }).withMessage('O ID da propriedade informado na URL é inválido.'),
-    param('idTalhao').isInt({ gt: 0 }).withMessage('O ID do talhão informado na URL é inválido.')
+    param('idTalhao').isInt({ gt: 0 }).withMessage('O ID do talhão informado na URL é inválido.'),
+    query('pagina').isInt({ gt: 0 }).withMessage('A página deve ser maior que zero.'),
   ],
   tratoCulturalController.listarTodosTalhao.bind(tratoCulturalController)
 );

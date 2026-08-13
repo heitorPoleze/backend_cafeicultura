@@ -2,10 +2,10 @@ import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import TratoCulturalService from './tratocultural.service';
 import {
-  AtualizarDescricaoDTO, BuscarTratoPorIdDTO, CadastrarTratoCulturalDTO,
-  ConfirmarTratoCulturalDTO, EditarResponsaveisTratoDTO, ExcluirInsumosTratoDTO,
-  ExcluirTransacoesTratoDTO, FinalizarTratoCulturalDTO, InserirInsumosTratoDTO, ListarTratoPorPropriedadeDTO, ListarTratoPorSafraDTO,
-  ListarTratoPorTalhaoDTO
+  AtualizarDescricaoDTO, BuscarTratoPorIdDTO, CadastrarTratoCulturalDTO, 
+  EditarResponsaveisTratoDTO, ExcluirInsumosTratoDTO, ExcluirTransacoesTratoDTO, 
+  FinalizarTratoCulturalDTO, InserirInsumosTratoDTO, ListarTratoPorPropriedadeDTO, 
+  ListarTratoPorSafraDTO,ListarTratoPorTalhaoDTO
 } from './tratocultural.dto';
 import { TipoTrato } from './tratocultural.entity';
 
@@ -118,7 +118,11 @@ class TratoCulturalController {
 
   public async listarTodosTalhao(req: Request, res: Response) {
     try {
-      const dto: ListarTratoPorTalhaoDTO = { idTalhao: Number(req.params.idTalhao), idPropriedade: Number(req.params.id) };
+      const dto: ListarTratoPorTalhaoDTO = { 
+        idTalhao: Number(req.params.idTalhao), 
+        idPropriedade: Number(req.params.id),
+        pagina: Number(req.query.pagina)
+      };
       const tratos = await this.tratoCulturalService.listarTodosTalhao(dto, req.session.idUsuario!);
       res.status(200).json(tratos);
     } catch (error: unknown) {
