@@ -89,7 +89,11 @@ export type ListarTratoPorSafraDTO = {
   idPropriedade: number;
 };
 
-export type ListarTratoPorTalhaoDTO = { idTalhao: number, idPropriedade: number };
+export type ListarTratoPorTalhaoDTO = { 
+  idTalhao: number, 
+  idPropriedade: number,
+  pagina: number;
+};
 
 export type FinalizarTratoCulturalDTO = {
   idTrato: number;

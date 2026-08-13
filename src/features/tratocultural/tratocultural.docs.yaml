@@ -481,7 +481,7 @@ paths:
 
   /api/v1/tratosculturais/propriedade/{id}/talhao/{idTalhao}:
     get:
-      summary: Listar Tratos por Talhão
+      summary: Listar Tratos por Talhão (Paginado)
       description: Retorna os tratos culturais realizados em um talhão específico.
       tags: 
         - Tratos Culturais
@@ -500,6 +500,13 @@ paths:
           schema:
             type: integer
           description: ID numérico do Talhão.
+        - in: query
+          name: pagina
+          required: true
+          schema:
+            type: integer
+            default: 1
+          description: Número da página desejada.
       responses:
         '200':
           description: Lista de tratos retornada com sucesso.
@@ -507,3 +514,5 @@ paths:
           description: Acesso negado.
         '404':
           description: Talhão, Propriedade ou tratos culturais não encontrados.
+        '500':
+          description: Erro interno ao buscar tratos culturais.
