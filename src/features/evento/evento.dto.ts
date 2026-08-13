@@ -12,7 +12,6 @@ export type BuscarEventosPropriedadeDTO = {
   limite: number;
 }
 
-
 export type EventoDTO = {
   id: number | undefined;
   idTalhao: number;

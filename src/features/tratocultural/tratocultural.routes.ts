@@ -16,6 +16,7 @@ import EventoAgricolaRepository from '../../shared/domain/evento/eventoagricola/
 import DespesaRepository from '../despesa/despesa.repository';
 import TransacaoFinanceiraRepository from '../../shared/domain/transacaofinanceira/transacaofinanceira.repository';
 import { FormaPagamento, TipoOperacao } from '../../shared/domain/transacaofinanceira/transacaofinanceira.entity';
+import { StatusTrato } from './tratocultural.dto';
 
 const router = Router();
 
@@ -53,10 +54,13 @@ router.get(
   exigeLogin(),
   [
     param('id').isInt({ gt: 0 }).withMessage('ID da propriedade inválido.'),
-    query('dataInicio').optional().isISO8601().withMessage('O formato da dataInicio deve ser yyyy-mm-dd.').withMessage('O formato da dataInicio deve ser yyyy-mm-dd.'),
-    query('dataFim').optional().isISO8601().withMessage('O formato da dataFim deve ser yyyy-mm-dd.'),
-    query('pagina').optional().isInt({ gt: 0 }).withMessage('A página deve ser maior que zero.'),
-    query('limite').optional().isInt({ gt: 0 }).withMessage('O limite deve ser maior que zero.')
+    query('filtroInicio').optional().isISO8601().withMessage('O formato da dataInicio deve ser ISO8601.'),
+    query('filtroFim').optional().isISO8601().withMessage('O formato da dataFim deve ser ISO8601.'),
+    query('status')
+      .optional()
+      .isIn(Object.values(StatusTrato))
+      .withMessage(`O status deve ser um dos seguintes: ${Object.values(StatusTrato).join(', ')}.`),
+    query('pagina').optional().isInt({ gt: 0 }).withMessage('A página deve ser maior que zero.')
   ],
   tratoCulturalController.listarTodosPropriedade.bind(tratoCulturalController)
 );

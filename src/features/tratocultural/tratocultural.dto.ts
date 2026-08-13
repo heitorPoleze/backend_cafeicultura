@@ -1,6 +1,5 @@
 import TratoInsumo from "../../shared/domain/insumo/tratoinsumo/tratoinsumo.entity";
 import Pessoa from "../../shared/domain/pessoa/pessoabase.entity";
-import TransacaoFinanceira, { FormaPagamento, TipoOperacao } from "../../shared/domain/transacaofinanceira/transacaofinanceira.entity";
 import Despesa from "../despesa/despesa.entity";
 import Safra from "../safra/safra.entity";
 import { TipoTrato } from "./tratocultural.entity";
@@ -76,12 +75,19 @@ export type ExcluirTransacoesTratoDTO = {
 
 export type BuscarTratoPorIdDTO = { idTrato: number };
 
+export enum StatusTrato {
+  AGENDADO = 'agendados',
+  EM_ANDAMENTO = 'em_andamento',
+  FINALIZADO = 'finalizados',
+  TODOS = 'todos'
+}
+
 export type ListarTratoPorPropriedadeDTO = { 
-  idPropriedade: number 
-  dataInicio?: Date;
-  dataFim?: Date;
-  pagina: number;
-  limite: number;
+  idPropriedade: number;
+  filtroInicio?: Date;
+  filtroFim?: Date;
+  pagina?: number;
+  status?: StatusTrato;
 };
 
 export type ListarTratoPorSafraDTO = {
@@ -102,4 +108,11 @@ export type FinalizarTratoCulturalDTO = {
 
 export type ConfirmarTratoCulturalDTO = {
   idTrato: number;
+};
+
+export type ResponseListagemTratosDTO = {
+  tratos: ResponseTratoCulturalDTO[]; 
+  total: number;
+  totalPaginas?: number;
+  paginaAtual?: number;
 };

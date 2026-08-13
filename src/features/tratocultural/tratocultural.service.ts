@@ -14,6 +14,7 @@ import {
   ListarTratoPorPropriedadeDTO,
   ListarTratoPorSafraDTO,
   ListarTratoPorTalhaoDTO,
+  ResponseListagemTratosDTO,
   ResponseTratoCulturalDTO,
   TipoTratoDTO,
 } from "./tratocultural.dto";
@@ -138,32 +139,44 @@ class TratoCulturalService {
   public async listarTodosPropriedade(
     dto: ListarTratoPorPropriedadeDTO, 
     idUsuarioSessao: number
-  ): Promise<{ tratos: ResponseTratoCulturalDTO[], total: number, totalPaginas: number, paginaAtual: number }> {
+  ): Promise<ResponseListagemTratosDTO> {
     
     await this.validarAcessoPropriedade(dto.idPropriedade, idUsuarioSessao);
 
-    const skip = (dto.pagina - 1) * dto.limite;
+    const limite = 25;
+    let skip: number | undefined = undefined;
+    let take: number | undefined = undefined;
+
+    if (dto.pagina) {
+      skip = (dto.pagina - 1) * limite;
+      take = limite;
+    }
 
     const { total, tratos } = await this.tratoCulturalRepo.listarTodosPropriedade(
       dto.idPropriedade,
       skip,
-      dto.limite,
-      dto.dataInicio,
-      dto.dataFim
+      take,
+      dto.filtroInicio,
+      dto.filtroFim,
+      dto.status
     );
 
-    const totalPaginas = Math.ceil(total / dto.limite);
-    
-    if (!tratos || tratos.length === 0) throw new Error("TRATOS_NAO_ENCONTRADOS");
+    const tratosMapeados = tratos.map(t => t.toJSON() as unknown as ResponseTratoCulturalDTO);
 
-    return { 
-      tratos: tratos, 
-      total, 
-      totalPaginas: totalPaginas === 0 ? 1 : totalPaginas,
-      paginaAtual: dto.pagina 
+    const response: ResponseListagemTratosDTO = {
+      total,
+      tratos: tratosMapeados
     };
-  }
 
+    if (dto.pagina) {
+      const totalPaginas = Math.ceil(total / limite);
+      response.totalPaginas = totalPaginas === 0 ? 1 : totalPaginas;
+      response.paginaAtual = dto.pagina;
+    }
+
+    return response;
+  }
+  
   public async listarTodosSafra(dto: ListarTratoPorSafraDTO, idUsuarioSessao: number): Promise<ResponseTratoCulturalDTO[]> {
     await this.validarAcessoPropriedade(dto.idPropriedade, idUsuarioSessao);
     const tratos = await this.tratoCulturalRepo.listarTodosSafra(dto.idSafra, dto.idPropriedade);
@@ -174,7 +187,7 @@ class TratoCulturalService {
   public async listarTodosTalhao(
     dto: ListarTratoPorTalhaoDTO,
     idUsuarioSessao: number
-  ): Promise<{ tratos: ResponseTratoCulturalDTO[], total: number, totalPaginas: number, paginaAtual: number }> {
+  ): Promise<ResponseListagemTratosDTO> {
     
     await this.validarAcessoPropriedade(dto.idPropriedade, idUsuarioSessao);
 

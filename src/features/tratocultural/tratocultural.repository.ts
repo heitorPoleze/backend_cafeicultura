@@ -9,6 +9,7 @@ import PessoaBaseRepository from "../../shared/domain/pessoa/pessoa.repository";
 import PessoaBase from "../../shared/domain/pessoa/pessoabase.entity";
 import Despesa from "../despesa/despesa.entity";
 import DespesaRepository from "../despesa/despesa.repository";
+import { StatusTrato } from "./tratocultural.dto";
 
 type TratoCulturalPayload = Prisma.tratosculturaisGetPayload<{
   include: {
@@ -134,29 +135,56 @@ class TratoCulturalRepository {
 
   public async listarTodosPropriedade(
     idPropriedade: number,
-    skip: number,
-    take: number,
-    dataInicio?: Date,
-    dataFim?: Date,
+    skip?: number, 
+    take?: number, 
+    filtroInicio?: Date,
+    filtroFim?: Date,
+    status?: StatusTrato,
     tx: Prisma.TransactionClient = this.prisma
   ): Promise<{ total: number; tratos: TratoCultural[] }> {
+
+    const eventosConditions: Prisma.eventosWhereInput[] = [];
+    const dataAtual = new Date();
+
+    if (status === 'agendados') {
+      eventosConditions.push({
+        dataInicio: { gt: dataAtual },
+        dataFim: null
+      });
+    } else if (status === 'em_andamento') {
+      eventosConditions.push({
+        dataInicio: { lte: dataAtual },
+        dataFim: null
+      });
+    } else if (status === 'finalizados') {
+      eventosConditions.push({
+        dataFim: { not: null }    
+      });
+    } else if (status === 'todos') {
+      eventosConditions.push({});
+    }
+
+    if (filtroInicio || filtroFim) {
+      eventosConditions.push({
+        dataInicio: { 
+          ...(filtroInicio && { gte: filtroInicio }),
+          ...(filtroFim && { lte: filtroFim }),
+        }
+      });
+    }
 
     const whereClause: Prisma.tratosculturaisWhereInput = {
       eventosagricolas: {
         talhoes: {
           idPropriedade_FK: idPropriedade,
         },
-        eventos: {
-          dataInicio: {
-            ...(dataInicio && { gte: dataInicio }),
-            ...(dataFim && { lte: dataFim }),
-          },
-        },
+        eventos: eventosConditions.length > 0 ? { AND: eventosConditions } : undefined,
       },
     };
 
     const [total, tratosDb] = await Promise.all([
       tx.tratosculturais.count({ where: whereClause }),
+      
       tx.tratosculturais.findMany({
         where: whereClause,
         orderBy: {
@@ -166,30 +194,19 @@ class TratoCulturalRepository {
             },
           },
         },
-        skip,
-        take,
+        skip, 
+        take, 
         include: {
           tipostratos: true,
-          tratosinsumos: {
-            include: {
-              insumos: true,
-            },
-          },
+          tratosinsumos: { include: { insumos: true } },
           eventosagricolas: {
             include: {
               eventos: {
                 include: {
                   safras: true,
-                  pessoaseventos: {
-                    include: {
-                      pessoas: true,
-                    },
-                  },
-                  transacoesfinanceiras: {
-                    include: {
-                      formaspgto: true,
-                      despesas: true,
-                    },
+                  pessoaseventos: { include: { pessoas: true } },
+                  transacoesfinanceiras: { 
+                    include: { formaspgto: true, despesas: true } 
                   },
                 },
               },
@@ -199,10 +216,12 @@ class TratoCulturalRepository {
       }),
     ]);
 
-    const tratosMapeados = await Promise.all(tratosDb.map((t) => this.mapToEntity(t, tx)));
+    const tratosMapeados = await Promise.all(
+      tratosDb.map((t) => this.mapToEntity(t, tx as PrismaClient))
+    );
 
     return { total, tratos: tratosMapeados };
-  };
+  }
 
   public async listarTodosSafra(
     idSafra: number,

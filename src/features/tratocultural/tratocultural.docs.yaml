@@ -397,8 +397,8 @@ paths:
 
   /api/v1/tratosculturais/propriedade/{id}:
     get:
-      summary: Listar Tratos Culturais da Propriedade (Paginado e Filtrado)
-      description: Retorna uma lista paginada de tratos culturais de uma propriedade, ordenados do mais recente para o mais antigo, com suporte a filtros temporais opcionais.
+      summary: Listar Tratos Culturais da Propriedade (Filtros e Paginação Dinâmica)
+      description: Retorna os tratos culturais ordenados do mais recente para o mais antigo. Suporta filtros temporais e de status. A paginação é opcional; se `pagina` for fornecida, o limite é fixado em 25 itens.
       tags: 
         - Tratos Culturais
       security:
@@ -411,44 +411,44 @@ paths:
             type: integer
           description: ID da Propriedade.
         - in: query
-          name: dataInicio
+          name: filtroInicio
           required: false
           schema:
             type: string
             format: date-time
-          description: Data inicial do filtro temporal (ISO8601).
+          description: Filtro temporal opcional.
         - in: query
-          name: dataFim
+          name: filtroFim
           required: false
           schema:
             type: string
             format: date-time
-          description: Data final do filtro temporal (ISO8601).
+          description: Filtro temporal opcional.
+        - in: query
+          name: status
+          required: false
+          schema:
+            type: string
+            enum: [agendados, em_andamento, finalizados]
+          description: Filtra tratos culturais baseando-se no momento atual e nas datas de início e fim.
         - in: query
           name: pagina
           required: false
           schema:
             type: integer
-            default: 1
-          description: Número da página desejada.
-        - in: query
-          name: limite
-          required: false
-          schema:
-            type: integer
-            default: 25
-          description: Quantidade de registros por página.
+            minimum: 1
+          description: Número da página. Se omitido, retorna todos os resultados sem paginação. O limite por página é fixado em 25.
       responses:
-        '200': 
-          description: Lista de tratos culturais retornada com sucesso.
+        '200':
+          description: Lista retornada com sucesso.
         '400':
-          description: Erro de validação nos parâmetros enviados.
-        '401':
-          description: Acesso negado. Usuário não tem permissão para a propriedade.
+          description: Parâmetros de query ou path inválidos.
+        '403':
+          description: Acesso negado.
         '404':
-          description: tratos ou propriedade não encontrados.
+          description: Tratos Culturais ou Propriedade não encontrados.
         '500':
-          description: Erro interno inesperado ao buscar tratos culturais.
+          description: Erro interno ao listar tratos culturais.
 
   /api/v1/tratosculturais/propriedade/{id}/safra/{idSafra}:
     get:

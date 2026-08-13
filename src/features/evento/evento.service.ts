@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import PropriedadeRepository from "../propriedade/propriedade.repository";
 import TratoCulturalRepository from "../tratocultural/tratocultural.repository";
 import { BuscarEventosPropriedadeDTO, RelatorioEventosPaginadoDTO, EventoRelatorioDTO, TratoCulturalDTO } from "./evento.dto";
+import { StatusTrato } from "../tratocultural/tratocultural.dto";
 
 export class EventoService {
   constructor(
@@ -28,6 +29,7 @@ export class EventoService {
         dto.limite,
         dto.dataInicio,
         dto.dataFim,
+        StatusTrato.TODOS,
         tx
       );
 

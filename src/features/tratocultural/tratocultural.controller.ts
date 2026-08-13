@@ -5,7 +5,8 @@ import {
   AtualizarDescricaoDTO, BuscarTratoPorIdDTO, CadastrarTratoCulturalDTO, 
   EditarResponsaveisTratoDTO, ExcluirInsumosTratoDTO, ExcluirTransacoesTratoDTO, 
   FinalizarTratoCulturalDTO, InserirInsumosTratoDTO, ListarTratoPorPropriedadeDTO, 
-  ListarTratoPorSafraDTO,ListarTratoPorTalhaoDTO
+  ListarTratoPorSafraDTO,ListarTratoPorTalhaoDTO,
+  StatusTrato
 } from './tratocultural.dto';
 import { TipoTrato } from './tratocultural.entity';
 
@@ -85,24 +86,23 @@ class TratoCulturalController {
     if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
 
     try {
-      const dataInicioStr = req.query.dataInicio as string | undefined;
-      const dataFimStr = req.query.dataFim as string | undefined;
+      const filtroInicioStr = req.query.filtroInicio as string | undefined;
+      const filtroFimStr = req.query.filtroFim as string | undefined;
       const paginaStr = req.query.pagina as string | undefined;
-      const limiteStr = req.query.limite as string | undefined;
+      const statusStr = req.query.status as string | undefined;
 
       const dto: ListarTratoPorPropriedadeDTO = { 
         idPropriedade: Number(req.params.id),
-        dataInicio: dataInicioStr ? new Date(dataInicioStr) : undefined,
-        dataFim: dataFimStr ? new Date(dataFimStr) : undefined,
-        pagina: paginaStr ? Number(paginaStr) : 1, 
-        limite: limiteStr ? Number(limiteStr) : 25  
+        filtroInicio: filtroInicioStr ? new Date(filtroInicioStr) : undefined,
+        filtroFim: filtroFimStr ? new Date(filtroFimStr) : undefined,
+        pagina: paginaStr ? Number(paginaStr) : undefined,
+        status: statusStr as StatusTrato
       };
-
       const resultado = await this.tratoCulturalService.listarTodosPropriedade(dto, req.session.idUsuario!);
-
+      
       res.status(200).json(resultado);
     } catch (error: unknown) {
-      this.handleError(res, error, 'Erro ao listar tratos');
+      this.handleError(res, error, 'Erro ao listar tratos culturais da propriedade.');
     }
   }
 
@@ -192,7 +192,7 @@ class TratoCulturalController {
         case 'PESSOA_NAO_ENCONTRADA':
           return res.status(404).json();
         case 'ACESSO_NEGADO':
-          return res.status(401).json({ error: 'Acesso negado! Você não tem permissão para esta ação.' });
+          return res.status(403).json({ error: 'Acesso negado! Você não tem permissão para esta ação.' });
         case 'DATA_INICIO_ANTERIOR':
           return res.status(422).json({ error: 'A data de início deve ser maior que a data de início da safra correspondente.' });
         case 'DATA_FIM_ANTERIOR':
