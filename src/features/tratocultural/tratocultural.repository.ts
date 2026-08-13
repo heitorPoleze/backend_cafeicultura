@@ -437,10 +437,6 @@ class TratoCulturalRepository {
     await this.eventoRepo.finalizar(trato);
   };
 
-  public async confirmarTrato(trato: TratoCultural): Promise<void> {
-    await this.eventoRepo.confirmar(trato);
-  };
-
   public async editarResponsaveis(trato: TratoCultural): Promise<void> {
     await this.eventoRepo.editarResponsaveis(trato, this.prisma);
   };
@@ -507,7 +503,6 @@ class TratoCulturalRepository {
       safra,
       transacoes,
       responsaveis,
-      eventoBase.confirmado === 1 ? true : false,
       tratoDB.tipostratos.descricao as TipoTrato,
       [],
     );

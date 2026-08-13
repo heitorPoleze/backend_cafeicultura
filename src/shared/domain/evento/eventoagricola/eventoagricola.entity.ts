@@ -15,7 +15,6 @@ abstract class EventoAgricola extends Evento {
     safra: Safra,
     transacoesFinanceiras?: Despesa[],
     responsaveis?: Pessoa[],
-    confirmado?: boolean,
   ) {
     super(
       id,
@@ -26,7 +25,6 @@ abstract class EventoAgricola extends Evento {
       safra,
       transacoesFinanceiras,
       responsaveis,
-      confirmado,
     );
     if (idTalhao <= 0)
       throw new Error("O id do talhão deve ser maior que zero.");

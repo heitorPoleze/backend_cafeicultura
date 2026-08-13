@@ -142,7 +142,7 @@ class DespesaRepository {
             }
           } : {}),
           eventos: {
-            confirmado: 1,
+            dataFim: { not: null },          
           },
         }
       },
@@ -166,7 +166,7 @@ class DespesaRepository {
         transacoesfinanceiras: {
           idPropriedade_FK: idPropriedade,
           eventos: {
-            confirmado: 1,
+            dataFim: { not: null },
             safras: {
               idSafra_PK: idSafra,
             },

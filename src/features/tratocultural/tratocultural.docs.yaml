@@ -256,31 +256,6 @@ paths:
         '500':
           description: Erro interno.
 
-  /api/v1/tratosculturais/{id}/confirmar:
-    patch:
-      summary: Confirma um Trato Cultural
-      description: Altera o status do trato cultural para confirmado no banco de dados.
-      tags: 
-        - Tratos Culturais
-      security:
-        - cookieAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-          description: ID numérico do trato cultural.
-      responses:
-        '200':
-          description: Trato Cultural confirmado com sucesso.
-        '401':
-          description: Acesso negado.
-        '404':
-          description: Trato Cultural ou Propriedade não encontrada.
-        '500':
-          description: Erro interno.
-
   /api/v1/tratosculturais/{id}/responsaveis:
     patch:
       summary: Edita os responsáveis

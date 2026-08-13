@@ -141,15 +141,6 @@ router.patch(
 );
 
 router.patch(
-  '/:id/confirmar',
-  exigeLogin(),
-  [
-    param('id').isInt({ gt: 0 }).withMessage('O ID do trato cultural informado na URL é inválido.')
-  ],
-  tratoCulturalController.confirmar.bind(tratoCulturalController)
-);
-
-router.patch(
   '/:id/responsaveis',
   exigeLogin(),
   [

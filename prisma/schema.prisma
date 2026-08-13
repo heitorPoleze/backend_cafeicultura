@@ -141,7 +141,6 @@ model eventos {
   dataInicio            DateTime                @db.DateTime(0)
   dataFim               DateTime?               @db.DateTime(0)
   descricao             String                  @db.VarChar(50)
-  confirmado            Int                     @db.TinyInt
   safras                safras                  @relation(fields: [idSafra_FK], references: [idSafra_PK], onDelete: NoAction, onUpdate: NoAction, map: "evento_safra")
   eventosagricolas      eventosagricolas?
   pessoaseventos        pessoaseventos[]

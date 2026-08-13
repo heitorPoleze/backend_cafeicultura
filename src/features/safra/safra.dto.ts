@@ -61,28 +61,6 @@ export type BuscarTodosEventosTalhaoDTO = {
   idTalhao: number;
 }
 
-export type EventoDTO = {
-  id: number | undefined;
-  idTalhao: number;
-  dataInicio: Date;
-  dataFim: Date | null;
-  descricao: string;
-  dataCadastro: Date;
-  safra: Safra;
-  transacoesFinanceiras: Despesa[] | undefined;
-  responsaveis: Pessoa[] | undefined;
-  confirmado: boolean | undefined;
-}
-
-export type TratoCulturalDTO = EventoDTO & {
-  tipoTrato: TipoTrato;
-  insumosUtilizados: TratoInsumo[] | undefined;
-}
-
-export type EventoRelatorioDTO = 
-  | { modulo: 'TRATO_CULTURAL'; dados: TratoCulturalDTO }
-
-
 export type RelatorioFinanceiroSafraDTO = {
   custoTotal: number;
   transacoes: TransacaoRelatorioWrapperDTO[];
