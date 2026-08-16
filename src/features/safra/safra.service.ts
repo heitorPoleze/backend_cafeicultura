@@ -263,15 +263,15 @@ public async reativarSafra(idSafra: number, idPropriedadeRequisicao?: number): P
     if (safra.idPropriedade !== dto.idPropriedade) throw new Error("SAFRA_NAO_PERTENCE_PROPRIEDADE");
 
     const eventos = await this.prisma.$transaction(async (tx) => {
-      const [tratosCulturais] = await Promise.all([
-        this.tratoCulturalRepo.listarTodosSafra(dto.idSafra, dto.idPropriedade, tx),
+      const [{tratos}] = await Promise.all([
+        this.tratoCulturalRepo.listarTodosSafra(dto.idSafra, dto.idPropriedade, undefined, tx),
         // this.colheitaRepo.listarTodosSafra(dto.idSafra, dto.idPropriedade, tx) 
       ]);
 
       const eventosRelatorio: EventoRelatorioDTO[] = [
-        ...tratosCulturais.map((trato) => ({
+        ...tratos.map((trato) => ({
           modulo: 'TRATO_CULTURAL' as const,
-          dados: trato.toJSON() as TratoCulturalDTO
+          dados: trato
         })),
       ];
 
@@ -283,6 +283,7 @@ public async reativarSafra(idSafra: number, idPropriedadeRequisicao?: number): P
 
       return eventosRelatorio;
     });
+
     if (!eventos || eventos.length === 0) throw new Error("SEM_EVENTOS");
 
     return eventos;

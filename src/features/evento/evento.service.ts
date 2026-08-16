@@ -24,7 +24,6 @@ export class EventoService {
       const { tratos } = await this.tratoCulturalRepo.listarTodosPropriedade(
         dto.idPropriedade,
         undefined,
-        undefined,
         dto.dataInicio,
         dto.dataFim,
         StatusTrato.TODOS,
