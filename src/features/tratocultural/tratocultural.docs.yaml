@@ -139,7 +139,7 @@ paths:
           description: Trato Cultural cadastrado com sucesso.
         '400':
           description: Erro de validação nos dados enviados ou tipo de trato inválido.
-        '401':
+        '403':
           description: Acesso negado. Usuário não tem permissão para a propriedade.
         '404':
           description: Safra, Talhão, Propriedade, Insumo ou Responsável não encontrado.
@@ -178,7 +178,7 @@ paths:
       responses:
         '200':
           description: Trato Cultural retornado com sucesso.
-        '401':
+        '403':
           description: Acesso negado.
         '404':
           description: Trato Cultural não encontrado.
@@ -216,7 +216,7 @@ paths:
       responses:
         '200':
           description: Descrição alterada com sucesso.
-        '401':
+        '403':
           description: Acesso negado.
         '404':
           description: Trato Cultural ou Propriedade não encontrada.
@@ -249,7 +249,7 @@ paths:
           description: Trato Cultural recebeu uma data de fim com sucesso.
         '400':
           description: Erro de validação da data.
-        '401':
+        '403':
           description: Acesso negado.
         '404':
           description: Trato Cultural ou Propriedade não encontrada.
@@ -390,7 +390,7 @@ paths:
       responses:
         '200':
           description: Transações excluídas com sucesso.
-        '401':
+        '403':
           description: Acesso negado.
         '404':
           description: Trato Cultural não encontrado.
@@ -452,7 +452,7 @@ paths:
 
   /api/v1/tratosculturais/propriedade/{id}/safra/{idSafra}:
     get:
-      summary: Listar Tratos por Safra
+      summary: Listar Tratos por Safra (com paginação)
       description: Retorna os tratos culturais vinculados a uma safra específica de uma propriedade.
       tags: 
         - Tratos Culturais
@@ -471,17 +471,24 @@ paths:
           schema:
             type: integer
           description: ID numérico da Safra.
+        - in: query
+          name: pagina
+          required: true
+          schema:
+            type: integer
+            default: 1
+          description: Número da página desejada.
       responses:
         '200':
           description: Lista de tratos retornada com sucesso.
-        '401':
+        '403':
           description: Acesso negado.
         '404':
           description: Safra, Propriedade ou tratos culturais não encontrados.
 
   /api/v1/tratosculturais/propriedade/{id}/talhao/{idTalhao}:
     get:
-      summary: Listar Tratos por Talhão (Paginado)
+      summary: Listar Tratos por Talhão (Paginado e com status)
       description: Retorna os tratos culturais realizados em um talhão específico.
       tags: 
         - Tratos Culturais
@@ -507,10 +514,17 @@ paths:
             type: integer
             default: 1
           description: Número da página desejada.
+        - in: query
+          name: status
+          required: false
+          schema:
+            type: string
+            enum: [agendados, em_andamento, finalizados, todos]
+          description: Filtra tratos culturais baseando-se no status do evento de trato cultural.
       responses:
         '200':
           description: Lista de tratos retornada com sucesso.
-        '401':
+        '403':
           description: Acesso negado.
         '404':
           description: Talhão, Propriedade ou tratos culturais não encontrados.

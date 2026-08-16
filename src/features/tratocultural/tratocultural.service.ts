@@ -143,45 +143,31 @@ class TratoCulturalService {
     
     await this.validarAcessoPropriedade(dto.idPropriedade, idUsuarioSessao);
 
-    const limite = 25;
-    let skip: number | undefined = undefined;
-    let take: number | undefined = undefined;
-
-    if (dto.pagina) {
-      skip = (dto.pagina - 1) * limite;
-      take = limite;
-    }
-
     const { total, tratos } = await this.tratoCulturalRepo.listarTodosPropriedade(
       dto.idPropriedade,
-      skip,
-      take,
+      dto.pagina,
       dto.filtroInicio,
       dto.filtroFim,
       dto.status
     );
 
-    const tratosMapeados = tratos.map(t => t.toJSON() as unknown as ResponseTratoCulturalDTO);
-
-    const response: ResponseListagemTratosDTO = {
-      total,
-      tratos: tratosMapeados
-    };
-
-    if (dto.pagina) {
-      const totalPaginas = Math.ceil(total / limite);
-      response.totalPaginas = totalPaginas === 0 ? 1 : totalPaginas;
-      response.paginaAtual = dto.pagina;
-    }
-
-    return response;
+    return this.formatarRespostaPaginada(total, tratos, dto.pagina);
   }
   
-  public async listarTodosSafra(dto: ListarTratoPorSafraDTO, idUsuarioSessao: number): Promise<ResponseTratoCulturalDTO[]> {
+  public async listarTodosSafra(
+    dto: ListarTratoPorSafraDTO, 
+    idUsuarioSessao: number
+  ): Promise<ResponseListagemTratosDTO> {
+    
     await this.validarAcessoPropriedade(dto.idPropriedade, idUsuarioSessao);
-    const tratos = await this.tratoCulturalRepo.listarTodosSafra(dto.idSafra, dto.idPropriedade);
-    if (!tratos || tratos.length === 0) throw new Error("TRATOS_NAO_ENCONTRADOS");
-    return tratos;
+
+    const { total, tratos } = await this.tratoCulturalRepo.listarTodosSafra(
+      dto.idSafra,
+      dto.idPropriedade,
+      dto.pagina
+    );
+
+    return this.formatarRespostaPaginada(total, tratos, dto.pagina);
   }
 
   public async listarTodosTalhao(
@@ -194,18 +180,11 @@ class TratoCulturalService {
     const { total, tratos } = await this.tratoCulturalRepo.listarTodosTalhao(
       dto.idTalhao,
       dto.idPropriedade,
-      dto.pagina
+      dto.pagina,
+      dto.status
     );
     
-    const limite = 25;
-    const totalPaginas = Math.ceil(total / limite);
-
-    return { 
-      tratos: tratos, 
-      total, 
-      totalPaginas: totalPaginas === 0 ? 1 : totalPaginas,
-      paginaAtual: dto.pagina
-    };
+    return this.formatarRespostaPaginada(total, tratos, dto.pagina);
   }
 
   public async buscarTiposTratos(): Promise<TipoTratoDTO[]> {
@@ -228,6 +207,27 @@ class TratoCulturalService {
     const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);
     trato.excluirInsumos(dto.idInsumos);
     await this.tratoCulturalRepo.excluirInsumos(trato);
+  }
+
+  private formatarRespostaPaginada(
+    total: number, 
+    tratos: ResponseTratoCulturalDTO[], 
+    pagina?: number
+  ): ResponseListagemTratosDTO {
+    const limite = 25;
+    const response: ResponseListagemTratosDTO = { total, tratos: tratos };
+
+    if (pagina) {
+      const totalPaginas = Math.ceil(total / limite);
+      response.totalPaginas = totalPaginas === 0 ? 1 : totalPaginas;
+      response.paginaAtual = pagina;
+    }
+
+    if (tratos.length === 0) {
+      throw new Error("TRATOS_NAO_ENCONTRADOS");
+    }
+
+    return response;
   }
 }
 

@@ -107,26 +107,44 @@ class TratoCulturalController {
   }
 
   public async listarTodosSafra(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
+
     try {
-      const dto: ListarTratoPorSafraDTO = { idSafra: Number(req.params.idSafra), idPropriedade: Number(req.params.id) };
-      const tratos = await this.tratoCulturalService.listarTodosSafra(dto, req.session.idUsuario!);
-      res.status(200).json(tratos);
+      const paginaStr = req.query.pagina as string | undefined;
+
+      const dto: ListarTratoPorSafraDTO = { 
+        idPropriedade: Number(req.params.id),
+        idSafra: Number(req.params.idSafra),
+        pagina: paginaStr ? Number(paginaStr) : undefined
+      };
+
+      const resultado = await this.tratoCulturalService.listarTodosSafra(dto, req.session.idUsuario!);
+      res.status(200).json(resultado);
     } catch (error: unknown) {
-      this.handleError(res, error, 'Erro ao listar tratos');
+      this.handleError(res, error, 'Erro ao listar tratos da safra.');
     }
   }
 
   public async listarTodosTalhao(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
+
     try {
+      const paginaStr = req.query.pagina as string | undefined;
+      const statusStr = req.query.status as string | undefined;
+
       const dto: ListarTratoPorTalhaoDTO = { 
-        idTalhao: Number(req.params.idTalhao), 
         idPropriedade: Number(req.params.id),
-        pagina: Number(req.query.pagina)
+        idTalhao: Number(req.params.idTalhao),
+        pagina: paginaStr ? Number(paginaStr) : undefined,
+        status: statusStr as StatusTrato | undefined
       };
-      const tratos = await this.tratoCulturalService.listarTodosTalhao(dto, req.session.idUsuario!);
-      res.status(200).json(tratos);
+
+      const resultado = await this.tratoCulturalService.listarTodosTalhao(dto, req.session.idUsuario!);
+      res.status(200).json(resultado);
     } catch (error: unknown) {
-      this.handleError(res, error, 'Erro ao listar tratos');
+      this.handleError(res, error, 'Erro ao listar tratos do talhão.');
     }
   }
 

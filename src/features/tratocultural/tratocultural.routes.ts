@@ -69,8 +69,9 @@ router.get(
   '/propriedade/:id/safra/:idSafra',
   exigeLogin(),
   [
-    param('id').isInt({ gt: 0 }).withMessage('O ID da propriedade informado na URL é inválido.'),
-    param('idSafra').isInt({ gt: 0 }).withMessage('O ID da safra informado na URL é inválido.')
+    param('id').isInt({ gt: 0 }).withMessage('ID da propriedade inválido.'),
+    param('idSafra').isInt({ gt: 0 }).withMessage('ID da safra inválido.'),
+    query('pagina').optional().isInt({ gt: 0 }).withMessage('A página deve ser maior que zero.')
   ],
   tratoCulturalController.listarTodosSafra.bind(tratoCulturalController)
 );
@@ -79,9 +80,13 @@ router.get(
   '/propriedade/:id/talhao/:idTalhao',
   exigeLogin(),
   [
-    param('id').isInt({ gt: 0 }).withMessage('O ID da propriedade informado na URL é inválido.'),
-    param('idTalhao').isInt({ gt: 0 }).withMessage('O ID do talhão informado na URL é inválido.'),
-    query('pagina').isInt({ gt: 0 }).withMessage('A página deve ser maior que zero.'),
+    param('id').isInt({ gt: 0 }).withMessage('ID da propriedade inválido.'),
+    param('idTalhao').isInt({ gt: 0 }).withMessage('ID do talhão inválido.'),
+    query('pagina').optional().isInt({ gt: 0 }).withMessage('A página deve ser maior que zero.'),
+    query('status')
+      .optional()
+      .isIn(Object.values(StatusTrato))
+      .withMessage(`O status deve ser: ${Object.values(StatusTrato).join(', ')}.`)
   ],
   tratoCulturalController.listarTodosTalhao.bind(tratoCulturalController)
 );
