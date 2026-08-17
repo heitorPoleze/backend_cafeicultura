@@ -155,7 +155,8 @@ router.patch(
   exigeLogin(),
   [
     param('id').isInt({ gt: 0 }).withMessage('O ID do trato cultural informado na URL é inválido.'),
-    body('dataFim').notEmpty().withMessage('A data de fim é obrigatória.').isISO8601().withMessage('A data de fim deve estar em formato ISO8601.')
+    body('dataInicio').notEmpty().withMessage('A data de início é obrigatória.').isISO8601().withMessage('A data de início deve ser YYYY-MM-DD.'),
+    body('dataFim').notEmpty().withMessage('A data de fim é obrigatória.').isISO8601().withMessage('A data de fim deve ser YYYY-MM-DD.')
   ],
   tratoCulturalController.finalizar.bind(tratoCulturalController)
 );

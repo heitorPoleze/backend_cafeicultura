@@ -70,7 +70,10 @@ class EventoRepository {
 
     await client.eventos.update({
       where: { idEvento_PK: evento.id },
-      data: { dataFim: evento.dataFim },
+      data: { 
+        dataInicio: evento.dataInicio,
+        dataFim: evento.dataFim 
+      },
     });
   };
 

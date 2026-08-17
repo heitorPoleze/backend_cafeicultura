@@ -77,9 +77,16 @@ abstract class Evento {
         this._dataInicio = dataInicio;
     };
 
-    public finalizar(dataFim: Date): void {
-        if (dataFim < this._dataInicio) 
+    public finalizar(dataInicio: Date,dataFim: Date): void {
+        if (dataInicio < this._safra.dataInicio) 
+            throw new Error("DATA_INICIO_ANTERIOR");
+        if (dataInicio > dataFim) 
+            throw new Error("DATA_INICIO_SUPERIOR");
+        if (dataFim < dataInicio) 
             throw new Error("DATA_FIM_ANTERIOR");
+        if (dataFim > new Date()) 
+            throw new Error("DATA_FIM_SUPERIOR");
+        this._dataInicio = dataInicio;
         this._dataFim = dataFim;
     };
 
