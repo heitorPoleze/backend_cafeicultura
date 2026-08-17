@@ -470,6 +470,10 @@ class TratoCulturalRepository {
     });
   };
 
+  public async alterarInicioTrato(trato: TratoCultural): Promise<void> {
+    await this.eventoRepo.editarInicio(trato);
+  };
+  
   public async finalizarTrato(trato: TratoCultural): Promise<void> {
     await this.eventoRepo.finalizar(trato);
   };

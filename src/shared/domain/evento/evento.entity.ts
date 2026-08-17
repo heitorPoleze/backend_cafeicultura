@@ -71,6 +71,12 @@ abstract class Evento {
         this._transacoesFinanceiras = this._transacoesFinanceiras?.filter(transacao => idTransacoes.includes(transacao.id as number));
     };
 
+    public editarInicio(dataInicio: Date): void {
+        if (dataInicio < this._safra.dataInicio) 
+            throw new Error("DATA_INICIO_ANTERIOR");
+        this._dataInicio = dataInicio;
+    };
+
     public finalizar(dataFim: Date): void {
         if (dataFim < this._dataInicio) 
             throw new Error("DATA_FIM_ANTERIOR");

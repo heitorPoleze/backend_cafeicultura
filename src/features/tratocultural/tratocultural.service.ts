@@ -2,6 +2,7 @@ import TratoCultural, { TipoTrato } from "./tratocultural.entity";
 import TratoInsumo from "../../shared/domain/insumo/tratoinsumo/tratoinsumo.entity";
 import Pessoa from "../../shared/domain/pessoa/pessoabase.entity";
 import {
+    AlterarInicioTratoCulturalDTO,
   AtualizarDescricaoDTO,
   BuscarTratoPorIdDTO,
   CadastrarTratoCulturalDTO,
@@ -190,6 +191,12 @@ class TratoCulturalService {
   public async buscarTiposTratos(): Promise<TipoTratoDTO[]> {
     return await this.tratoCulturalRepo.buscarTiposTratos();
   }
+
+  public async alterarInicioTrato(dto: AlterarInicioTratoCulturalDTO, idUsuarioSessao: number): Promise<void> {
+    const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);
+    trato.editarInicio(dto.dataInicio);
+    await this.tratoCulturalRepo.alterarInicioTrato(trato);
+  };
 
   public async finalizarTrato(dto: FinalizarTratoCulturalDTO, idUsuarioSessao: number): Promise<void> {
     const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);

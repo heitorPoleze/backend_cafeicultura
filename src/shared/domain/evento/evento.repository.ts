@@ -49,6 +49,18 @@ class EventoRepository {
       data: { descricao: evento.descricao },
     });
   };
+  
+  public async editarInicio(
+    evento: Evento,
+    tx?: Prisma.TransactionClient,
+  ): Promise<void> {
+    const client = tx || this.prisma;
+
+    await client.eventos.update({
+      where: { idEvento_PK: evento.id },
+      data: { dataInicio: evento.dataInicio },
+    });
+  };
 
   public async finalizar(
     evento: Evento,

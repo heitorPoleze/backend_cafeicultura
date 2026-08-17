@@ -223,6 +223,45 @@ paths:
         '500':
           description: Erro interno.
 
+  /api/v1/tratosculturais/{id}/alterarInicio:
+    patch:
+      summary: Altera a data de início de um Trato Cultural
+      description: Atualiza a data de início de um trato cultural existente.
+      tags: 
+        - Tratos Culturais
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico do trato cultural.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - dataInicio
+              properties:
+                dataInicio:
+                  type: string
+                  format: date-time
+                  description: Nova data de início do trato cultural.
+                  example: "2024-03-15T08:00:00Z"
+      responses:
+        '200':
+          description: Data de início alterada com sucesso.
+        '403':
+          description: Acesso negado.
+        '404':
+          description: Trato Cultural ou Propriedade não encontrada.
+        '500':
+          description: Erro interno.
+
   /api/v1/tratosculturais/{id}/finalizar:
     patch:
       summary: Finaliza um Trato Cultural
