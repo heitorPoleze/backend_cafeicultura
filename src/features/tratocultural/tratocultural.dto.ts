@@ -58,6 +58,11 @@ export type InserirInsumosTratoDTO = {
   }[];
 }
 
+export type AlterarInicioTratoCulturalDTO = {
+  idTrato: number;
+  dataInicio: Date;
+}
+
 export type EditarResponsaveisTratoDTO = {
   idTrato: number;
   responsaveisIds: number[];

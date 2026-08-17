@@ -141,6 +141,16 @@ router.patch(
 )
 
 router.patch(
+  '/:id/alterarInicio',
+  exigeLogin(),
+  [
+    param('id').isInt({ gt: 0 }).withMessage('O ID do trato cultural informado na URL é inválido.'),
+    body('dataInicio').notEmpty().withMessage('A data de início é obrigatória.').isISO8601().withMessage('A data de início deve ser YYYY-MM-DD.')
+  ],
+  tratoCulturalController.alterarInicio.bind(tratoCulturalController)
+)
+
+router.patch(
   '/:id/finalizar',
   exigeLogin(),
   [

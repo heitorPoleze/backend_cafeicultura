@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import TratoCulturalService from './tratocultural.service';
 import {
+    AlterarInicioTratoCulturalDTO,
   AtualizarDescricaoDTO, BuscarTratoPorIdDTO, CadastrarTratoCulturalDTO, 
   EditarResponsaveisTratoDTO, ExcluirInsumosTratoDTO, ExcluirTransacoesTratoDTO, 
   FinalizarTratoCulturalDTO, InserirInsumosTratoDTO, ListarTratoPorPropriedadeDTO, 
@@ -68,6 +69,22 @@ class TratoCulturalController {
     }
   }
 
+  public async alterarInicio(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
+
+    try {
+      const dto: AlterarInicioTratoCulturalDTO = { 
+        idTrato: Number(req.params.id), 
+        dataInicio: new Date(req.body.dataInicio) 
+      };
+      await this.tratoCulturalService.alterarInicioTrato(dto, req.session.idUsuario!);
+      res.status(200).json({ mensagem: 'Data de início alterada com sucesso' });
+    } catch (error: unknown) {
+      this.handleError(res, error, 'Erro ao alterar trato cultural');
+    }
+
+    }
   public async finalizar(req: Request, res: Response) {
     const erros = validationResult(req);
     if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
