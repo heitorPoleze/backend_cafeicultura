@@ -80,6 +80,8 @@ export type ExcluirTransacoesTratoDTO = {
 
 export type BuscarTratoPorIdDTO = { idTrato: number };
 
+export type ExcluirTratoCulturalDTO = { idTrato: number };
+
 export enum StatusTrato {
   AGENDADO = 'agendados',
   EM_ANDAMENTO = 'em_andamento',

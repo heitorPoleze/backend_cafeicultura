@@ -68,6 +68,7 @@ export class SafraService {
     const safras = await this.safraRepository.bucarAtivasPorPropriedade(idPropriedade);
     return safras.map((safra) => safra.toJSON());
   }
+  
   public async buscarPorId(id: number, idUsuarioSessao: number): Promise<SafraRespostaDTO> {
     const safra = await this.safraRepository.buscarPorId(id);
     if (!safra) {

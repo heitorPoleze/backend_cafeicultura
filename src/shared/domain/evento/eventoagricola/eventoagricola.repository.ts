@@ -18,6 +18,11 @@ export class EventoAgricolaRepository {
 
         return eventoAgricolaDB.idEvento_PFK;
     };
+
+    public async excluir(evento: EventoAgricola, tx: Prisma.TransactionClient): Promise<void> {
+        if (!evento.id) throw new Error("ID_OBRIGATORIO");
+        await tx.eventosagricolas.delete({ where: { idEvento_PFK: evento.id } });
+    }
 };
 
 export default EventoAgricolaRepository;

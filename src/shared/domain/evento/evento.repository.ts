@@ -118,6 +118,12 @@ class EventoRepository {
       });
     }
   }
+
+  public async excluir(evento: Evento, tx: Prisma.TransactionClient): Promise<void> {
+    if (!evento.id) throw new Error("ID_OBRIGATORIO");
+    await tx.pessoaseventos.deleteMany({ where: { idEvento_PFK: evento.id } });
+    await tx.eventos.delete({ where: { idEvento_PK: evento.id } });
+  }
 };
 
 export default EventoRepository;

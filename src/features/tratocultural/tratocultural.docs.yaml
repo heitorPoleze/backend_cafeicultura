@@ -184,7 +184,32 @@ paths:
           description: Trato Cultural não encontrado.
         '500':
           description: Erro interno ao buscar o trato cultural.
-
+    delete: 
+      summary: Exclui um Trato Cultural
+      description: Rota para excluir um trato cultural.
+      tags: 
+        - Tratos Culturais
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico do trato cultural.
+      responses:
+        '200':
+          description: Trato Cultural excluído com sucesso.
+        '403':
+          description: Acesso negado.
+        '404':
+          description: Trato cultural ou Propriedade não encontrada.
+        '422':
+          description: Trato cultural não pode ser excluído.
+        '500':
+          description: Erro interno ao excluir o trato cultural.
+          
   /api/v1/tratosculturais/{id}/descricao:
     patch:
       summary: Altera a descrição de um Trato Cultural
