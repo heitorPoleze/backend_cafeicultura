@@ -200,7 +200,7 @@ class TratoCulturalService {
 
   public async finalizarTrato(dto: FinalizarTratoCulturalDTO, idUsuarioSessao: number): Promise<void> {
     const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);
-    trato.finalizar(dto.dataFim);
+    trato.finalizar(dto.dataInicio,dto.dataFim);
     await this.tratoCulturalRepo.finalizarTrato(trato);
   }
 

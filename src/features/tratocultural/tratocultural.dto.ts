@@ -110,6 +110,7 @@ export type ListarTratoPorTalhaoDTO = {
 
 export type FinalizarTratoCulturalDTO = {
   idTrato: number;
+  dataInicio: Date;
   dataFim: Date;
 };
 

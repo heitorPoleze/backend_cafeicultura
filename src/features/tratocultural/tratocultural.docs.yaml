@@ -111,12 +111,18 @@ components:
     FinalizarTratoCulturalInput:
       type: object
       required:
+        - dataInicio
         - dataFim
       properties:
+        dataInicio:
+          type: string
+          format: date-time
+          description: Data em que o trato cultural foi iniciado.
+          example: "2024-03-15T08:00:00Z"
         dataFim:
           type: string
           format: date-time
-          description: Data exata em que o trato cultural foi concluído ou previsão de conclusão.
+          description: Data em que o trato cultural foi finalizado.
           example: "2024-03-20T18:00:00Z"
 
 paths:
@@ -265,7 +271,7 @@ paths:
   /api/v1/tratosculturais/{id}/finalizar:
     patch:
       summary: Finaliza um Trato Cultural
-      description: Atribui uma data de fim ao trato cultural, marcando-o como concluído.
+      description: Finaliza um trato cultural existente. Informando uma data de fim, podendo alterar também a data de início por algum motivo.
       tags: 
         - Tratos Culturais
       security:

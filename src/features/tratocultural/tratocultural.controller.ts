@@ -90,7 +90,11 @@ class TratoCulturalController {
     if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
 
     try {
-      const dto: FinalizarTratoCulturalDTO = { idTrato: Number(req.params.id), dataFim: new Date(req.body.dataFim) };
+      const dto: FinalizarTratoCulturalDTO = 
+      { idTrato: Number(req.params.id), 
+        dataInicio: new Date(req.body.dataInicio),
+        dataFim: new Date(req.body.dataFim) 
+      };
       await this.tratoCulturalService.finalizarTrato(dto, req.session.idUsuario!);
       res.status(200).json({ mensagem: 'Trato Cultural finalizado com sucesso' });
     } catch (error: unknown) {
@@ -227,11 +231,15 @@ class TratoCulturalController {
         case 'PESSOA_NAO_ENCONTRADA':
           return res.status(404).json();
         case 'ACESSO_NEGADO':
-          return res.status(403).json({ error: 'Acesso negado! Você não tem permissão para esta ação.' });
+          return res.status(403).json({ error: 'Acesso negado! Você não tem permissão para esta ação' });
         case 'DATA_INICIO_ANTERIOR':
-          return res.status(422).json({ error: 'A data de início deve ser maior que a data de início da safra correspondente.' });
+          return res.status(422).json({ error: 'A data de início deve ser maior que a data de início da safra correspondente' });
+        case 'DATA_INICIO_SUPERIOR':
+          return res.status(422).json({ error: 'A data de início deve ser menor que a data de fim' });
         case 'DATA_FIM_ANTERIOR':
-          return res.status(422).json({ error: 'A data de fim deve ser maior que a data de início.' });
+          return res.status(422).json({ error: 'A data de fim deve ser maior que a data de início' });
+        case 'DATA_FIM_SUPERIOR':
+          return res.status(422).json({ error: 'A data de fim deve ser menor ou igual que a data atual' });
       }
 
       return res.status(400).json({ error: msg });
