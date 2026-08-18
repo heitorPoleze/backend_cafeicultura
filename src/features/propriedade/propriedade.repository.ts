@@ -36,8 +36,8 @@ class PropriedadeRepository {
     return novaPropriedade.idPropriedade_PK;
   };
 
-  public async buscarPorId(idPropriedade: number): Promise<Propriedade | null> {
-    const prop = await this.db.propriedades.findUnique({
+  public async buscarPorId(idPropriedade: number, tx: Prisma.TransactionClient = this.db): Promise<Propriedade | null> {
+    const prop = await tx.propriedades.findUnique({
       where: { 
         idPropriedade_PK: idPropriedade 
       },

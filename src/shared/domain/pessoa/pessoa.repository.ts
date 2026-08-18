@@ -264,8 +264,8 @@ class PessoaRepository {
     return !!existe;
   };
 
-  public async buscarPorId(id: number, tx?: Prisma.TransactionClient): Promise<PessoaBase | null> {
-    const pessoaDB = await (tx ?? this.prisma).pessoas.findUnique({
+  public async buscarPorId(id: number, tx: Prisma.TransactionClient = this.prisma): Promise<PessoaBase | null> {
+    const pessoaDB = await tx.pessoas.findUnique({
       where: { idPessoa_PK: id },
       include: pessoaInclude
     });

@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import Safra from "./safra.entity";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 
@@ -40,8 +40,8 @@ export class SafraRepository {
       dataFim: safra.dataFim,
     }));
   }
-  public async buscarSafrasPorPropriedade(idPropriedade: number): Promise<Safra[]> {
-    const data = await this.prisma.safras.findMany({
+  public async buscarSafrasPorPropriedade(idPropriedade: number, tx: Prisma.TransactionClient = this.prisma): Promise<Safra[]> {
+    const data = await tx.safras.findMany({
       where: {
         idPropriedade_FK: idPropriedade,
       },
@@ -54,8 +54,8 @@ export class SafraRepository {
     }));
   }
 
-  public async buscarPorId(id: number): Promise<Safra | null> {
-    const data = await this.prisma.safras.findUnique({
+  public async buscarPorId(id: number, tx: Prisma.TransactionClient = this.prisma): Promise<Safra | null> {
+    const data = await tx.safras.findUnique({
       where: { 
         idSafra_PK: id,
       },

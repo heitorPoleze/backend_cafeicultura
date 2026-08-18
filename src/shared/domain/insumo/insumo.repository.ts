@@ -18,8 +18,8 @@ class InsumoRepository {
         return insumoDB.idInsumo_PK;
     };
 
-    public async buscarPorId(idInsumo: number, idUsuario: number): Promise<Insumo | null> {
-        const insumoDB = await this.prisma.insumos.findUnique({
+    public async buscarPorId(idInsumo: number, idUsuario: number, tx: Prisma.TransactionClient = this.prisma): Promise<Insumo | null> {
+        const insumoDB = await tx.insumos.findUnique({
             where: { 
                 idInsumo_PK: idInsumo,
                 idProprietario_FK: idUsuario

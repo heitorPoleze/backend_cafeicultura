@@ -9,7 +9,7 @@ import PessoaBaseRepository from "../../shared/domain/pessoa/pessoa.repository";
 import PessoaBase from "../../shared/domain/pessoa/pessoabase.entity";
 import Despesa from "../despesa/despesa.entity";
 import DespesaRepository from "../despesa/despesa.repository";
-import { StatusTrato } from "./tratocultural.dto";
+import { StatusTrato, TipoTratoDTO } from "./tratocultural.dto";
 
 type TratoCulturalPayload = Prisma.tratosculturaisGetPayload<{
   include: {
@@ -59,40 +59,47 @@ class TratoCulturalRepository {
 
   public async cadastrar(
     trato: TratoCultural,
-    idTipoTrato: number
+    idTipoTrato: number,
+    tx: Prisma.TransactionClient
   ): Promise<number> {
-    return await this.prisma.$transaction(async (tx) => {
-      const id = await this.eventoRepo.cadastrar(trato, tx);
-      await this.eventoAgricolaRepo.cadastrar(trato, id, tx);
-      await tx.tratosculturais.create({
-        data: {
-          idEventoAgricola_PFK: id,
-          idTipoTrato_FK: idTipoTrato,
-          tratosinsumos:
-            trato.insumosUtilizados && trato.insumosUtilizados.length > 0
-              ? {
-                createMany: {
-                  data: trato.insumosUtilizados.map((tratoInsumo) => ({
-                    idInsumo_PFK: tratoInsumo.insumo.id!,
-                    qtdUsada: tratoInsumo.qtdUsada,
-                  })),
-                },
-              }
-              : undefined,
-        },
-      });
-      if (trato.transacoesFinanceiras && trato.transacoesFinanceiras.length > 0) {
-        trato.transacoesFinanceiras.forEach(async (transacao) => {
-          transacao.idEvento = id;
-          await this.despesaRepo.cadastrar(transacao, tx);
-        });
-      };
-      return id;
+    const id = await this.eventoRepo.cadastrar(trato, tx);
+    await this.eventoAgricolaRepo.cadastrar(trato, id, tx);
+    await tx.tratosculturais.create({
+      data: {
+        idEventoAgricola_PFK: id,
+        idTipoTrato_FK: idTipoTrato,
+        tratosinsumos:
+          trato.insumosUtilizados && trato.insumosUtilizados.length > 0
+            ? {
+              createMany: {
+                data: trato.insumosUtilizados.map((tratoInsumo) => ({
+                  idInsumo_PFK: tratoInsumo.insumo.id!,
+                  qtdUsada: tratoInsumo.qtdUsada,
+                })),
+              },
+            }
+            : undefined,
+      },
     });
+    if (trato.transacoesFinanceiras && trato.transacoesFinanceiras.length > 0) {
+      const promises = trato.transacoesFinanceiras.map(async (transacao) => {
+        transacao.idEvento = id;
+        return this.despesaRepo.cadastrar(transacao, tx);
+      });
+      await Promise.all(promises);
+    }
+    return id;
   };
 
-  public async buscarPorId(id: number): Promise<TratoCultural | null> {
-    const tratoCulturalDB = await this.prisma.tratosculturais.findUnique({
+  public async editar(trato: TratoCultural, idTipoTrato: number): Promise<void> {
+    return await this.prisma.$transaction(async (tx) => {
+      await this.excluir(trato, tx);
+      await this.cadastrar(trato, idTipoTrato, tx);
+    });
+  }
+
+  public async buscarPorId(id: number, tx: Prisma.TransactionClient = this.prisma): Promise<TratoCultural | null> {
+    const tratoCulturalDB = await tx.tratosculturais.findUnique({
       where: {
         idEventoAgricola_PFK: id,
       },
@@ -384,36 +391,45 @@ class TratoCulturalRepository {
       },
     });
 
-    return await Promise.all(
-      tratos.map((trato) => this.mapToEntity(trato, tx))
+    return await Promise.all(tratos.map((trato) => this.mapToEntity(trato, tx))
     );
   }
 
-  public async buscarTiposTratos(): Promise<
-    { id: number; descricao: string }[]
-  > {
+  public async buscarTiposTratos(): Promise<TipoTratoDTO[]> {
     const tiposTratos = await this.prisma.tipostratos.findMany();
-
+    if (!tiposTratos) {
+      throw new Error("TIPOS_TRATOS_NAO_ENCONTRADOS");
+    }
     return tiposTratos.map((tipoTrato) => ({
       id: tipoTrato.idTipoTrato_PK,
       descricao: tipoTrato.descricao,
     }));
   }
 
+  public async buscarTipoTratoPorDescricao(descricao: string, tx: Prisma.TransactionClient = this.prisma): Promise<TipoTratoDTO> {
+    const tipoTrato = await tx.tipostratos.findUnique({ where: { descricao } });
+    if (!tipoTrato) throw new Error("TIPO_TRATO_NAO_ENCONTRADO");
+    return {
+      id: tipoTrato.idTipoTrato_PK,
+      descricao: tipoTrato.descricao
+    };
+  }
+
   public async atualizarDescricao(
     trato: TratoCultural,
+    tx: Prisma.TransactionClient
   ): Promise<void> {
-    await this.eventoRepo.atualizarDescricao(trato);
+    await this.eventoRepo.atualizarDescricao(trato, tx);
   };
 
-  public async inserirInsumos(trato: TratoCultural): Promise<void> {
+  public async inserirInsumos(trato: TratoCultural, tx: Prisma.TransactionClient): Promise<void> {
     if (!trato.insumosUtilizados || trato.insumosUtilizados.length === 0) {
       return;
     }
 
     const idTrato = trato.id!;
 
-    const insumosNoBanco = await this.prisma.tratosinsumos.findMany({
+    const insumosNoBanco = await tx.tratosinsumos.findMany({
       where: { idTrato_PFK: idTrato },
       select: { idInsumo_PFK: true, qtdUsada: true },
     });
@@ -450,43 +466,42 @@ class TratoCulturalRepository {
       }
     }
 
-    await this.prisma.$transaction(async (tx) => {
-      for (const atualizacao of insumosParaAtualizar) {
-        await tx.tratosinsumos.updateMany({
-          where: {
-            idTrato_PFK: idTrato,
-            idInsumo_PFK: atualizacao.idInsumo_PFK,
-          },
-          data: {
-            qtdUsada: atualizacao.novaQtdTotal,
-          },
-        });
-      }
-      if (novosInsumosParaInserir.length > 0) {
-        await tx.tratosinsumos.createMany({
-          data: novosInsumosParaInserir,
-        });
-      }
-    });
+    for (const atualizacao of insumosParaAtualizar) {
+      await tx.tratosinsumos.updateMany({
+        where: {
+          idTrato_PFK: idTrato,
+          idInsumo_PFK: atualizacao.idInsumo_PFK,
+        },
+        data: {
+          qtdUsada: atualizacao.novaQtdTotal,
+        },
+      });
+    }
+    if (novosInsumosParaInserir.length > 0) {
+      await tx.tratosinsumos.createMany({
+        data: novosInsumosParaInserir,
+      });
+    }
+
   };
 
-  public async alterarInicioTrato(trato: TratoCultural): Promise<void> {
-    await this.eventoRepo.editarInicio(trato);
+  public async alterarInicioTrato(trato: TratoCultural, tx: Prisma.TransactionClient): Promise<void> {
+    await this.eventoRepo.editarInicio(trato, tx);
   };
-  
-  public async finalizarTrato(trato: TratoCultural): Promise<void> {
+
+  public async finalizarTrato(trato: TratoCultural, tx: Prisma.TransactionClient): Promise<void> {
     await this.eventoRepo.finalizar(trato);
   };
 
-  public async editarResponsaveis(trato: TratoCultural): Promise<void> {
-    await this.eventoRepo.editarResponsaveis(trato, this.prisma);
+  public async editarResponsaveis(trato: TratoCultural, tx: Prisma.TransactionClient): Promise<void> {
+    await this.eventoRepo.editarResponsaveis(trato, tx);
   };
 
-  public async excluirTransacoes(trato: TratoCultural): Promise<void> {
-    await this.eventoRepo.excluirTransacoes(trato);
+  public async excluirTransacoes(trato: TratoCultural, tx: Prisma.TransactionClient): Promise<void> {
+    await this.eventoRepo.excluirTransacoes(trato, tx);
   };
 
-  public async excluirInsumos(trato: TratoCultural): Promise<void> {
+  public async excluirInsumos(trato: TratoCultural, tx: Prisma.TransactionClient): Promise<void> {
     await this.prisma.tratosinsumos.deleteMany({
       where: {
         idTrato_PFK: trato.id,
@@ -495,15 +510,13 @@ class TratoCulturalRepository {
     });
   };
 
-  public async excluir(trato: TratoCultural): Promise<void> {
-    await this.prisma.$transaction(async (tx) => {
-      await tx.tratosinsumos.deleteMany({
-        where: { idTrato_PFK: trato.id },
-      });
-      await tx.tratosculturais.delete({ where: { idEventoAgricola_PFK: trato.id } });
-      await this.eventoAgricolaRepo.excluir(trato, tx);
-      await this.eventoRepo.excluir(trato, tx);
-    })
+  public async excluir(trato: TratoCultural, tx: Prisma.TransactionClient = this.prisma): Promise<void> {
+    await tx.tratosinsumos.deleteMany({
+      where: { idTrato_PFK: trato.id },
+    });
+    await tx.tratosculturais.delete({ where: { idEventoAgricola_PFK: trato.id } });
+    await this.eventoAgricolaRepo.excluir(trato, tx);
+    await this.eventoRepo.excluir(trato, tx);
   }
 
   private async mapToEntity(
@@ -558,7 +571,7 @@ class TratoCulturalRepository {
       tratoDB.tipostratos.descricao as TipoTrato,
       [],
     );
-    
+
 
     if (tratoDB.tratosinsumos && tratoDB.tratosinsumos.length > 0) {
       tratoDB.tratosinsumos.forEach((ti: TratoInsumoPayload) => {

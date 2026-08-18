@@ -147,8 +147,8 @@ public async buscarEventosPosterioresEncerramento(
       dados: talhoesDb.map((db) => this.mapToDomain(db))
     };
   }
-  async buscarPorId(id: number): Promise<Talhao | null> {
-    const talhaoDb = await this.prisma.talhoes.findFirst({
+  async buscarPorId(id: number, tx: Prisma.TransactionClient = this.prisma): Promise<Talhao | null> {
+    const talhaoDb = await tx.talhoes.findFirst({
       where: {
         idTalhao_PK: id,
       },

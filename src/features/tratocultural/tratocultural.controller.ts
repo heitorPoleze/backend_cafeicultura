@@ -4,7 +4,7 @@ import TratoCulturalService from './tratocultural.service';
 import {
     AlterarInicioTratoCulturalDTO,
   AtualizarDescricaoDTO, BuscarTratoPorIdDTO, CadastrarTratoCulturalDTO, 
-  EditarResponsaveisTratoDTO, ExcluirInsumosTratoDTO, ExcluirTransacoesTratoDTO, 
+  EditarResponsaveisTratoDTO, EditarTratoCulturalDTO, ExcluirInsumosTratoDTO, ExcluirTransacoesTratoDTO, 
   ExcluirTratoCulturalDTO, 
   FinalizarTratoCulturalDTO, InserirInsumosTratoDTO, ListarTratoPorPropriedadeDTO, 
   ListarTratoPorSafraDTO,ListarTratoPorTalhaoDTO,
@@ -14,27 +14,32 @@ import { TipoTrato } from './tratocultural.entity';
 
 class TratoCulturalController {
   constructor(private readonly tratoCulturalService: TratoCulturalService) { }
-
+  
   public async cadastrar(req: Request, res: Response) {
     const erros = validationResult(req);
     if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
 
     try {
       const dto: CadastrarTratoCulturalDTO = req.body;
-      const idUsuario = req.session.idUsuario!;
-
-      switch (dto.idTipoTrato) {
-        case 1: dto.tipoTrato = TipoTrato.ADUBACAO; break;
-        case 2: dto.tipoTrato = TipoTrato.CAPINA; break;
-        case 3: dto.tipoTrato = TipoTrato.DEFENSIVO; break;
-        case 4: dto.tipoTrato = TipoTrato.PODA; break;
-        case 5: dto.tipoTrato = TipoTrato.REPLANTIO; break;
-      }
-
-      await this.tratoCulturalService.cadastrar(dto, idUsuario);
+      await this.tratoCulturalService.cadastrar(dto, req.session.idUsuario!);
       res.status(201).json({ mensagem: 'Trato Cultural cadastrado com sucesso' });
     } catch (error: unknown) {
       this.handleError(res, error, 'Erro ao cadastrar trato cultural');
+    }
+  }
+
+  public async editar(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
+
+    try {
+      const dto: EditarTratoCulturalDTO = {
+        id: Number(req.params.id),
+        ...req.body
+      }
+      res.status(201).json(await this.tratoCulturalService.editar(dto, req.session.idUsuario!));
+    } catch (error: unknown) {
+      this.handleError(res, error, 'Erro ao editar trato cultural');
     }
   }
 
@@ -241,8 +246,10 @@ class TratoCulturalController {
           return res.status(404).json({ error: 'Trato Cultural não encontrado' });
         case 'TRATOS_NAO_ENCONTRADOS':
           return res.status(404).json({ error: 'Nenhum trato encontrado' });
+        case 'TIPOS_TRATOS_NAO_ENCONTRADOS':
+          return res.status(404).json({ error: 'Nenhum tipo de trato encontrado' });
         case 'PESSOA_NAO_ENCONTRADA':
-          return res.status(404).json();
+          return res.status(404).json({ error: 'Responsável ou Beneficiado não encontrado' });
         case 'ACESSO_NEGADO':
           return res.status(403).json({ error: 'Acesso negado! Você não tem permissão para esta ação' });
         case 'DATA_INICIO_ANTERIOR':
@@ -257,6 +264,8 @@ class TratoCulturalController {
           return res.status(422).json({ error: 'Não é possível excluir um trato cultural de uma safra fechada' });
         case 'TRATO_OUTRA_SAFRA':
           return res.status(422).json({ error: 'Não é possível excluir um trato cultural de uma safra diferente da atual' });
+        case 'FORMA_NAO_ENCONTRADA':
+          return res.status(422).json({ error: 'Forma de pagamento inválida' });
       }
 
       return res.status(400).json({ error: msg });
