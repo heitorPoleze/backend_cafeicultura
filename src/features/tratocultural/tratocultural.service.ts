@@ -10,6 +10,7 @@ import {
   EditarResponsaveisTratoDTO,
   ExcluirInsumosTratoDTO,
   ExcluirTransacoesTratoDTO,
+  ExcluirTratoCulturalDTO,
   FinalizarTratoCulturalDTO,
   InserirInsumosTratoDTO,
   ListarTratoPorPropriedadeDTO,
@@ -214,6 +215,18 @@ class TratoCulturalService {
     const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);
     trato.excluirInsumos(dto.idInsumos);
     await this.tratoCulturalRepo.excluirInsumos(trato);
+  }
+
+  public async excluir(dto: ExcluirTratoCulturalDTO, idUsuarioSessao: number): Promise<void> {
+    const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao);
+    const safras = await this.safraRepo.buscarSafrasPorPropriedade(trato.safra.idPropriedade);
+    if (trato.safra.dataFim !== null) {
+      throw new Error("SAFRA_FECHADA");
+    }
+    if (safras.some((safra) => trato.safra.dataInicio < safra.dataInicio)) {
+      throw new Error("TRATO_OUTRA_SAFRA");
+    }
+    await this.tratoCulturalRepo.excluir(trato);
   }
 
   private formatarRespostaPaginada(

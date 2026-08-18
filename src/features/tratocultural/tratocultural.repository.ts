@@ -495,6 +495,17 @@ class TratoCulturalRepository {
     });
   };
 
+  public async excluir(trato: TratoCultural): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      await tx.tratosinsumos.deleteMany({
+        where: { idTrato_PFK: trato.id },
+      });
+      await tx.tratosculturais.delete({ where: { idEventoAgricola_PFK: trato.id } });
+      await this.eventoAgricolaRepo.excluir(trato, tx);
+      await this.eventoRepo.excluir(trato, tx);
+    })
+  }
+
   private async mapToEntity(
     tratoDB: TratoCulturalPayload,
     prisma: Prisma.TransactionClient = this.prisma
@@ -547,6 +558,7 @@ class TratoCulturalRepository {
       tratoDB.tipostratos.descricao as TipoTrato,
       [],
     );
+    
 
     if (tratoDB.tratosinsumos && tratoDB.tratosinsumos.length > 0) {
       tratoDB.tratosinsumos.forEach((ti: TratoInsumoPayload) => {

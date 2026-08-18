@@ -5,6 +5,7 @@ import {
     AlterarInicioTratoCulturalDTO,
   AtualizarDescricaoDTO, BuscarTratoPorIdDTO, CadastrarTratoCulturalDTO, 
   EditarResponsaveisTratoDTO, ExcluirInsumosTratoDTO, ExcluirTransacoesTratoDTO, 
+  ExcluirTratoCulturalDTO, 
   FinalizarTratoCulturalDTO, InserirInsumosTratoDTO, ListarTratoPorPropriedadeDTO, 
   ListarTratoPorSafraDTO,ListarTratoPorTalhaoDTO,
   StatusTrato
@@ -209,6 +210,18 @@ class TratoCulturalController {
     }
   }
 
+  public async excluir(req: Request, res: Response) {
+    try {
+      const dto: ExcluirTratoCulturalDTO = { 
+        idTrato: Number(req.params.id) 
+      };
+      await this.tratoCulturalService.excluir(dto, req.session.idUsuario!);
+      res.status(200).json({ mensagem: 'Trato Cultural excluído com sucesso' });
+    } catch (error: unknown) {
+      this.handleError(res, error, 'Erro ao excluir trato cultural');
+    }
+  }
+
   private handleError(res: Response, error: unknown, defaultMessage: string) {
     if (error instanceof Error) {
       const msg = error.message;
@@ -240,6 +253,10 @@ class TratoCulturalController {
           return res.status(422).json({ error: 'A data de fim deve ser maior que a data de início' });
         case 'DATA_FIM_SUPERIOR':
           return res.status(422).json({ error: 'A data de fim deve ser menor ou igual que a data atual' });
+        case 'SAFRA_FECHADA':
+          return res.status(422).json({ error: 'Não é possível excluir um trato cultural de uma safra fechada' });
+        case 'TRATO_OUTRA_SAFRA':
+          return res.status(422).json({ error: 'Não é possível excluir um trato cultural de uma safra diferente da atual' });
       }
 
       return res.status(400).json({ error: msg });

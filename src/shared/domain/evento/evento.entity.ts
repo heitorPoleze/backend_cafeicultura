@@ -35,17 +35,21 @@ abstract class Evento {
 
         this._dataCadastro = dataCadastro;
 
-        if (!safra) throw new Error('A safra do evento é obrigatória.');
-        if (!(safra instanceof Safra)) throw new Error('A safra do evento é inválida.');
+        if (!safra) 
+            throw new Error('A safra do evento é obrigatória.');
+        if (!(safra instanceof Safra)) 
+            throw new Error('A safra do evento é inválida.');
         this._safra = safra;
 
         if (transacoesFinanceiras && transacoesFinanceiras.length > 0) {
-            if (!(transacoesFinanceiras[0] instanceof Despesa)) throw new Error('As transações financeiras do evento é inválida.');
+            if (!(transacoesFinanceiras[0] instanceof Despesa)) 
+                throw new Error('As transações financeiras do evento é inválida.');
         };
         this._transacoesFinanceiras = transacoesFinanceiras;
 
         if (responsaveis && responsaveis.length > 0) {
-            if (!(responsaveis[0] instanceof Pessoa)) throw new Error('Os responsáveis do evento é inválido.');
+            if (!(responsaveis[0] instanceof Pessoa)) 
+                throw new Error('Os responsáveis do evento é inválido.');
         };
         this._responsaveis = responsaveis;
     };
@@ -74,6 +78,10 @@ abstract class Evento {
     public editarInicio(dataInicio: Date): void {
         if (dataInicio < this._safra.dataInicio) 
             throw new Error("DATA_INICIO_ANTERIOR");
+        if (this._dataFim) {
+            if (dataInicio > this._dataFim) 
+                throw new Error("DATA_INICIO_SUPERIOR");
+        }
         this._dataInicio = dataInicio;
     };
 

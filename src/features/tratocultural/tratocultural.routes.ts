@@ -206,4 +206,14 @@ router.delete(
   tratoCulturalController.excluirInsumos.bind(tratoCulturalController)
 );
 
+router.delete(
+  '/:id',
+  exigeLogin(),
+  [
+    param('id').isInt({ gt: 0 }).withMessage('O ID do trato cultural informado na URL é inválido.'),
+  ],
+  tratoCulturalController.excluir.bind(tratoCulturalController)
+);
+
+
 export default router;
