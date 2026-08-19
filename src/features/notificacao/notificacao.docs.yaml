@@ -1,0 +1,193 @@
+tags:
+  - name: Notificações
+    description: Gerenciamento das notificações dos usuários e propriedades.
+
+paths:
+  /api/v1/notificacoes:
+    get:
+      summary: Listar todas as notificações
+      description: Retorna todas as notificações vinculadas ao proprietário logado (sessão).
+      tags:
+        - Notificações
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista de notificações retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificacaoResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/notificacoes/nao-lidas:
+    get:
+      summary: Listar notificações não lidas
+      description: Retorna apenas as notificações não lidas vinculadas ao proprietário logado.
+      tags:
+        - Notificações
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista de notificações não lidas retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificacaoResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/notificacoes/propriedades/{id}:
+    get:
+      summary: Listar notificações por propriedade
+      description: Retorna todas as notificações vinculadas a uma propriedade específica pertencente ao usuário logado.
+      tags:
+        - Notificações
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID da propriedade.
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Lista de notificações da propriedade retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificacaoResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/notificacoes/nao-lidas/propriedades/{id}:
+    get:
+      summary: Listar notificações não lidas por propriedade
+      description: Retorna apenas as notificações não lidas vinculadas a uma propriedade específica.
+      tags:
+        - Notificações
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID da propriedade.
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Lista de notificações não lidas da propriedade retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificacaoResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/notificacoes/{id}/lida:
+    patch:
+      summary: Marcar notificação como lida
+      description: Atualiza o status da notificação especificada para lida (true).
+      tags:
+        - Notificações
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID da notificação a ser atualizada.
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '204':
+          description: Notificação atualizada com sucesso (No Content).
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    NotificacaoResponse:
+      type: object
+      properties:
+        id_PK:
+          type: integer
+          example: 1
+        titulo:
+          type: string
+          example: "Lembrete: Evento em 3 dia(s)"
+        mensagem:
+          type: string
+          example: "Atenção, o evento agendado está se aproximando."
+        tipoEvento:
+          type: string
+          example: "tratosculturais"
+        idEvento_FK:
+          type: integer
+          example: 14
+        idPropriedade_FK:
+          type: integer
+          example: 2
+        lida:
+          type: boolean
+          example: false
+        dataCriacao:
+          type: string
+          format: date-time
+          example: "2026-08-18T22:57:15.149Z"
+
+  responses:
+    ValidationError:
+      description: Erro de validação nos parâmetros enviados.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              erros:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    msg:
+                      type: string
+                      example: "ID da notificação inválido."
+                    param:
+                      type: string
+                      example: "id"
+                    location:
+                      type: string
+                      example: "params"
+    
+    InternalServerError:
+      description: Erro interno no servidor ao processar a requisição.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Erro ao buscar notificações."

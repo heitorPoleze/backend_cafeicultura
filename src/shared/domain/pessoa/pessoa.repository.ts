@@ -5,7 +5,7 @@ import PessoaFactory from "./pessoafactory.entity";
 import PessoaBase from "./pessoabase.entity";
 import PessoaDTO from "./pessoa.dto";
 import { Prisma, PrismaClient } from "@prisma/client";
-import { paginar, ResultadoPaginacao } from "../../utils/pagination.dto";
+import { ResultadoPaginacao } from "../../utils/pagination.dto";
 const pessoaInclude = {
   pessoasfisicas: true,
   pessoasjuridicas: true,
