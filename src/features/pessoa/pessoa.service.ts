@@ -8,7 +8,7 @@ import PessoaFactory from "../../shared/domain/pessoa/pessoafactory.entity";
 import { cnpj as ValidarCNPJ } from "cpf-cnpj-validator";
 import {
   BuscaPaginadaDTO,
-    ClienteResponseDTO,
+  ClienteResponseDTO,
   CreateClienteDTO,
   CreateFornecedorDTO,
   CreateFuncionarioDTO,
@@ -44,7 +44,7 @@ class PessoaService {
     private readonly meeiroRepo: MeeiroRepo,
     private readonly prestadorRepo: PrestadorRepo,
     private readonly pessoaRepo: PessoaRepo,
-  ) {}
+  ) { }
 
   private async verificarCadastro(dados: CreatePessoaDTO) {
     if (dados.tipoPessoa === "fisica") {
@@ -55,17 +55,18 @@ class PessoaService {
         throw new Error(`CPF_EXISTENTE`);
       };
     } else if (dados.tipoPessoa === "juridica") {
-      const cnpjExistente = await this.pessoaRepo.verificarCnpjExistente(
-        dados.cnpj!,
-      );
-      const inscricaoExistente = await this.pessoaRepo.verificarInscricaoEstadualExistente(
-        dados.inscrEstadual!,
-        dados.idAdministrador!
-      );
+      const cnpjExistente = await this.pessoaRepo.verificarCnpjExistente(dados.cnpj!);
       if (cnpjExistente) {
         throw new Error(`CNPJ_EXISTENTE`);
-      }else if( inscricaoExistente){
-        throw new Error(`INSCRICAO_ESTADUAL_EXISTENTE`);
+      }
+      if (dados.inscrEstadual != null) {
+        const inscricaoExistente = await this.pessoaRepo.verificarInscricaoEstadualExistente(
+          dados.inscrEstadual!,
+          dados.idAdministrador!
+        );
+        if (inscricaoExistente) {
+          throw new Error(`INSCRICAO_ESTADUAL_EXISTENTE`);
+        }
       }
     };
   };
@@ -155,7 +156,7 @@ class PessoaService {
         endereco: c.pessoa.endereco,
       };
     } else {
-        throw new Error("ERRO_AO_BUSCAR");
+      throw new Error("ERRO_AO_BUSCAR");
     };
   };
 
@@ -192,7 +193,7 @@ class PessoaService {
         endereco: f.pessoa.endereco,
       };
     } else {
-        throw new Error("ERRO_AO_BUSCAR");
+      throw new Error("ERRO_AO_BUSCAR");
     }
   };
 
@@ -221,7 +222,7 @@ class PessoaService {
         salario: f.salario,
       };
     } else {
-        throw new Error("ERRO_AO_BUSCAR");
+      throw new Error("ERRO_AO_BUSCAR");
     };
   };
 
@@ -243,7 +244,7 @@ class PessoaService {
         endereco: m.pessoa.endereco
       };
     } else {
-        throw new Error("ERRO_AO_BUSCAR");
+      throw new Error("ERRO_AO_BUSCAR");
     };
   };
 
@@ -266,60 +267,60 @@ class PessoaService {
         endereco: p.pessoa.endereco
       };
     } else {
-        throw new Error("ERRO_AO_BUSCAR");
+      throw new Error("ERRO_AO_BUSCAR");
     };
   };
 
-public async listarPessoas(dto: ListarPessoasDTO): Promise<ResultadoPaginacao<PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO>> {
-  const { data: pessoas, total, pagina, totalPaginas } = await this.pessoaRepo.listarPessoas(
-    dto.idAdministrador,
-    dto.pagina,
-    dto.limite,
-  );
+  public async listarPessoas(dto: ListarPessoasDTO): Promise<ResultadoPaginacao<PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO>> {
+    const { data: pessoas, total, pagina, totalPaginas } = await this.pessoaRepo.listarPessoas(
+      dto.idAdministrador,
+      dto.pagina,
+      dto.limite,
+    );
 
-  if (!pessoas) {
-    throw new Error("ERRO_AO_BUSCAR");
-  }
-
-  if (pessoas.length === 0) {
-    throw new Error("SEM_REGISTROS");
-  }
-
-  const pessoasDTO: (PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO)[] = [];
-  for (const p of pessoas) {
-    if (p instanceof PessoaFisica) {
-      pessoasDTO.push({
-        id: p.id!,
-        idAdministrador: p.idAdministrador,
-        dataCadastro: p.dataCadastro,
-        nome: p.nome,
-        cpf: p.cpf,
-        endereco: p.endereco,
-        papel: p.papel,
-      });
-    } else if (p instanceof PessoaJuridica) {
-      pessoasDTO.push({
-        id: p.id!,
-        idAdministrador: p.idAdministrador,
-        dataCadastro: p.dataCadastro,
-        razaoSocial: p.razaoSocial,
-        cnpj: p.cnpj,
-        inscrEstadual: p.inscrEstadual,
-        endereco: p.endereco,
-        papel: p.papel,
-      });
-    } else {
+    if (!pessoas) {
       throw new Error("ERRO_AO_BUSCAR");
     }
-  }
 
-  return {
-    data: pessoasDTO,
-    total,
-    pagina,
-    totalPaginas,
-  };
-}
+    if (pessoas.length === 0) {
+      throw new Error("SEM_REGISTROS");
+    }
+
+    const pessoasDTO: (PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO)[] = [];
+    for (const p of pessoas) {
+      if (p instanceof PessoaFisica) {
+        pessoasDTO.push({
+          id: p.id!,
+          idAdministrador: p.idAdministrador,
+          dataCadastro: p.dataCadastro,
+          nome: p.nome,
+          cpf: p.cpf,
+          endereco: p.endereco,
+          papel: p.papel,
+        });
+      } else if (p instanceof PessoaJuridica) {
+        pessoasDTO.push({
+          id: p.id!,
+          idAdministrador: p.idAdministrador,
+          dataCadastro: p.dataCadastro,
+          razaoSocial: p.razaoSocial,
+          cnpj: p.cnpj,
+          inscrEstadual: p.inscrEstadual,
+          endereco: p.endereco,
+          papel: p.papel,
+        });
+      } else {
+        throw new Error("ERRO_AO_BUSCAR");
+      }
+    }
+
+    return {
+      data: pessoasDTO,
+      total,
+      pagina,
+      totalPaginas,
+    };
+  }
   public async buscarFuncionariosPorIdAdministrador(idAdministrador: number, pagina: number, limite: number): Promise<BuscaPaginadaDTO> {
     const funcionarios = await this.funcionarioRepo.listarFuncionarios(idAdministrador, pagina, limite);
 
@@ -365,8 +366,8 @@ public async listarPessoas(dto: ListarPessoasDTO): Promise<ResultadoPaginacao<Pe
     return { pagina, limite, dados: funcionariosDTO };
   }
   public async buscarClientesPorIdAdministrador(idAdministrador: number, pagina: number, limite: number): Promise<BuscaPaginadaDTO> {
-    const clientes = await this.clienteRepo.buscarClientesPorAdministrador(idAdministrador,pagina,limite);
-    if (!clientes) return {pagina, limite, dados: []};
+    const clientes = await this.clienteRepo.buscarClientesPorAdministrador(idAdministrador, pagina, limite);
+    if (!clientes) return { pagina, limite, dados: [] };
     const clientesDTO: ClienteResponseDTO[] = [];
     for (const c of clientes.dados) {
       if ('pessoa' in c && c.pessoa instanceof PessoaFisica) {
@@ -434,7 +435,7 @@ public async listarPessoas(dto: ListarPessoasDTO): Promise<ResultadoPaginacao<Pe
           cpf: m.pessoa.cpf,
           endereco: m.pessoa.endereco,
         });
-      }else if (m.pessoa instanceof PessoaJuridica) {
+      } else if (m.pessoa instanceof PessoaJuridica) {
         meeirosDTO.push({
           id: m.pessoa.id!,
           idAdministrador: m.pessoa.idAdministrador,
@@ -506,7 +507,7 @@ public async listarPessoas(dto: ListarPessoasDTO): Promise<ResultadoPaginacao<Pe
     if (!pessoa) {
       throw new Error(`Pessoa com ID ${pessoaId} não encontrado.`);
     }
-    
+
     const perfil = pessoa
     if (perfil instanceof PessoaFisica) {
       const novoNome = dados.nome as string;
@@ -540,33 +541,33 @@ public async listarPessoas(dto: ListarPessoasDTO): Promise<ResultadoPaginacao<Pe
       throw new Error("Tipo de pessoa inválido.");
     }
   }
-  public async atualizarCpf(novoCpf:string,pessoaId:number){
-      const cpfExistente = await this.pessoaRepo.verificarCpfExistente(
-        novoCpf!
-      );
-      if (cpfExistente) {
-        throw new Error(`CPF_EXISTENTE`);
-      };
-   let resultado =  await this.pessoaRepo.atualizarCpfPessoa(novoCpf,pessoaId);
-   return resultado
+  public async atualizarCpf(novoCpf: string, pessoaId: number) {
+    const cpfExistente = await this.pessoaRepo.verificarCpfExistente(
+      novoCpf!
+    );
+    if (cpfExistente) {
+      throw new Error(`CPF_EXISTENTE`);
+    };
+    let resultado = await this.pessoaRepo.atualizarCpfPessoa(novoCpf, pessoaId);
+    return resultado
   }
-  public async atualizarCNPJ(novoCnpj:string,pessoaId:number){
+  public async atualizarCNPJ(novoCnpj: string, pessoaId: number) {
     const cnpjExistente = await this.pessoaRepo.verificarCnpjExistente(novoCnpj!)
-    if (cnpjExistente ){
+    if (cnpjExistente) {
       throw new Error(`CNPJ_EXISTENTE`)
     };
-    if(ValidarCNPJ.isValid(novoCnpj,true)!){
-        throw new Error(`CNPJ_INVALIDO`)
+    if (ValidarCNPJ.isValid(novoCnpj, true)!) {
+      throw new Error(`CNPJ_INVALIDO`)
     }
-    let resultado = await this.pessoaRepo.atualizarCnpj(novoCnpj,pessoaId)
+    let resultado = await this.pessoaRepo.atualizarCnpj(novoCnpj, pessoaId)
     return resultado
   }
-  public async atualizarInscricaoEstadual(novaIE:string,pessoaId:number){
-    let resultado = await this.pessoaRepo.atualizarInscricaoEstadualPorPessoaId(pessoaId,novaIE)
+  public async atualizarInscricaoEstadual(novaIE: string, pessoaId: number) {
+    let resultado = await this.pessoaRepo.atualizarInscricaoEstadualPorPessoaId(pessoaId, novaIE)
     return resultado
   }
-  public async verificarInscricaoEstadualExistente(ie:string,idAdministrador:number){
-    const ieExistente = await this.pessoaRepo.verificarInscricaoEstadualExistente(ie,idAdministrador)
+  public async verificarInscricaoEstadualExistente(ie: string, idAdministrador: number) {
+    const ieExistente = await this.pessoaRepo.verificarInscricaoEstadualExistente(ie, idAdministrador)
     if (ieExistente) {
       throw new Error(`INSCRICAO_ESTADUAL_EXISTENTE`);
     }
@@ -620,7 +621,7 @@ public async listarPessoas(dto: ListarPessoasDTO): Promise<ResultadoPaginacao<Pe
     const prestador = await this.prestadorRepo.buscarPorId(dto.id);
     if (!prestador) {
       throw new Error("NAO_ENCONTRADO");
-    }    ;
+    };
     if (prestador.pessoa.idAdministrador !== idUsuarioSessao) {
       throw new Error("ACESSO_NEGADO");
     };
