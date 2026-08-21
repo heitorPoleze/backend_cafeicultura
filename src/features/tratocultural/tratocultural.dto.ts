@@ -45,10 +45,6 @@ export type AtualizarDescricaoDTO = {
   idTrato: number;
   descricao: string;
 };
-export type AtualizarDescricaoTratoDTO  = {
-  idTrato: number;
-  descricao: string;
-}
 
 export type InserirInsumosTratoDTO = {
   idTrato: number;

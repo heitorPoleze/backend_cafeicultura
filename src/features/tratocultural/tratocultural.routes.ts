@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { body, param, query } from 'express-validator';
-import exigeLogin from "../../shared/middlewares/exigeLogin"; 
+import exigeLogin from "../../shared/middlewares/exigeLogin";
 import TratoCulturalController from './tratocultural.controller';
 import TratoCulturalService from './tratocultural.service';
 
@@ -10,7 +10,7 @@ import SafraRepository from '../safra/safra.repository';
 import InsumoRepository from '../../shared/domain/insumo/insumo.repository';
 import TalhaoRepository from '../talhao/talhao.repository';
 import PessoaRepository from '../../shared/domain/pessoa/pessoa.repository';
-import { prisma } from "../../shared/config/database"; 
+import { prisma } from "../../shared/config/database";
 import EventoRepository from '../../shared/domain/evento/evento.repository';
 import EventoAgricolaRepository from '../../shared/domain/evento/eventoagricola/eventoagricola.repository';
 import DespesaRepository from '../despesa/despesa.repository';
@@ -101,11 +101,11 @@ router.post(
     body('dataInicio').notEmpty().withMessage('A data de início é obrigatória.').isISO8601().withMessage('A data de início deve estar em formato ISO8601.'),
     body('dataFim').optional({ nullable: true }).isISO8601().withMessage('A data de fim deve estar em formato ISO8601.'),
     body('descricao').optional().isString().withMessage('A descrição deve ser um texto.'),
-    
+
     body('insumosUtilizados').optional().isArray().withMessage('Os insumos utilizados devem ser uma lista (array).'),
     body('insumosUtilizados.*.idInsumo').optional().isInt({ gt: 0 }).withMessage('ID do insumo inválido.'),
     body('insumosUtilizados.*.qtdUsada').optional().isFloat({ gt: 0 }).withMessage('A quantidade deve ser maior que zero.'),
-    
+
     body('responsaveisIds').optional().isArray().withMessage('Os responsáveis devem ser enviados em formato de lista.'),
     body('responsaveisIds.*').optional().isInt({ gt: 0 }).withMessage('ID de responsável inválido.'),
 
@@ -135,7 +135,11 @@ router.patch(
   exigeLogin(),
   [
     param('id').isInt({ gt: 0 }).withMessage('O ID do trato cultural informado na URL é inválido.'),
-    body('descricao').notEmpty().withMessage('A descrição é obrigatória.')
+    body('descricao')
+      .optional({ values: 'falsy' })
+      .isString().withMessage('A descrição deve ser um texto.')
+      .matches(/^(?=.*[a-zA-Zá-úÁ-ÚãõÃÕçÇ]).*$/)
+      .withMessage('A descrição não pode conter apenas números, espaços ou sinais.')
   ],
   tratoCulturalController.atualizarDescricao.bind(tratoCulturalController)
 )
