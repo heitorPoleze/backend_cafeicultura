@@ -20,20 +20,6 @@ class NotificacaoRepository {
     return this.mapToEntity(notificacao);
   }
 
-  public async listarExistentesPorEventos(idsEventos: number[]): Promise<Array<{ idEvento_FK: number, tipoNotificacao: string }>> {
-    if (idsEventos.length === 0) return [];
-
-    return await this.prisma.notificacoes.findMany({
-      where: {
-        idEvento_FK: { in: idsEventos }
-      },
-      select: {
-        idEvento_FK: true,
-        tipoNotificacao: true
-      }
-    });
-  }
-
   public async listarTodas(idUsuario: number): Promise<Notificacao[]> {
     const notificacoes = await this.prisma.notificacoes.findMany({
       where: { idProprietario_FK: idUsuario },

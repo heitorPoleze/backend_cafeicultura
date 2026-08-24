@@ -53,7 +53,6 @@ const mapaDiasNotificacao: Record<number, TipoNotificacao> = {
 const MS_POR_DIA = 1000 * 60 * 60 * 24;
 
 function calcularDiferencaDias(dataEvento: Date, dataAtual: Date): number {
-    // FIXED: Using getUTCDate() to ignore the local timezone shift from the database
     const utcEvento = Date.UTC(
         dataEvento.getUTCFullYear(), 
         dataEvento.getUTCMonth(), 
@@ -131,18 +130,7 @@ async function processarNotificacoes(): Promise<void> {
 
     if (notificacoesDesejadas.length === 0) return;
 
-    const idsEventos = [...new Set(notificacoesDesejadas.map(n => n.idEvento))];
-    const existentes = await notificacaoRepo.listarExistentesPorEventos(idsEventos);
-
-    const setExistentes = new Set(
-        existentes.map(e => `${e.idEvento_FK}-${e.tipoNotificacao}`)
-    );
-
-    const notificacoesParaCriar = notificacoesDesejadas.filter(n => 
-        !setExistentes.has(`${n.idEvento}-${n.tipoNotificacao}`)
-    );
-
-    const promisesDeDespacho = notificacoesParaCriar.map(async (dto) => {
+    const promisesDeDespacho = notificacoesDesejadas.map(async (dto) => {
         try {
             const novaNotificacao = await notificacaoRepo.criar({
                 idProprietario: dto.idProprietario,
@@ -160,11 +148,11 @@ async function processarNotificacoes(): Promise<void> {
 
     await Promise.all(promisesDeDespacho);
     
-    console.log(`[CRON] Finalizado. ${notificacoesParaCriar.length} novas notificações geradas.`);
+    console.log(`[CRON] Finalizado. ${notificacoesDesejadas.length} novas notificações geradas.`);
 }
 
 export function iniciarCronJobs(): void {
-    cron.schedule('* 3 * * *', async () => {
+    cron.schedule('* 7 * * *', async () => { // Roda todo dia às 7:00
         try {
             await processarNotificacoes();
         } catch (erro) {
