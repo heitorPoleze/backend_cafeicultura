@@ -10,7 +10,7 @@ class TransacaoFinanceiraRepository {
         tx: Prisma.TransactionClient
     ): Promise<number> {
         
-        const formaPgtoDB = await tx.formaspgto.findFirst({
+        const formaPgtoDB = await tx.formaspgto.findUnique({
             where: { 
                 descricao: transacao.formaPagamento 
             }
