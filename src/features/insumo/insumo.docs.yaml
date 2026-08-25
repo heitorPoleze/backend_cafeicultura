@@ -7,14 +7,9 @@ components:
     CadastrarInsumoInput:
       type: object
       required:
-        - idProprietario
         - descricao
         - medida
       properties:
-        idProprietario:
-          type: integer
-          description: ID numérico do proprietário do insumo.
-          example: 1
         descricao:
           type: string
           minLength: 3

@@ -17,7 +17,6 @@ router.post(
     '/',
     exigeLogin(),
     [
-        body('idProprietario').isInt({ gt: 0 }).withMessage('O ID do proprietário é inválido.'),
         body('descricao').notEmpty().withMessage('A descrição é obrigatória.').isString().isLength({ min: 3 }).withMessage('A descrição deve ter no mínimo 3 caracteres.'),
         body('medida').isIn(Object.values(MedidaInsumo)).withMessage('Unidade de medida inválida.')
     ],

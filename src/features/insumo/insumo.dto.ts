@@ -1,7 +1,6 @@
 import { MedidaInsumo } from '../../shared/domain/insumo/insumo.entity';
 
 export type CadastrarInsumoDTO = {
-    idProprietario: number;
     descricao: string;
     medida: MedidaInsumo;
 };
