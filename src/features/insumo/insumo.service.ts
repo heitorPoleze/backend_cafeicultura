@@ -12,16 +12,13 @@ class InsumoService {
         if (!Object.values(MedidaInsumo).includes(dto.medida)) 
             throw new Error('MEDIDA_INVALIDA');
         
-        if (dto.idProprietario !== idUsuario) 
-            throw new Error('PROPRIETARIO_INVALIDO');
-        
         const descricaoPadronizada = dto.descricao
             .trim()
             .split(/\s+/)
             .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
             .join(' ');
 
-        const novoInsumo = new Insumo(undefined, dto.idProprietario, descricaoPadronizada, dto.medida);
+        const novoInsumo = new Insumo(undefined, idUsuario, descricaoPadronizada, dto.medida);
         return await this.insumoRepo.cadastrar(novoInsumo);
     };
 
