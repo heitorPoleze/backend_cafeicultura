@@ -143,6 +143,7 @@ model eventos {
   descricao             String                  @db.VarChar(50)
   safras                safras                  @relation(fields: [idSafra_FK], references: [idSafra_PK], onDelete: NoAction, onUpdate: NoAction, map: "evento_safra")
   eventosagricolas      eventosagricolas?
+  notificacoes          notificacoes[]
   pessoaseventos        pessoaseventos[]
   transacoesfinanceiras transacoesfinanceiras[]
   vendas                vendas?
@@ -334,6 +335,7 @@ model propriedades {
   idProprietario_FK     Int                     @db.UnsignedInt
   idTamanho_FK          Int                     @db.UnsignedInt
   nome                  String                  @db.VarChar(25)
+  notificacoes          notificacoes[]
   enderecos             enderecos               @relation(fields: [idEndereco_FK], references: [idEndereco_PK], onDelete: NoAction, onUpdate: NoAction, map: "propriedade_endereco")
   proprietarios         proprietarios           @relation(fields: [idProprietario_FK], references: [idProprietario_PFK], onDelete: NoAction, onUpdate: NoAction, map: "propriedade_proprietario")
   tamanhos              tamanhos                @relation(fields: [idTamanho_FK], references: [idTamanho_PK], onDelete: NoAction, onUpdate: NoAction, map: "propriedade_tamanho")
@@ -348,6 +350,7 @@ model propriedades {
 
 model proprietarios {
   idProprietario_PFK Int            @id @unique(map: "idProprietario_PFK_UNIQUE") @db.UnsignedInt
+  notificacoes       notificacoes[]
   pessoas            pessoas[]
   propriedades       propriedades[]
   usuarios           usuarios       @relation(fields: [idProprietario_PFK], references: [idUsuario_PFK], onDelete: NoAction, onUpdate: NoAction, map: "proprietario_usuario")
@@ -551,4 +554,22 @@ model prestadoresdeservico {
   pessoas        pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_prestador")
 
   @@index([idPeFisica_PFK], map: "pessoa_prestador_idx")
+}
+
+model notificacoes {
+  idNotificacao_PK  Int           @id @unique(map: "idNotificacao_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
+  idProprietario_FK Int           @db.UnsignedInt
+  idPropriedade_FK  Int           @db.UnsignedInt
+  idEvento_FK       Int           @db.UnsignedInt
+  tipoEvento        String        @db.VarChar(15)
+  tipoNotificacao   String        @db.VarChar(25)
+  dataCriacao       DateTime      @default(now()) @db.DateTime(0)
+  lida              Int           @default(0) @db.UnsignedTinyInt
+  eventos           eventos       @relation(fields: [idEvento_FK], references: [idEvento_PK], onDelete: NoAction, onUpdate: NoAction, map: "notificacao_evento")
+  propriedades      propriedades  @relation(fields: [idPropriedade_FK], references: [idPropriedade_PK], onDelete: NoAction, onUpdate: NoAction, map: "notificacao_propriedade")
+  proprietarios     proprietarios @relation(fields: [idProprietario_FK], references: [idProprietario_PFK], onDelete: NoAction, onUpdate: NoAction, map: "notificacao_proprietario")
+
+  @@index([idEvento_FK], map: "notificacao_evento_idx")
+  @@index([idPropriedade_FK], map: "notificacao_propriedade_idx")
+  @@index([idProprietario_FK], map: "notificacao_proprietario_idx")
 }
