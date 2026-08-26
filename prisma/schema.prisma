@@ -119,13 +119,13 @@ model enderecos {
 }
 
 model estoque {
-  idEstoque_PK    Int   @id @unique(map: "idEstoque_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
-  idEventogricola Int   @db.UnsignedInt
-  idPropriedade   Int   @db.UnsignedInt
-  idTalhao        Int   @db.UnsignedInt
-  idSafra         Int   @db.UnsignedInt
-  idTipoCafe      Int   @db.UnsignedInt
-  quantidade      Float @db.Float
+  idEstoque_PK     Int   @id @unique(map: "idEstoque_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
+  idEventoAgricola Int   @db.UnsignedInt
+  idPropriedade    Int   @db.UnsignedInt
+  idTalhao         Int   @db.UnsignedInt
+  idSafra          Int   @db.UnsignedInt
+  idTipoCafe       Int   @db.UnsignedInt
+  quantidade       Float
 }
 
 model etiquetas {

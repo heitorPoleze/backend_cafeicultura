@@ -34,7 +34,7 @@ const pessoaService = new PessoaService(
 
 const pessoaController = new PessoaController(pessoaService);
 
-const validacaoPessoaMista = [
+const validarCriacaoPessoaMista = [
   body("tipoPessoa").isIn(['fisica', 'juridica']).withMessage("O tipoPessoa deve ser 'fisica' ou 'juridica'"),
   
   // Condicionais Física
@@ -48,7 +48,7 @@ const validacaoPessoaMista = [
 ];
 
 // Validação estrita para Funcionario, Meeiro e Prestador (Apenas Física)
-const validacaoPessoaFisicaEstrita = [
+const validarCriacaoPessoaFisica = [
   body("tipoPessoa").equals("fisica").withMessage("Este cadastro aceita apenas Pessoa Física ('fisica')"),
   body("nome").notEmpty().withMessage("O nome é obrigatório"),
   body("cpf").custom((value) => validarCPF.isValid(value, true)).withMessage("O CPF informado é inválido")
@@ -143,7 +143,7 @@ router.delete(
 router.post(
   "/clientes",
   exigeLogin(),
-  validacaoPessoaMista,
+  validarCriacaoPessoaMista,
   pessoaController.cadastrarCliente.bind(pessoaController)
 );
 
@@ -164,7 +164,7 @@ router.delete(
 router.post(
   "/fornecedores",
   exigeLogin(),
-  validacaoPessoaMista,
+  validarCriacaoPessoaMista,
   pessoaController.cadastrarFornecedor.bind(pessoaController)
 );
 
@@ -187,7 +187,7 @@ router.post(
   "/funcionarios",
   exigeLogin(),
   [
-    ...validacaoPessoaFisicaEstrita
+    ...validarCriacaoPessoaFisica
     //body("ctps").notEmpty().withMessage("A CTPS é obrigatória para funcionários"),
     //body("salario").isFloat({ gt: 0 }).withMessage("O salário deve ser um valor numérico maior que zero")
   ],
@@ -221,7 +221,7 @@ router.delete(
 router.post(
   "/meeiros",
   exigeLogin(),
-  validacaoPessoaFisicaEstrita,
+  validarCriacaoPessoaFisica,
   pessoaController.cadastrarMeeiro.bind(pessoaController)
 );
 
@@ -242,7 +242,7 @@ router.delete(
 router.post(
   "/prestadores",
   exigeLogin(),
-  validacaoPessoaMista,
+  validarCriacaoPessoaMista,
   pessoaController.cadastrarPrestador.bind(pessoaController)
 );
 

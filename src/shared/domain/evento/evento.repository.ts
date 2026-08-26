@@ -40,11 +40,9 @@ class EventoRepository {
 
   public async atualizarDescricao(
     evento: Evento,
-    tx?: Prisma.TransactionClient,
+    tx: Prisma.TransactionClient = this.prisma,
   ): Promise<void> {
-    const client = tx || this.prisma;
-
-    await client.eventos.update({
+    await tx.eventos.update({
       where: { idEvento_PK: evento.id },
       data: { descricao: evento.descricao },
     });
@@ -52,11 +50,10 @@ class EventoRepository {
   
   public async editarInicio(
     evento: Evento,
-    tx?: Prisma.TransactionClient,
+    tx: Prisma.TransactionClient = this.prisma, 
   ): Promise<void> {
-    const client = tx || this.prisma;
 
-    await client.eventos.update({
+    await tx.eventos.update({
       where: { idEvento_PK: evento.id },
       data: { dataInicio: evento.dataInicio },
     });
@@ -64,11 +61,10 @@ class EventoRepository {
 
   public async finalizar(
     evento: Evento,
-    tx?: Prisma.TransactionClient,
+    tx: Prisma.TransactionClient = this.prisma,
   ): Promise<void> {
-    const client = tx || this.prisma;
 
-    await client.eventos.update({
+    await tx.eventos.update({
       where: { idEvento_PK: evento.id },
       data: { 
         dataInicio: evento.dataInicio,
@@ -77,9 +73,9 @@ class EventoRepository {
     });
   };
 
-  public async excluirTransacoes(evento: Evento): Promise<void> {
+  public async excluirTransacoes(evento: Evento, tx: Prisma.TransactionClient): Promise<void> {
     evento.transacoesFinanceiras!.forEach(async (transacao) => {
-      await this.despesaRepo.excluir(transacao.id as number, this.prisma);
+      await this.despesaRepo.excluir(transacao.id as number, tx);
     });
   };
 
@@ -124,6 +120,7 @@ class EventoRepository {
 
   public async excluir(evento: Evento, tx: Prisma.TransactionClient): Promise<void> {
     if (!evento.id) throw new Error("ID_OBRIGATORIO");
+    await this.despesaRepo.excluirPorEvento(evento.id, tx);
     await tx.pessoaseventos.deleteMany({ where: { idEvento_PFK: evento.id } });
     await tx.eventos.delete({ where: { idEvento_PK: evento.id } });
   }

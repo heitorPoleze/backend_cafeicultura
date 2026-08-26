@@ -61,8 +61,8 @@ components:
       required:
         - idTalhao
         - idSafra
-        - idTipoTrato
         - dataInicio
+        - tipoTrato
       properties:
         idTalhao:
           type: integer
@@ -71,10 +71,6 @@ components:
         idSafra:
           type: integer
           description: ID numérico da safra associada.
-          example: 2
-        idTipoTrato:
-          type: integer
-          description: ID numérico representando o tipo de trato (ex. Capina, Adubação).
           example: 2
         dataInicio:
           type: string
@@ -91,6 +87,10 @@ components:
           type: string
           description: Descrição ou observação sobre o trato realizado (opcional).
           example: "Adubação foliar realizada no período da manhã."
+        tipoTrato:
+          type: string
+          description: Tipo de trato cultural realizado.
+          example: "Adubação"
         insumosUtilizados:
           type: array
           description: Lista opcional de insumos gastos neste trato.
@@ -190,6 +190,37 @@ paths:
           description: Trato Cultural não encontrado.
         '500':
           description: Erro interno ao buscar o trato cultural.
+    put:
+      summary: Exclui e cadastra um novo Trato Cultural
+      description: Rota para excluir um trato cultural e cadastrar um novo com dados atualizados.
+      tags:
+        - Tratos Culturais
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico do trato cultural.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CadastrarTratoCulturalInput'
+      responses:
+        '201':
+          description: Trato Cultural retornado com sucesso.
+        '400':
+          description: Erro de validação nos dados enviados ou tipo de trato inválido.
+        '403':
+          description: Acesso negado.
+        '404':
+          description: Safra, Talhão, Propriedade, Insumo ou Responsável não encontrado.
+        '500':
+          description: Erro interno ao atualizar o trato cultural.
     delete: 
       summary: Exclui um Trato Cultural
       description: Rota para excluir um trato cultural.

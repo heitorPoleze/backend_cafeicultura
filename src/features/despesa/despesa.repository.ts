@@ -32,15 +32,15 @@ class DespesaRepository {
     tx?: Prisma.TransactionClient,
   ): Promise<number> {
     const executarOperacoes = async (
-      clientePrisma: Prisma.TransactionClient,
+      tx: Prisma.TransactionClient,
     ) => {
       const idTransacao = await this.transacaoRepo.cadastrar(
         despesa,
         despesa.beneficiado.id!,
-        clientePrisma,
+        tx,
       );
 
-      await clientePrisma.despesas.create({
+      await tx.despesas.create({
         data: {
           idTransacaoFinanceira_PFK: idTransacao,
           descricao: despesa.descricao || "",
@@ -258,6 +258,20 @@ class DespesaRepository {
         await executarOperacoes(novoTx);
       });
     }
+  }
+
+  public async excluirPorEvento(
+    idEvento: number,
+    tx: Prisma.TransactionClient = this.prisma,
+  ): Promise<void> {
+    await tx.despesas.deleteMany({
+      where: {
+        transacoesfinanceiras: {
+          idEvento_FK: idEvento,
+        },
+      },
+    });
+    await this.transacaoRepo.excluirPorEvento(idEvento, tx);
   }
 }
 
