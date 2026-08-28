@@ -152,7 +152,7 @@ async function processarNotificacoes(): Promise<void> {
 }
 
 export function iniciarCronJobs(): void {
-    cron.schedule('* 7 * * *', async () => { // Roda todo dia às 7:00
+    cron.schedule('0 7 * * *', async () => { // Roda todo dia às 7:00
         try {
             await processarNotificacoes();
         } catch (erro) {
