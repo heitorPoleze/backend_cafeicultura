@@ -6,7 +6,6 @@ import {
   AtualizarDescricaoDTO,
   BuscarTratoPorIdDTO,
   CadastrarTratoCulturalDTO,
-  ConfirmarTratoCulturalDTO,
   EditarResponsaveisTratoDTO,
   EditarTratoCulturalDTO,
   ExcluirInsumosTratoDTO,
@@ -41,29 +40,29 @@ class TratoCulturalService {
     private safraRepo: SafraRepository,
     private insumoRepo: InsumoRepository,
     private talhaoRepo: TalhaoRepository,
-    private pessoaRepo: PessoaRepository
-  ) { }
+    private pessoaRepo: PessoaRepository  
+  ) {};
 
   private async validarAcessoPropriedade(idPropriedade: number, idUsuarioSessao: number, tx: Prisma.TransactionClient): Promise<void> {
     const propriedade = await this.propriedadeRepo.buscarPorId(idPropriedade, tx);
     if (!propriedade) throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
     if (propriedade.idProprietario !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
-  }
+  };
 
   private async buscarEValidarTrato(idTrato: number, idUsuarioSessao: number, tx: Prisma.TransactionClient): Promise<TratoCultural> {
     const trato = await this.tratoCulturalRepo.buscarPorId(idTrato, tx);
     if (!trato) throw new Error("TRATO_NAO_ENCONTRADO");
     await this.validarAcessoPropriedade(trato.safra.idPropriedade, idUsuarioSessao, tx);
     return trato;
-  }
+  };
 
   private async buscarEValidarSafra(idSafra: number, tx: Prisma.TransactionClient): Promise<Safra> {
     const safra = await this.safraRepo.buscarPorId(idSafra, tx);
     if (!safra) {
       throw new Error("SAFRA_NAO_ENCONTRADA");
-    }
+    };
     return safra;
-  }
+  };
 
   private async buscarEValidarTalhao(idTalhao: number, tx: Prisma.TransactionClient): Promise<Talhao> {
     const talhao = await this.talhaoRepo.buscarPorId(idTalhao, tx);
@@ -128,8 +127,8 @@ class TratoCulturalService {
       return await this.prisma.$transaction(async (novoTx) => {
         return await executarOperacoes(novoTx);
       });
-    }
-  }
+    };
+  };
 
   public async editar(
     dto: EditarTratoCulturalDTO,
@@ -140,7 +139,7 @@ class TratoCulturalService {
       await this.tratoCulturalRepo.excluir(trato, tx);
       return this.buscarEValidarTrato(await this.cadastrar(dto, idUsuarioSessao, tx), idUsuarioSessao, tx);
     });
-  }
+  };
 
   public async atualizarDescricao(dto: AtualizarDescricaoDTO, idUsuarioSessao: number): Promise<void> {
     return await this.prisma.$transaction(async (tx) => {
@@ -148,7 +147,7 @@ class TratoCulturalService {
       trato.descricao = dto.descricao;
       await this.tratoCulturalRepo.atualizarDescricao(trato, tx);
     })
-  }
+  };
 
   public async editarResponsaveis(dto: EditarResponsaveisTratoDTO, idUsuarioSessao: number): Promise<void> {
     return await this.prisma.$transaction(async (tx) => {
@@ -164,8 +163,8 @@ class TratoCulturalService {
 
       trato.editarResponsaveis(responsaveis);
       await this.tratoCulturalRepo.editarResponsaveis(trato, tx);
-    })
-  }
+    });
+  };
 
   public async inserirInsumos(dto: InserirInsumosTratoDTO, idUsuarioSessao: number): Promise<void> {
     return await this.prisma.$transaction(async (tx) => {
@@ -178,15 +177,14 @@ class TratoCulturalService {
           return new TratoInsumo(insumoDomain, item.qtdUsada);
         })
       );
-
       trato.inserirInsumos(novosInsumos);
       await this.tratoCulturalRepo.inserirInsumos(trato, tx);
-    })
-  }
+    });
+  };
 
   public async buscarPorId(dto: BuscarTratoPorIdDTO, idUsuarioSessao: number): Promise<ResponseTratoCulturalDTO> {
     return await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao, this.prisma);
-  }
+  };
 
   public async listarTodosPropriedade(
     dto: ListarTratoPorPropriedadeDTO,
@@ -202,10 +200,9 @@ class TratoCulturalService {
         dto.filtroFim,
         dto.status
       );
-
       return this.formatarRespostaPaginada(total, tratos, dto.pagina);
-    })
-  }
+    });
+  };
 
   public async listarTodosSafra(
     dto: ListarTratoPorSafraDTO,
@@ -219,10 +216,9 @@ class TratoCulturalService {
         dto.idPropriedade,
         dto.pagina
       );
-
       return this.formatarRespostaPaginada(total, tratos, dto.pagina);
     });
-  }
+  };
 
   public async listarTodosTalhao(
     dto: ListarTratoPorTalhaoDTO,
@@ -237,18 +233,17 @@ class TratoCulturalService {
         dto.pagina,
         dto.status
       );
-
       return this.formatarRespostaPaginada(total, tratos, dto.pagina);
-    })
-  }
+    });
+  };
 
   public async buscarTiposTratos(): Promise<TipoTratoDTO[]> {
     return await this.tratoCulturalRepo.buscarTiposTratos();
-  }
+  };
 
   public async buscarTipoTratoPorDescricao(descricao: string, tx: Prisma.TransactionClient = this.prisma): Promise<TipoTratoDTO> {
     return await this.tratoCulturalRepo.buscarTipoTratoPorDescricao(descricao, tx);
-  }
+  };
 
   public async alterarInicioTrato(dto: AlterarInicioTratoCulturalDTO, idUsuarioSessao: number): Promise<void> {
     await this.prisma.$transaction(async (tx) => {
@@ -264,7 +259,7 @@ class TratoCulturalService {
       trato.finalizar(dto.dataInicio, dto.dataFim);
       await this.tratoCulturalRepo.finalizarTrato(trato, tx);
     });
-  }
+  };
 
   public async excluirTransacoes(dto: ExcluirTransacoesTratoDTO, idUsuarioSessao: number): Promise<void> {
     await this.prisma.$transaction(async (tx) => {
@@ -272,7 +267,7 @@ class TratoCulturalService {
       trato.excluirTransacoes(dto.idTransacoes);
       await this.tratoCulturalRepo.excluirTransacoes(trato, tx);
     });
-  }
+  };
 
   public async excluirInsumos(dto: ExcluirInsumosTratoDTO, idUsuarioSessao: number): Promise<void> {
     await this.prisma.$transaction(async (tx) => {
@@ -280,7 +275,7 @@ class TratoCulturalService {
       trato.excluirInsumos(dto.idInsumos);
       await this.tratoCulturalRepo.excluirInsumos(trato, tx);
     });
-  }
+  };
 
   public async excluir(dto: ExcluirTratoCulturalDTO, idUsuarioSessao: number): Promise<void> {
     return await this.prisma.$transaction(async (tx) => {
@@ -288,13 +283,13 @@ class TratoCulturalService {
       const safras = await this.safraRepo.buscarSafrasPorPropriedade(trato.safra.idPropriedade, tx);
       if (trato.safra.dataFim !== null) {
         throw new Error("SAFRA_FECHADA");
-      }
+      };
       if (safras.some((safra) => trato.safra.dataInicio < safra.dataInicio)) {
         throw new Error("TRATO_OUTRA_SAFRA");
-      }
+      };
       await this.tratoCulturalRepo.excluir(trato, tx);
     });
-  }
+  };
 
   private formatarRespostaPaginada(
     total: number,
@@ -303,19 +298,16 @@ class TratoCulturalService {
   ): ResponseListagemTratosDTO {
     const limite = 25;
     const response: ResponseListagemTratosDTO = { total, tratos: tratos };
-
     if (pagina) {
       const totalPaginas = Math.ceil(total / limite);
       response.totalPaginas = totalPaginas === 0 ? 1 : totalPaginas;
       response.paginaAtual = pagina;
-    }
-
+    };
     if (tratos.length === 0) {
       throw new Error("TRATOS_NAO_ENCONTRADOS");
-    }
-
+    };
     return response;
-  }
+  };
 }
 
 export default TratoCulturalService;

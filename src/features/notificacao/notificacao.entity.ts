@@ -1,7 +1,7 @@
 import { TipoEvento, TipoNotificacao } from "./notificacao.dto";
 
 class Notificacao {
-    private _id: number;
+    private readonly _id: number | undefined;
     private _idProprietario: number;
     private _idPropriedade: number;
     private _idEvento: number;
@@ -10,7 +10,7 @@ class Notificacao {
     private _dataCriacao: Date;
     private _lida: boolean;
 
-    constructor(id: number, idProprietario: number, idPropriedade: number, idEvento: number, tipoEvento: TipoEvento, tipoNotificaocao: TipoNotificacao, dataCriacao: Date, lida: boolean) {
+    constructor(id: number | undefined, idProprietario: number, idPropriedade: number, idEvento: number, tipoEvento: TipoEvento, tipoNotificaocao: TipoNotificacao, dataCriacao: Date = new Date(), lida: boolean = false) {
         this._id = id;
         this._idProprietario = idProprietario;
         this._idPropriedade = idPropriedade;
@@ -19,7 +19,7 @@ class Notificacao {
         this._tipoNotificacao = tipoNotificaocao;
         this._dataCriacao = dataCriacao;
         this._lida = lida;
-    }
+    };
 
     get id() { return this._id; }
     get idProprietario() { return this._idProprietario; }

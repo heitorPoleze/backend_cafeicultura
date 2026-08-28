@@ -7,7 +7,7 @@ export enum TipoEvento {
   PILAGENS = 'pilagens',
   ARMAZENAGENS = 'armazenagens',
   VENDAS = 'vendas'
-}
+};
 
 export enum TipoNotificacao {
   FUTURO_UM = 'FUTURO_UM',
@@ -15,32 +15,24 @@ export enum TipoNotificacao {
   FUTURO_TRES = 'FUTURO_TRES',
   FUTURO_SETE= 'FUTURO_SETE',
   PASSADO = 'PASSADO'
-}
-
-export type CriarNotificacaoDTO = {
-  idProprietario: number;
-  idPropriedade: number;
-  idEvento: number;
-  tipoEvento: TipoEvento;
-  tipoNotificacao: TipoNotificacao;
-}
+};
 
 export type ListarPorProprietarioDTO = {
   idProprietario: number;
-}
+};
 
 export type ListarPorPropriedadeDTO = {
   idProprietario: number;
   idPropriedade: number;
-}
+};
 
 export type MarcarComoLidaDTO = {
   idNotificacao: number;
   idProprietario: number;
-}
+};
 
 export type NotificacaoResponseDTO = {
-  id: number;
+  id: number | undefined;
   idEvento: number;
   idProprietario: number;
   idPropriedade: number;
@@ -48,4 +40,4 @@ export type NotificacaoResponseDTO = {
   tipoNotificacao: TipoNotificacao;
   dataCriacao: Date;
   lida: boolean;
-}
+};

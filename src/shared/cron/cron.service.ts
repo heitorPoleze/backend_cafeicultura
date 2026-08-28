@@ -4,6 +4,7 @@ import { prisma } from '../../shared/config/database';
 import { GerenciadorWebSocket } from '../websocket/websocket.manager';
 import { TipoEvento, TipoNotificacao } from '../../features/notificacao/notificacao.dto';
 import NotificacaoRepository from '../../features/notificacao/notificacao.repository';
+import Notificacao from '../../features/notificacao/notificacao.entity';
 
 const notificacaoRepo = new NotificacaoRepository(prisma);
 
@@ -132,13 +133,15 @@ async function processarNotificacoes(): Promise<void> {
 
     const promisesDeDespacho = notificacoesDesejadas.map(async (dto) => {
         try {
-            const novaNotificacao = await notificacaoRepo.criar({
-                idProprietario: dto.idProprietario,
-                idPropriedade: dto.idPropriedade,
-                idEvento: dto.idEvento,
-                tipoEvento: dto.tipoEvento,
-                tipoNotificacao: dto.tipoNotificacao
-            });
+            const notificacao = new Notificacao(
+                undefined,
+                dto.idProprietario,
+                dto.idPropriedade,
+                dto.idEvento,
+                dto.tipoEvento,
+                dto.tipoNotificacao
+            );
+            const novaNotificacao = await notificacaoRepo.criar(notificacao);
 
             GerenciadorWebSocket.obterInstancia().enviarParaUsuario(dto.idProprietario, novaNotificacao);
         } catch (erro) {
