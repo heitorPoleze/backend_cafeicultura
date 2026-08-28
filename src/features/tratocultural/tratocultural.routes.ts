@@ -18,6 +18,7 @@ import TransacaoFinanceiraRepository from '../../shared/domain/transacaofinancei
 import { FormaPagamento, TipoOperacao } from '../../shared/domain/transacaofinanceira/transacaofinanceira.entity';
 import { StatusTrato } from './tratocultural.dto';
 import { TipoTrato } from './tratocultural.entity';
+import EstoqueInsumoRepository from '../../shared/domain/estoqueinsumo/estoqueinsumo.repository';
 
 const router = Router();
 
@@ -28,6 +29,7 @@ const eventoRepository = new EventoRepository(prisma, despesaRepository);
 const eventoAgricolaRepository = new EventoAgricolaRepository(prisma);
 const propriedadeRepository = new PropriedadeRepository(prisma);
 const safraRepository = new SafraRepository(prisma);
+const estoqueRepository = new EstoqueInsumoRepository();
 const insumoRepository = new InsumoRepository(prisma);
 const talhaoRepository = new TalhaoRepository(prisma);
 const tratoCulturalRepository = new TratoCulturalRepository(prisma, eventoRepository, eventoAgricolaRepository, pessoaRepository, despesaRepository);
@@ -39,7 +41,8 @@ const tratoCulturalService = new TratoCulturalService(
   safraRepository,
   insumoRepository,
   talhaoRepository,
-  pessoaRepository
+  pessoaRepository,
+  estoqueRepository
 );
 
 const tratoCulturalController = new TratoCulturalController(tratoCulturalService);

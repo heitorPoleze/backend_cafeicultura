@@ -25,45 +25,49 @@ class DespesaRepository {
     private prisma: PrismaClient,
     private transacaoRepo: TransacaoFinanceiraRepository,
     private pessoaRepo: PessoaRepository,
-  ) { }
-
+  ) {};
+  
   public async cadastrar(
     despesa: Despesa,
-    tx?: Prisma.TransactionClient,
-  ): Promise<number> {
-    const executarOperacoes = async (
-      tx: Prisma.TransactionClient,
-    ) => {
-      const idTransacao = await this.transacaoRepo.cadastrar(
-        despesa,
-        despesa.beneficiado.id!,
-        tx,
-      );
+    tx: Prisma.TransactionClient,
+    compraInsumo: boolean
+  ): Promise<Despesa>;
+  public async cadastrar(
+    despesa: Despesa,
+    tx: Prisma.TransactionClient
+  ): Promise<number>;
+  public async cadastrar(
+    despesa: Despesa,
+    tx: Prisma.TransactionClient,
+    compraInsumo?: boolean
+  ): Promise<number | Despesa> {
+    const transacao = await this.transacaoRepo.cadastrar(
+      despesa,
+      despesa.beneficiado.id!,
+      tx
+    );
 
-      await tx.despesas.create({
-        data: {
-          idTransacaoFinanceira_PFK: idTransacao,
-          descricao: despesa.descricao || "",
-        },
-      });
+    const despesaDB = await tx.despesas.create({
+      data: {
+        idTransacaoFinanceira_PFK: transacao,
+        descricao: despesa.descricao || "",
+      },
+    });
 
-      return idTransacao;
-    };
-
-    if (tx) {
-      return await executarOperacoes(tx);
+    if (compraInsumo) {
+      const despesa = await this.buscarPorId(despesaDB.idTransacaoFinanceira_PFK, tx);
+      if (!despesa) throw new Error("DESPESA_NAO_ENCONTRADA");
+      return despesa;
     } else {
-      return await this.prisma.$transaction(async (novoTx) => {
-        return await executarOperacoes(novoTx);
-      });
+      return transacao;
     }
   }
 
   public async buscarPorId(
     id: number,
-    tx?: Prisma.TransactionClient,
+    tx: Prisma.TransactionClient = this.prisma,
   ): Promise<Despesa | null> {
-    const despesaDB = await (tx ?? this.prisma).despesas.findUnique({
+    const despesaDB = await tx.despesas.findUnique({
       where: {
         idTransacaoFinanceira_PFK: id,
       },
@@ -142,7 +146,7 @@ class DespesaRepository {
             }
           } : {}),
           eventos: {
-            dataFim: { not: null },          
+            dataFim: { not: null },
           },
         }
       },

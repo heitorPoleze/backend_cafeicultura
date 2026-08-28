@@ -18,9 +18,8 @@ const pessoaRepo = new PessoaRepository(prisma);
 const propriedadeRepo = new PropriedadeRepository(prisma);
 const despesaRepo = new DespesaRepository(prisma, transacaoRepo, pessoaRepo);
 
-const despesaService = new DespesaService(despesaRepo, propriedadeRepo, pessoaRepo);
+const despesaService = new DespesaService(prisma, despesaRepo, propriedadeRepo, pessoaRepo);
 const despesaController = new DespesaController(despesaService);
-
 
 router.post(
   '/',
@@ -38,7 +37,7 @@ router.post(
 );
 
 router.get(
-  '/propriedade/:idPropriedade',
+  '/propriedades/:idPropriedade',
   exigeLogin(),
   [
     param('idPropriedade').isInt({ gt: 0 }).withMessage('ID da propriedade inválido.')
@@ -47,9 +46,8 @@ router.get(
 );
 
 router.get(
-  '/proprietario',
+  '/',
   exigeLogin(),
-  [],
   despesaController.listarPorProprietario.bind(despesaController)
 );
 

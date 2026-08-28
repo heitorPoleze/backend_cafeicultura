@@ -1,48 +1,45 @@
 import { Router } from 'express';
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import exigeLogin from "../../shared/middlewares/exigeLogin"; 
 import InsumoController from './insumo.controller';
 import InsumoService from './insumo.service';
 import InsumoRepository from '../../shared/domain/insumo/insumo.repository';
 import { prisma } from "../../shared/config/database"; 
 import { MedidaInsumo } from '../../shared/domain/insumo/insumo.entity';
+import EstoqueInsumoRepository from '../../shared/domain/estoqueinsumo/estoqueinsumo.repository';
 
 const router = Router();
 
+const estoqueRepository = new EstoqueInsumoRepository();
 const insumoRepository = new InsumoRepository(prisma);
-const insumoService = new InsumoService(insumoRepository);
+const insumoService = new InsumoService(prisma, insumoRepository, estoqueRepository);
 const insumoController = new InsumoController(insumoService);
 
-router.post(
+router.get(
     '/',
     exigeLogin(),
     [
-        body('descricao').notEmpty().withMessage('A descrição é obrigatória.').isString().isLength({ min: 3 }).withMessage('A descrição deve ter no mínimo 3 caracteres.'),
-        body('medida').isIn(Object.values(MedidaInsumo)).withMessage('Unidade de medida inválida.')
+        query('idPropriedade').isInt({ gt: 0 }).withMessage('O ID da propriedade deve ser numérico.')
     ],
-    insumoController.cadastrar.bind(insumoController)
+    insumoController.listarTodos.bind(insumoController)
 );
 
 router.get(
-    '/buscar/:descricao',
+    '/buscar',
     exigeLogin(),
     [
-        param('descricao').notEmpty().withMessage('A descrição para busca é obrigatória.')
+        query('descricao').notEmpty().withMessage('A descrição para busca é obrigatória.'),
+        query('idPropriedade').isInt({ gt: 0 }).withMessage('O ID da propriedade deve ser numérico.')
     ],
     insumoController.buscarPorDescricao.bind(insumoController)
-);
-
-router.get(
-    '/',
-    exigeLogin(),
-    insumoController.listarTodos.bind(insumoController)
 );
 
 router.get(
     '/:id',
     exigeLogin(),
     [
-        param('id').isInt({ gt: 0 }).withMessage('O ID do insumo informado na URL é inválido.')
+        param('id').isInt({ gt: 0 }).withMessage('O ID do insumo informado na URL é inválido.'),
+        query('idPropriedade').isInt({ gt: 0 }).withMessage('O ID da propriedade deve ser numérico.')
     ],
     insumoController.buscarPorId.bind(insumoController)
 );

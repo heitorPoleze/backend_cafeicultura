@@ -4,10 +4,8 @@ import Insumo, { MedidaInsumo } from './insumo.entity';
 class InsumoRepository {
     constructor(private readonly prisma: PrismaClient) {};
 
-    public async cadastrar(insumo: Insumo, tx?: Prisma.TransactionClient): Promise<number> {
-        const client = tx || this.prisma;
-
-        const insumoDB = await client.insumos.create({
+    public async cadastrar(insumo: Insumo, tx: Prisma.TransactionClient): Promise<Insumo> {
+        const insumoDB = await tx.insumos.create({
             data: {
                 idProprietario_FK: insumo.idProprietario,
                 descricao: insumo.descricao,
@@ -15,7 +13,7 @@ class InsumoRepository {
             }
         });
 
-        return insumoDB.idInsumo_PK;
+        return new Insumo(insumoDB.idInsumo_PK, insumoDB.idProprietario_FK, insumoDB.descricao, insumoDB.medida as MedidaInsumo);
     };
 
     public async buscarPorId(idInsumo: number, idUsuario: number, tx: Prisma.TransactionClient = this.prisma): Promise<Insumo | null> {
@@ -30,8 +28,8 @@ class InsumoRepository {
         return new Insumo(insumoDB.idInsumo_PK, insumoDB.idProprietario_FK, insumoDB.descricao, insumoDB.medida as MedidaInsumo);
     };
 
-    public async buscarPorDescricao(descricao: string, idUsuario: number): Promise<Insumo | null> {
-        const insumoDB = await this.prisma.insumos.findFirst({
+    public async buscarPorDescricao(descricao: string, idUsuario: number, tx: Prisma.TransactionClient): Promise<Insumo | null> {
+        const insumoDB = await tx.insumos.findFirst({
             where: {
                 idProprietario_FK: idUsuario,
                 descricao: {
@@ -44,20 +42,8 @@ class InsumoRepository {
         return new Insumo(insumoDB.idInsumo_PK, insumoDB.idProprietario_FK, insumoDB.descricao, insumoDB.medida as MedidaInsumo);
     };
 
-    public async verificarExistente(descricao: string, idUsuario: number): Promise<boolean> {
-        const insumo = await this.prisma.insumos.findFirst({
-            where: {
-                idProprietario_FK: idUsuario,
-                descricao: {
-                    equals: descricao
-                },
-            },
-        })
-        return !!insumo;
-    };
-
-    public async buscarTodos(idUsuario: number): Promise<Insumo[]> {
-        const insumosDB = await this.prisma.insumos.findMany({
+    public async buscarTodos(idUsuario: number, tx: Prisma.TransactionClient): Promise<Insumo[]> {
+        const insumosDB = await tx.insumos.findMany({
             where: {
                 idProprietario_FK: idUsuario,
             },

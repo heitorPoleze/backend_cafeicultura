@@ -52,17 +52,17 @@ class FornecedorRepository {
     });
   };
 
-  public async buscarPorId(id: number): Promise<Fornecedor | null> {
+  public async buscarPorId(id: number, tx?: Prisma.TransactionClient): Promise<Fornecedor | null> {
      if(!id || id <= 0 || !Number.isInteger(id)) {
       throw new Error("ID_INVALIDO");
     }
-    const f = await this.prisma.fornecedores.findUnique({
+    const f = await (tx || this.prisma).fornecedores.findUnique({
       where: { idFornecedor_PFK: id },
     });
 
     if (!f) return null;
 
-    const p = await this.prisma.pessoas.findUnique({
+    const p = await (tx || this.prisma).pessoas.findUnique({
       where: { idPessoa_PK: id },
       include: {
         pessoasfisicas: true,

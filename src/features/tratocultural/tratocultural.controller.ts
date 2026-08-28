@@ -266,6 +266,10 @@ class TratoCulturalController {
           return res.status(422).json({ error: 'Não é possível excluir um trato cultural de uma safra diferente da atual' });
         case 'FORMA_NAO_ENCONTRADA':
           return res.status(422).json({ error: 'Forma de pagamento inválida' });
+        case 'VALOR_INVALIDO':
+          return res.status(422).json({ error: 'Valor da quantidade usada inválido' });
+        case 'ESTOQUE_INSUFICIENTE':
+          return res.status(422).json({ error: 'Estoque insuficiente' });
       }
 
       return res.status(400).json({ error: msg });

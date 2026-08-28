@@ -422,67 +422,32 @@ class TratoCulturalRepository {
     await this.eventoRepo.atualizarDescricao(trato, tx);
   };
 
-  public async inserirInsumos(trato: TratoCultural, tx: Prisma.TransactionClient): Promise<void> {
-    if (!trato.insumosUtilizados || trato.insumosUtilizados.length === 0) {
-      return;
-    }
-
-    const idTrato = trato.id!;
-
-    const insumosNoBanco = await tx.tratosinsumos.findMany({
+  public async buscarInsumosDoTrato(idTrato: number, tx: Prisma.TransactionClient): Promise<Array<{ idInsumo_PFK: number, qtdUsada: number }>> {
+    return await tx.tratosinsumos.findMany({
       where: { idTrato_PFK: idTrato },
       select: { idInsumo_PFK: true, qtdUsada: true },
     });
+  };
 
-    const mapaExistentes = new Map<number, number>();
-    for (const item of insumosNoBanco) {
-      mapaExistentes.set(item.idInsumo_PFK, Number(item.qtdUsada));
-    }
+  public async atualizarQtdInsumoTrato(idTrato: number, idInsumo: number, novaQtdTotal: number, tx: Prisma.TransactionClient): Promise<void> {
+    await tx.tratosinsumos.updateMany({
+      where: {
+        idTrato_PFK: idTrato,
+        idInsumo_PFK: idInsumo,
+      },
+      data: {
+        qtdUsada: novaQtdTotal,
+      },
+    });
+  };
 
-    type InsertPayload = { idTrato_PFK: number; idInsumo_PFK: number; qtdUsada: number };
-    type UpdatePayload = { idInsumo_PFK: number; novaQtdTotal: number };
-
-    const novosInsumosParaInserir: InsertPayload[] = [];
-    const insumosParaAtualizar: UpdatePayload[] = [];
-
-    for (const tratoInsumo of trato.insumosUtilizados) {
-      const idInsumo = tratoInsumo.insumo.id!;
-      const qtdSendoAdicionada = tratoInsumo.qtdUsada;
-
-      if (mapaExistentes.has(idInsumo)) {
-        const qtdAnterior = mapaExistentes.get(idInsumo)!;
-        const qtdTotalAtualizada = qtdAnterior + qtdSendoAdicionada;
-
-        insumosParaAtualizar.push({
-          idInsumo_PFK: idInsumo,
-          novaQtdTotal: qtdTotalAtualizada,
-        });
-      } else {
-        novosInsumosParaInserir.push({
-          idTrato_PFK: idTrato,
-          idInsumo_PFK: idInsumo,
-          qtdUsada: qtdSendoAdicionada,
-        });
-      }
-    }
-
-    for (const atualizacao of insumosParaAtualizar) {
-      await tx.tratosinsumos.updateMany({
-        where: {
-          idTrato_PFK: idTrato,
-          idInsumo_PFK: atualizacao.idInsumo_PFK,
-        },
-        data: {
-          qtdUsada: atualizacao.novaQtdTotal,
-        },
-      });
-    }
-    if (novosInsumosParaInserir.length > 0) {
-      await tx.tratosinsumos.createMany({
-        data: novosInsumosParaInserir,
-      });
-    }
-
+  public async inserirInsumos(
+    insumos: Array<{ idTrato_PFK: number; idInsumo_PFK: number; qtdUsada: number }>,
+    tx: Prisma.TransactionClient
+  ): Promise<void> {
+    await tx.tratosinsumos.createMany({
+      data: insumos,
+    });
   };
 
   public async alterarInicioTrato(trato: TratoCultural, tx: Prisma.TransactionClient): Promise<void> {

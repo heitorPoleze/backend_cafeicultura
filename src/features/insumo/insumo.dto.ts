@@ -7,15 +7,21 @@ export type CadastrarInsumoDTO = {
 
 export type BuscarInsumoPorIdDTO = {
     id: number;
+    idPropriedade: number;
 };
 
 export type BuscarInsumoPorDescricaoDTO = {
     descricao: string;
+    idPropriedade: number;
+};
+
+export type BuscarTodosInsumosDTO = {
+    idPropriedade: number;
 };
 
 export type InsumoResponseDTO = {
     id: number | undefined;
-    idProprietario: number;
     descricao: string;
     medida: string;
+    qtdEstoque: number;
 };

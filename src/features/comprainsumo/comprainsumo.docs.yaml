@@ -7,7 +7,6 @@ components:
     CadastrarCompraInsumoInput:
       type: object
       required:
-        - idInsumo
         - qtdComprada
         - idPropriedade
         - beneficiado
@@ -18,11 +17,24 @@ components:
       properties:
         idInsumo:
           type: integer
-          description: ID do insumo previamente cadastrado no catálogo geral.
+          description: ID do insumo previamente cadastrado no catálogo. Obrigatório se 'novoInsumo' não for enviado.
           example: 12
+        novoInsumo:
+          type: object
+          description: Dados para criação de um novo insumo. Obrigatório se 'idInsumo' não for enviado.
+          required:
+            - descricao
+            - medida
+          properties:
+            descricao:
+              type: string
+              example: "Adubo Foliar NPK"
+            medida:
+              type: string
+              example: "L"
         qtdComprada:
           type: number
-          format: float
+          format: double
           description: Quantidade adquirida do insumo (na unidade de medida correspondente).
           example: 50.5
         idPropriedade:
@@ -40,7 +52,7 @@ components:
           example: 42
         valor:
           type: number
-          format: float
+          format: decimal(10,2)
           description: Valor total pago pelos insumos.
           example: 1500.50
         descricao:
@@ -60,7 +72,7 @@ paths:
   /api/v1/comprasinsumos:
     post:
       summary: Registra a Compra de um Insumo
-      description: Realiza a orquestração do sistema. Adiciona o insumo ao estoque da propriedade e cria, na mesma transação, a Despesa financeira.
+      description: Adiciona o insumo ao estoque da propriedade e cria a Despesa financeira. Permite referenciar um insumo existente ou criar um novo na mesma requisição.
       tags: 
         - Compras de Insumos
       security:
@@ -75,11 +87,24 @@ paths:
         '201':
           description: Compra de insumo registrada e Despesa financeira gerada com sucesso.
         '400':
-          description: Erro de validação nos dados enviados (ex. valores negativos).
+          description: Erro de validação nos dados enviados (ex. valores negativos, ou envio de idInsumo e novoInsumo simultaneamente).
         '401':
           description: Acesso negado. O usuário não é o proprietário da propriedade informada.
         '404':
           description: Propriedade, Insumo ou Fornecedor (Beneficiado) não encontrado.
+
+    get:
+      summary: Lista Todas as Compras do Proprietário
+      description: Retorna um agregado de todas as compras de insumos vinculadas a TODAS as propriedades do proprietário logado.
+      tags: 
+        - Compras de Insumos
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista geral de compras retornada com sucesso.
+        '404':
+          description: Nenhuma compra encontrada para este proprietário.
 
   /api/v1/comprasinsumos/{id}:
     get:
@@ -104,7 +129,7 @@ paths:
         '404':
           description: Compra não encontrada no banco de dados.
 
-  /api/v1/comprasinsumos/propriedade/{idPropriedade}:
+  /api/v1/comprasinsumos/propriedades/{idPropriedade}:
     get:
       summary: Lista Compras por Propriedade
       description: Retorna todo o histórico de compras de insumos vinculadas a uma propriedade rural específica.
@@ -123,25 +148,11 @@ paths:
         '200':
           description: Lista de compras retornada com sucesso.
         '401':
-          description: Acesso negado. O usuário não tem permissão para visualizar dados desta propriedade.
+          description: Acesso negado.
         '404':
           description: Nenhuma compra encontrada para esta propriedade, ou a propriedade em si não foi encontrada.
 
-  /api/v1/comprasinsumos/proprietario:
-    get:
-      summary: Lista Todas as Compras do Proprietário
-      description: Retorna um agregado de todas as compras de insumos vinculadas a TODAS as propriedades do proprietário logado.
-      tags: 
-        - Compras de Insumos
-      security:
-        - cookieAuth: []
-      responses:
-        '200':
-          description: Lista geral de compras retornada com sucesso.
-        '404':
-          description: Nenhuma compra encontrada para este proprietário.
-
-  /api/v1/comprasinsumos/buscar/{descricao}:
+  /api/v1/comprasinsumos/buscar:
     get:
       summary: Busca Compras por Descrição do Insumo
       description: Permite ao usuário buscar no histórico global todas as vezes que comprou um insumo contendo o texto especificado.
@@ -150,7 +161,7 @@ paths:
       security:
         - cookieAuth: []
       parameters:
-        - in: path
+        - in: query
           name: descricao
           required: true
           schema:
