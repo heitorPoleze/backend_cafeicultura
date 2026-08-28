@@ -11,16 +11,18 @@ import { EventoAgricolaRepository } from '../../shared/domain/evento/eventoagric
 import DespesaRepository from '../despesa/despesa.repository';
 import TransacaoFinanceiraRepository from '../../shared/domain/transacaofinanceira/transacaofinanceira.repository';
 import PessoaRepository from '../../shared/domain/pessoa/pessoa.repository';
+import NotificacaoRepository from '../notificacao/notificacao.repository';
 
 const router = Router();
 
+const notificacaoRepository = new NotificacaoRepository(prisma);
 const propriedadeRepo = new PropriedadeRepository(prisma);
 const pessoaRepo = new PessoaRepository(prisma);
 const transacaoRepo = new TransacaoFinanceiraRepository(prisma);
 const despesaRepo = new DespesaRepository(prisma, transacaoRepo, pessoaRepo);
 const eventoRepo = new EventoRepository(prisma, despesaRepo);
 const eventoAgricolaRepo = new EventoAgricolaRepository(prisma);
-const tratoRepo = new TratoRepository(prisma, eventoRepo, eventoAgricolaRepo, pessoaRepo, despesaRepo);
+const tratoRepo = new TratoRepository(prisma, eventoRepo, eventoAgricolaRepo, pessoaRepo, despesaRepo, notificacaoRepository);
 const eventoService = new EventoService(prisma, propriedadeRepo, tratoRepo);
 const eventoController = new EventoController(eventoService);
 

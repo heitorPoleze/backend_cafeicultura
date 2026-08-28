@@ -10,6 +10,7 @@ import PessoaBase from "../../shared/domain/pessoa/pessoabase.entity";
 import Despesa from "../despesa/despesa.entity";
 import DespesaRepository from "../despesa/despesa.repository";
 import { StatusTrato, TipoTratoDTO } from "./tratocultural.dto";
+import NotificacaoRepository from "../notificacao/notificacao.repository";
 
 type TratoCulturalPayload = Prisma.tratosculturaisGetPayload<{
   include: {
@@ -54,8 +55,9 @@ class TratoCulturalRepository {
     private eventoRepo: EventoRepository,
     private eventoAgricolaRepo: EventoAgricolaRepository,
     private pessoaBaseRepo: PessoaBaseRepository,
-    private despesaRepo: DespesaRepository
-  ) { }
+    private despesaRepo: DespesaRepository,
+    private notificacaoRepo: NotificacaoRepository
+  ) {};
 
   public async cadastrar(
     trato: TratoCultural,
@@ -476,13 +478,12 @@ class TratoCulturalRepository {
   };
 
   public async excluir(trato: TratoCultural, tx: Prisma.TransactionClient = this.prisma): Promise<void> {
-    await tx.tratosinsumos.deleteMany({
-      where: { idTrato_PFK: trato.id },
-    });
+    await this.notificacaoRepo.excluirPorEvento(trato, tx);
+    await tx.tratosinsumos.deleteMany({where: { idTrato_PFK: trato.id }});
     await tx.tratosculturais.delete({ where: { idEventoAgricola_PFK: trato.id } });
     await this.eventoAgricolaRepo.excluir(trato, tx);
     await this.eventoRepo.excluir(trato, tx);
-  }
+  };
 
   private async mapToEntity(
     tratoDB: TratoCulturalPayload,

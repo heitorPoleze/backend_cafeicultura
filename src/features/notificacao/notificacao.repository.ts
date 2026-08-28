@@ -1,13 +1,14 @@
 import { Prisma, PrismaClient } from "@prisma/client";
-import { CriarNotificacaoDTO, TipoEvento, TipoNotificacao } from "./notificacao.dto";
+import { TipoEvento, TipoNotificacao } from "./notificacao.dto";
 import Notificacao from "./notificacao.entity";
+import Evento from "../../shared/domain/evento/evento.entity";
 
 type NotificacaoPayload = Prisma.notificacoesGetPayload<{}>;
 
 class NotificacaoRepository {
   constructor(private readonly prisma: PrismaClient) { }
 
-  public async criar(dto: CriarNotificacaoDTO): Promise<Notificacao> {
+  public async criar(dto: Notificacao): Promise<Notificacao> {
     const notificacao = await this.prisma.notificacoes.create({
       data: {
         idProprietario_FK: dto.idProprietario,
@@ -81,6 +82,13 @@ class NotificacaoRepository {
       }
     });
   }
+  public async excluirPorEvento(evento: Evento, tx: Prisma.TransactionClient): Promise<void> {
+    await tx.notificacoes.deleteMany({
+      where: {
+        idEvento_FK: evento.id,
+      }
+    });
+  };
 
   private async mapToEntity(notificacaoDB: NotificacaoPayload): Promise<Notificacao> {
     return new Notificacao(
