@@ -3,7 +3,7 @@ import { body, param, query } from 'express-validator';
 import exigeLogin from "../../shared/middlewares/exigeLogin";
 import TratoCulturalController from './tratocultural.controller';
 import TratoCulturalService from './tratocultural.service';
-
+import NotificacaoRepository from '../notificacao/notificacao.repository';
 import TratoCulturalRepository from './tratocultural.repository';
 import PropriedadeRepository from '../propriedade/propriedade.repository';
 import SafraRepository from '../safra/safra.repository';
@@ -21,6 +21,7 @@ import { TipoTrato } from './tratocultural.entity';
 
 const router = Router();
 
+const notificacaoRepository = new NotificacaoRepository(prisma);
 const transacaoRepository = new TransacaoFinanceiraRepository(prisma);
 const pessoaRepository = new PessoaRepository(prisma);
 const despesaRepository = new DespesaRepository(prisma, transacaoRepository, pessoaRepository);
@@ -30,7 +31,7 @@ const propriedadeRepository = new PropriedadeRepository(prisma);
 const safraRepository = new SafraRepository(prisma);
 const insumoRepository = new InsumoRepository(prisma);
 const talhaoRepository = new TalhaoRepository(prisma);
-const tratoCulturalRepository = new TratoCulturalRepository(prisma, eventoRepository, eventoAgricolaRepository, pessoaRepository, despesaRepository);
+const tratoCulturalRepository = new TratoCulturalRepository(prisma, eventoRepository, eventoAgricolaRepository, pessoaRepository, despesaRepository, notificacaoRepository);
 
 const tratoCulturalService = new TratoCulturalService(
   prisma,

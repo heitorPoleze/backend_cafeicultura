@@ -12,9 +12,11 @@ import EventoRepository from '../../shared/domain/evento/evento.repository';
 import DespesaRepository from '../despesa/despesa.repository';
 import PessoaRepository from '../../shared/domain/pessoa/pessoa.repository';
 import { EventoAgricolaRepository } from '../../shared/domain/evento/eventoagricola/eventoagricola.repository';
+import NotificacaoRepository from '../notificacao/notificacao.repository';
 
 const router = Router();
 
+const notificacaoRepository = new NotificacaoRepository(prisma);
 const pessoaRepository = new PessoaRepository(prisma);
 const transacaoRepository = new TransacaoRepository(prisma);
 const despesaRepository = new DespesaRepository(prisma, transacaoRepository, pessoaRepository);
@@ -22,7 +24,7 @@ const safraRepository = new SafraRepository(prisma);
 const eventoRepository = new EventoRepository(prisma, despesaRepository);
 const eventoAgricolaRepository = new EventoAgricolaRepository(prisma);
 const propriedadeRepo = new PropriedadeRepo(prisma);
-const tratoRepository = new TratoRepository(prisma, eventoRepository, eventoAgricolaRepository, pessoaRepository, despesaRepository);
+const tratoRepository = new TratoRepository(prisma, eventoRepository, eventoAgricolaRepository, pessoaRepository, despesaRepository, notificacaoRepository);
 const safraService = new SafraService(prisma, safraRepository, propriedadeRepo, tratoRepository, despesaRepository);
 const safraController = new SafraController(safraService);
 

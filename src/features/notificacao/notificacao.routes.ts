@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { param } from 'express-validator';
 import { prisma } from "../../shared/config/database";
-import exigeLogin from "../../shared/middlewares/exigeLogin"; // Adjust path if needed
+import exigeLogin from "../../shared/middlewares/exigeLogin";
 import NotificacaoRepository from './notificacao.repository';
 import NotificacaoService from './notificacao.service';
 import NotificacaoController from './notificacao.controller';
