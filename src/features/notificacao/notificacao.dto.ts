@@ -27,7 +27,7 @@ export type ListarPorPropriedadeDTO = {
 };
 
 export type MarcarComoLidaDTO = {
-  idNotificacao: number;
+  idsNotificacoes: number[];
   idProprietario: number;
 };
 

@@ -12,16 +12,16 @@ paths:
       security:
         - cookieAuth: []
       responses:
-        '200':
+        "200":
           description: Lista de notificações retornada com sucesso.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/NotificacaoResponse'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                  $ref: "#/components/schemas/NotificacaoResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
   /api/v1/notificacoes/nao-lidas:
     get:
@@ -32,16 +32,16 @@ paths:
       security:
         - cookieAuth: []
       responses:
-        '200':
+        "200":
           description: Lista de notificações não lidas retornada com sucesso.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/NotificacaoResponse'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                  $ref: "#/components/schemas/NotificacaoResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
   /api/v1/notificacoes/propriedades/{id}:
     get:
@@ -60,18 +60,18 @@ paths:
             type: integer
             minimum: 1
       responses:
-        '200':
+        "200":
           description: Lista de notificações da propriedade retornada com sucesso.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/NotificacaoResponse'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                  $ref: "#/components/schemas/NotificacaoResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
   /api/v1/notificacoes/nao-lidas/propriedades/{id}:
     get:
@@ -90,104 +90,132 @@ paths:
             type: integer
             minimum: 1
       responses:
-        '200':
+        "200":
           description: Lista de notificações não lidas da propriedade retornada com sucesso.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/NotificacaoResponse'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                  $ref: "#/components/schemas/NotificacaoResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
-  /api/v1/notificacoes/{id}/lida:
+  /api/v1/notificacoes/lida:
     patch:
-      summary: Marcar notificação como lida
-      description: Atualiza o status da notificação especificada para lida (true).
+      summary: Marcar notificações como lidas
+      description: Atualiza o status das notificações para lida.
       tags:
         - Notificações
       security:
         - cookieAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          description: ID da notificação a ser atualizada.
-          schema:
-            type: integer
-            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - idsNotificacoes
+              properties:
+                idsNotificacoes:
+                  type: array
+                  items:
+                    type: integer
+                  example: [1, 2, 3]
       responses:
-        '204':
+        "204":
           description: Notificação atualizada com sucesso (No Content).
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
 components:
   schemas:
     NotificacaoResponse:
       type: object
       properties:
-        id_PK:
+        id:
           type: integer
-          example: 1
-        titulo:
-          type: string
-          example: "Lembrete: Evento em 3 dia(s)"
-        mensagem:
-          type: string
-          example: "Atenção, o evento agendado está se aproximando."
+          description: ID da notificação.
+          example: 52
+        idEvento:
+          type: integer
+          description: ID do evento agrícola referenciado.
+          example: 18
+        idProprietario:
+          type: integer
+          description: ID do usuário dono da propriedade.
+          example: 20
+        idPropriedade:
+          type: integer
+          description: ID da propriedade vinculada à notificação.
+          example: 3
         tipoEvento:
           type: string
+          description: A categoria da operação agrícola.
+          enum:
+            - tratosculturais
+            - colheitas
+            - fermentacoes
+            - presecagens
+            - secagens
+            - pilagens
+            - armazenagens
+            - vendas
           example: "tratosculturais"
-        idEvento_FK:
-          type: integer
-          example: 14
-        idPropriedade_FK:
-          type: integer
-          example: 2
-        lida:
-          type: boolean
-          example: false
+        tipoNotificacao:
+          type: string
+          description: A janela de tempo da notificação.
+          enum:
+            - FUTURO_UM
+            - FUTURO_DOIS
+            - FUTURO_TRES
+            - FUTURO_SETE
+            - PASSADO
+          example: "FUTURO_DOIS"
         dataCriacao:
           type: string
           format: date-time
           example: "2026-08-18T22:57:15.149Z"
+        lida:
+          type: boolean
+          description: Indica se a notificação já foi visualizada pelo usuário.
+          example: false
 
-  responses:
-    ValidationError:
-      description: Erro de validação nos parâmetros enviados.
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              erros:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    msg:
-                      type: string
-                      example: "ID da notificação inválido."
-                    param:
-                      type: string
-                      example: "id"
-                    location:
-                      type: string
-                      example: "params"
-    
-    InternalServerError:
-      description: Erro interno no servidor ao processar a requisição.
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-                example: "Erro ao buscar notificações."
+responses:
+  ValidationError:
+    description: Erro de validação nos parâmetros enviados.
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            erros:
+              type: array
+              items:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: "O array idsNotificacoes é obrigatório."
+                  param:
+                    type: string
+                    example: "idsNotificacoes"
+                  location:
+                    type: string
+                    example: "body"
+
+  InternalServerError:
+    description: Erro interno no servidor ao processar a requisição.
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "Erro ao atualizar status das notificações."

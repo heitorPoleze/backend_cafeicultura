@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { param } from 'express-validator';
+import { body, param } from 'express-validator';
 import { prisma } from "../../shared/config/database";
 import exigeLogin from "../../shared/middlewares/exigeLogin";
 import NotificacaoRepository from './notificacao.repository';
@@ -43,10 +43,11 @@ router.get(
 );
 
 router.patch(
-  '/:id/lida', 
+  '/lida', 
   exigeLogin(), 
   [
-    param('id').isInt({ gt: 0 }).withMessage('ID da notificação inválido.')
+    body('idsNotificacoes').isArray().withMessage('IDs de notificação devem ser enviados em formato de lista.'),
+    body('idsNotificacoes.*').isInt({ gt: 0 }).withMessage('ID de notificação inválido.'),
   ],
   notificacaoController.marcarComoLida.bind(notificacaoController)
 );
