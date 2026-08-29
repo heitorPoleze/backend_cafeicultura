@@ -87,8 +87,6 @@ abstract class Evento {
 
     public finalizar(dataInicio: Date,dataFim: Date): void {
         const agora = new Date().toLocaleDateString('en-US', { timeZone: 'America/Sao_Paulo' });
-        console.log(dataFim, dataInicio, agora);
-
         if (dataInicio < this._safra.dataInicio) 
             throw new Error("DATA_INICIO_ANTERIOR");
         if (dataInicio > dataFim) 
