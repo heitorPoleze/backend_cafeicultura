@@ -6,16 +6,14 @@ import { ListarPorPropriedadeDTO, MarcarComoLidaDTO } from './notificacao.dto';
 class NotificacaoController {
     constructor(private readonly notificacaoService: NotificacaoService) { }
 
-
     public async listarTodas(req: Request, res: Response) {
         try {
             const notificacoes = await this.notificacaoService.listarTodas({ idProprietario: req.session.idUsuario! });
-
             return res.status(200).json(notificacoes);
         } catch (error: unknown) {
             return res.status(500).json({ error: 'Erro ao buscar notificações.' });
-        }
-    }
+        };
+    };
 
     public async listarTodasPropriedade(req: Request, res: Response) {
         try {
@@ -65,7 +63,7 @@ class NotificacaoController {
         try {
             const dto: MarcarComoLidaDTO = {
                 idProprietario: req.session.idUsuario!,
-                idNotificacao: Number(req.params.id)
+                idsNotificacoes: req.body.idsNotificacoes
             };
             await this.notificacaoService.marcarComoLida(dto);
             return res.status(204).send();
