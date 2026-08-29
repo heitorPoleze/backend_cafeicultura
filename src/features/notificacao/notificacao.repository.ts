@@ -71,17 +71,18 @@ class NotificacaoRepository {
     return await Promise.all(notificacoes.map((n) => this.mapToEntity(n)));
   }
 
-  public async marcarComoLida(idNotificacao: number, idUsuario: number): Promise<void> {
+  public async marcarComoLida(idsNotificacoes: number[], idUsuario: number): Promise<void> {
     await this.prisma.notificacoes.updateMany({
       where: {
-        idNotificacao_PK: idNotificacao,
+        idNotificacao_PK: { in: idsNotificacoes },
         idProprietario_FK: idUsuario
       },
       data: {
         lida: 1
       }
     });
-  }
+  };
+
   public async excluirPorEvento(evento: Evento, tx: Prisma.TransactionClient): Promise<void> {
     await tx.notificacoes.deleteMany({
       where: {

@@ -21,7 +21,7 @@ class NotificacaoService {
   }
 
   public async marcarComoLida(dto: MarcarComoLidaDTO): Promise<void> {
-    await this.notificacaoRepo.marcarComoLida(dto.idNotificacao, dto.idProprietario);
+    await this.notificacaoRepo.marcarComoLida(dto.idsNotificacoes, dto.idProprietario);
   }
 }
 
