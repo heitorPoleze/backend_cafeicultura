@@ -2,6 +2,7 @@ import Endereco from "../endereco/endereco.vo";
 
 type PessoaDTO = {
   id?: number;
+  idAdministrador: number | null;
   nome?: string;
   cpf?: string;
   razaoSocial?: string;

@@ -4,7 +4,6 @@ import PessoaService from "./pessoa.service";
 import Endereco from "../../shared/domain/endereco/endereco.vo";
 import { ExcluirPessoaDTO } from "./pessoa.dto";
 
-
 class PessoaController {
   constructor(private service: PessoaService) { }
 
@@ -20,17 +19,13 @@ class PessoaController {
       res.status(201).json({ mensagem: "Cliente cadastrado com sucesso" });
     } catch (error: unknown) {
       if (error instanceof Error) {
-        if (error.message === "CPF_EXISTENTE") {
-          return res.status(409).json({ error: "CPF já cadastrado" });
-        } else if (error.message === "CNPJ_EXISTENTE") {
-          return res.status(409).json({ error: "CNPJ já cadastrado" });
-        } else if (error.message === "INSCRICAO_ESTADUAL_EXISTENTE") {
-          return res.status(409).json({ error: "Inscrição estadual já cadastrada" });
-        }
+        if (error.message === "CPF_EXISTENTE") return res.status(409).json({ error: "CPF já cadastrado" });
+        if (error.message === "CNPJ_EXISTENTE") return res.status(409).json({ error: "CNPJ já cadastrado" });
+        if (error.message === "INSCRICAO_ESTADUAL_EXISTENTE") return res.status(409).json({ error: "Inscrição estadual já cadastrada" });
         return res.status(500).json({ error: error.message });
-      };
-    };
-  };
+      }
+    }
+  }
 
   public async cadastrarFornecedor(req: Request, res: Response) {
     const erros = validationResult(req);
@@ -44,24 +39,19 @@ class PessoaController {
       res.status(201).json({ mensagem: "Fornecedor cadastrado com sucesso" });
     } catch (error: unknown) {
       if (error instanceof Error) {
-        if (error.message === "CPF_EXISTENTE") {
-          return res.status(409).json({ error: "CPF já cadastrado" });
-        }else if (error.message === "CNPJ_EXISTENTE") {
-          return res.status(409).json({ error: "CNPJ já cadastrado" });
-        } else if (error.message === "INSCRICAO_ESTADUAL_EXISTENTE") {
-          return res.status(409).json({ error: "Inscrição estadual já cadastrada" });
-        }
-
+        if (error.message === "CPF_EXISTENTE") return res.status(409).json({ error: "CPF já cadastrado" });
+        if (error.message === "CNPJ_EXISTENTE") return res.status(409).json({ error: "CNPJ já cadastrado" });
+        if (error.message === "INSCRICAO_ESTADUAL_EXISTENTE") return res.status(409).json({ error: "Inscrição estadual já cadastrada" });
         return res.status(500).json({ error: error.message });
-      };
+      }
     }
-  };
+  }
 
   public async cadastrarFuncionario(req: Request, res: Response) {
     const erros = validationResult(req);
     if (!erros.isEmpty()) {
       return res.status(400).json({ erros: erros.array() });
-    };
+    }
     try {
       req.body.idAdministrador = req.session.idUsuario!;
       await this.service.cadastrarFuncionario(req.body);
@@ -69,23 +59,19 @@ class PessoaController {
       res.status(201).json({ mensagem: "Funcionário cadastrado com sucesso" });
     } catch (error: unknown) {
       if (error instanceof Error) {
-        if (error.message === "CPF_EXISTENTE") {
-          return res.status(409).json({ error: "CPF já cadastrado" });
-        }else if (error.message === "CNPJ_EXISTENTE") {
-          return res.status(409).json({ error: "CNPJ já cadastrado" });
-        }else if (error.message === "INSCRICAO_ESTADUAL_EXISTENTE") {
-          return res.status(409).json({ error: "Inscrição estadual já cadastrada" });
-        }
+        if (error.message === "CPF_EXISTENTE") return res.status(409).json({ error: "CPF já cadastrado" });
+        if (error.message === "CNPJ_EXISTENTE") return res.status(409).json({ error: "CNPJ já cadastrado" });
+        if (error.message === "INSCRICAO_ESTADUAL_EXISTENTE") return res.status(409).json({ error: "Inscrição estadual já cadastrada" });
         return res.status(500).json({ error: error.message });
-      };
-    };
-  };
+      }
+    }
+  }
 
   public async atualizarFuncionarioSalario(req: Request, res: Response) {
     const erros = validationResult(req);
     if (!erros.isEmpty()) {
       return res.status(400).json({ erros: erros.array() });
-    };
+    }
     try {
       await this.service.atualizarFuncionarioSalario(
         {
@@ -98,24 +84,18 @@ class PessoaController {
       res.status(200).json({ mensagem: "Salário atualizado com sucesso" });
     } catch (error: unknown) {
       if (error instanceof Error) {
-        if (error.message === "NAO_ENCONTRADO") {
-          return res.status(404).json({ error: "Funcionário não encontrado" });
-        } else if (error.message === "ACESSO_NEGADO") {
-          return res
-            .status(403)
-            .json({ error: "Acesso negado! Não pode atualizar salário" });
-        } else if (error.message === "NAO_ATUALIZADO") {
-          return res.status(500).json({ error: "Erro ao atualizar salário" });
-        };
-      };
-    };
-  };
+        if (error.message === "NAO_ENCONTRADO") return res.status(404).json({ error: "Funcionário não encontrado" });
+        if (error.message === "ACESSO_NEGADO") return res.status(403).json({ error: "Acesso negado! Não pode atualizar salário" });
+        if (error.message === "NAO_ATUALIZADO") return res.status(500).json({ error: "Erro ao atualizar salário" });
+      }
+    }
+  }
 
   public async cadastrarMeeiro(req: Request, res: Response) {
     const erros = validationResult(req);
     if (!erros.isEmpty()) {
       return res.status(400).json({ erros: erros.array() });
-    };
+    }
     try {
       req.body.idAdministrador = req.session.idUsuario!;
       await this.service.cadastrarMeeiro(req.body);
@@ -123,17 +103,13 @@ class PessoaController {
       res.status(201).json({ mensagem: "Meeiro cadastrado com sucesso" });
     } catch (error: unknown) {
       if (error instanceof Error) {
-        if (error.message === "CPF_EXISTENTE") {
-          return res.status(409).json({ error: "CPF já cadastrado" });
-        } else if (error.message === "CNPJ_EXISTENTE") {
-          return res.status(409).json({ error: "CNPJ já cadastrado" });
-        }else if (error.message === "INSCRICAO_ESTADUAL_EXISTENTE") {
-          return res.status(409).json({ error: "Inscrição estadual já cadastrada" });
-        }
+        if (error.message === "CPF_EXISTENTE") return res.status(409).json({ error: "CPF já cadastrado" });
+        if (error.message === "CNPJ_EXISTENTE") return res.status(409).json({ error: "CNPJ já cadastrado" });
+        if (error.message === "INSCRICAO_ESTADUAL_EXISTENTE") return res.status(409).json({ error: "Inscrição estadual já cadastrada" });
         return res.status(500).json({ error: error.message });
-      };
-    };
-  };
+      }
+    }
+  }
 
   public async cadastrarPrestador(req: Request, res: Response) {
     const erros = validationResult(req);
@@ -146,18 +122,13 @@ class PessoaController {
       res.status(201).json({ mensagem: "Prestador de Serviço cadastrado com sucesso" });
     } catch (error: unknown) {
       if (error instanceof Error) {
-        if (error.message === "CPF_EXISTENTE") {
-          return res.status(409).json({ error: "CPF já cadastrado" });
-        };
-        if (error.message === "CNPJ_EXISTENTE") {
-          return res.status(409).json({ error: "CNPJ já cadastrado" });
-        }else if (error.message === "INSCRICAO_ESTADUAL_EXISTENTE") {
-          return res.status(409).json({ error: "Inscrição estadual já cadastrada" });
-        }
+        if (error.message === "CPF_EXISTENTE") return res.status(409).json({ error: "CPF já cadastrado" });
+        if (error.message === "CNPJ_EXISTENTE") return res.status(409).json({ error: "CNPJ já cadastrado" });
+        if (error.message === "INSCRICAO_ESTADUAL_EXISTENTE") return res.status(409).json({ error: "Inscrição estadual já cadastrada" });
         return res.status(500).json({ error: error.message });
-      };
-    };
-  };
+      }
+    }
+  }
 
   public async buscarClientePorId(req: Request, res: Response) {
     try {
@@ -168,18 +139,12 @@ class PessoaController {
       res.status(200).json(cliente);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        if (error.message === "NAO_ENCONTRADO") {
-          return res.status(404).json({ error: "Cliente não encontrado" });
-        } else if (error.message === "ACESSO_NEGADO") {
-          return res
-            .status(403)
-            .json({ error: "Acesso negado! Não pode visualizar cliente" });
-        } else if (error.message === "ERRO_AO_BUSCAR") {
-          return res.status(500).json({ error: "Erro ao buscar cliente" });
-        };
-      };
-    };
-  };
+        if (error.message === "NAO_ENCONTRADO") return res.status(404).json({ error: "Cliente não encontrado" });
+        if (error.message === "ACESSO_NEGADO") return res.status(403).json({ error: "Acesso negado! Não pode visualizar cliente" });
+        if (error.message === "ERRO_AO_BUSCAR") return res.status(500).json({ error: "Erro ao buscar cliente" });
+      }
+    }
+  }
 
   public async buscarFornecedorPorId(req: Request, res: Response) {
     try {
@@ -190,18 +155,12 @@ class PessoaController {
       res.status(200).json(fornecedor);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        if (error.message === "NAO_ENCONTRADO") {
-          return res.status(404).json({ error: "Fornecedor não encontrado" });
-        } else if (error.message === "ACESSO_NEGADO") {
-          return res
-            .status(403)
-            .json({ error: "Acesso negado! Não pode visualizar fornecedor" });
-        } else if (error.message === "ERRO_AO_BUSCAR") {
-          return res.status(500).json({ error: "Erro ao buscar fornecedor" });
-        };
-      };
-    };
-  };
+        if (error.message === "NAO_ENCONTRADO") return res.status(404).json({ error: "Fornecedor não encontrado" });
+        if (error.message === "ACESSO_NEGADO") return res.status(403).json({ error: "Acesso negado! Não pode visualizar fornecedor" });
+        if (error.message === "ERRO_AO_BUSCAR") return res.status(500).json({ error: "Erro ao buscar fornecedor" });
+      }
+    }
+  }
 
   public async buscarFuncionarioPorId(req: Request, res: Response) {
     try {
@@ -212,18 +171,12 @@ class PessoaController {
       res.status(200).json(funcionario);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        if (error.message === "NAO_ENCONTRADO") {
-          return res.status(404).json({ error: "Funcionário não encontrado" });
-        } else if (error.message === "ACESSO_NEGADO") {
-          return res
-            .status(403)
-            .json({ error: "Acesso negado! Não pode visualizar funcionário" });
-        } else if (error.message === "ERRO_AO_BUSCAR") {
-          return res.status(500).json({ error: "Erro ao buscar funcionário" });
-        };
-      };
-    };
-  };
+        if (error.message === "NAO_ENCONTRADO") return res.status(404).json({ error: "Funcionário não encontrado" });
+        if (error.message === "ACESSO_NEGADO") return res.status(403).json({ error: "Acesso negado! Não pode visualizar funcionário" });
+        if (error.message === "ERRO_AO_BUSCAR") return res.status(500).json({ error: "Erro ao buscar funcionário" });
+      }
+    }
+  }
 
   public async buscarFuncionarioPorIdAdministrador(req: Request, res: Response) {
     const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
@@ -237,18 +190,13 @@ class PessoaController {
       res.status(200).json(funcionarios);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        if (error.message === "NAO_ENCONTRADO") {
-          return res.status(404).json({ error: "Funcionário não encontrado" });
-        } else if (error.message === "ACESSO_NEGADO") {
-          return res
-            .status(403)
-            .json({ error: "Acesso negado! Não pode visualizar funcionário" });
-        } else if (error.message === "ERRO_AO_BUSCAR") {
-          return res.status(500).json({ error: "Erro ao buscar funcionário" });
-        };
-      };
-    };
-  };
+        if (error.message === "NAO_ENCONTRADO") return res.status(404).json({ error: "Funcionário não encontrado" });
+        if (error.message === "ACESSO_NEGADO") return res.status(403).json({ error: "Acesso negado! Não pode visualizar funcionário" });
+        if (error.message === "ERRO_AO_BUSCAR") return res.status(500).json({ error: "Erro ao buscar funcionário" });
+      }
+    }
+  }
+
   public async buscarClientesPorIdAdministrador(req: Request, res: Response) {
     const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
     const limite = req.query.limite ? Number(req.query.limite) : 10;
@@ -261,18 +209,12 @@ class PessoaController {
       res.status(200).json(clientes);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        if (error.message === "NAO_ENCONTRADO") {
-          return res.status(404).json({ error: "Cliente não encontrado" });
-        } else if (error.message === "ACESSO_NEGADO") {
-          return res
-            .status(403)
-            .json({ error: "Acesso negado! Não pode visualizar cliente" });
-        } else if (error.message === "ERRO_AO_BUSCAR") {
-          return res.status(500).json({ error: "Erro ao buscar cliente" });
-        };
+        if (error.message === "NAO_ENCONTRADO") return res.status(404).json({ error: "Cliente não encontrado" });
+        if (error.message === "ACESSO_NEGADO") return res.status(403).json({ error: "Acesso negado! Não pode visualizar cliente" });
+        if (error.message === "ERRO_AO_BUSCAR") return res.status(500).json({ error: "Erro ao buscar cliente" });
       }
-    };
-  };
+    }
+  }
 
   public async buscarMeeirosPorIdAdministrador(req: Request, res: Response) {
     const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
@@ -286,49 +228,36 @@ class PessoaController {
       res.status(200).json(meeiros);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        if (error.message === "NAO_ENCONTRADO") {
-          return res.status(404).json({ error: "Meeiro não encontrado" });
-        } else if (error.message === "ACESSO_NEGADO") {
-          return res
-            .status(403)
-            .json({ error: "Acesso negado! Não pode visualizar meeiro" });
-        } else if (error.message === "ERRO_AO_BUSCAR") {
-          return res.status(500).json({ error: "Erro ao buscar meeiro" });
-        };
+        if (error.message === "NAO_ENCONTRADO") return res.status(404).json({ error: "Meeiro não encontrado" });
+        if (error.message === "ACESSO_NEGADO") return res.status(403).json({ error: "Acesso negado! Não pode visualizar meeiro" });
+        if (error.message === "ERRO_AO_BUSCAR") return res.status(500).json({ error: "Erro ao buscar meeiro" });
       }
-    };
-  };
+    }
+  }
 
   public async buscarPrestadoresDeServicoPorIdAdministrador(req: Request, res: Response) {
     const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
     const limite = req.query.limite ? Number(req.query.limite) : 10;
     const idSessao = req.session.idUsuario!;
-    console.log("ID Sessão:", idSessao);
+    
     try {
-      if(!idSessao) {
+      if (!idSessao) {
         return res.status(401).json({ error: "Usuário não autenticado" });
       }
-      const meeiros = await this.service.buscarPrestadoresDeServicoPorIdAdministrador(
+      const prestadores = await this.service.buscarPrestadoresDeServicoPorIdAdministrador(
         idSessao,
         pagina,
         limite
-
       );
-      res.status(200).json(meeiros);
+      res.status(200).json(prestadores);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        if (error.message === "NAO_ENCONTRADO") {
-          return res.status(404).json({ error: "Prestador de Serviço não encontrado" });
-        } else if (error.message === "ACESSO_NEGADO") {
-          return res
-            .status(403)
-            .json({ error: "Acesso negado! Não pode visualizar prestador de serviço" });
-        } else if (error.message === "ERRO_AO_BUSCAR") {
-          return res.status(500).json({ error: "Erro ao buscar prestador de serviço" });
-        };
+        if (error.message === "NAO_ENCONTRADO") return res.status(404).json({ error: "Prestador de Serviço não encontrado" });
+        if (error.message === "ACESSO_NEGADO") return res.status(403).json({ error: "Acesso negado! Não pode visualizar prestador de serviço" });
+        if (error.message === "ERRO_AO_BUSCAR") return res.status(500).json({ error: "Erro ao buscar prestador de serviço" });
       }
-    };
-  };
+    }
+  }
 
   public async buscarFornecedoresPorIdAdministrador(req: Request, res: Response) {
     const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
@@ -342,18 +271,12 @@ class PessoaController {
       res.status(200).json(fornecedores);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        if (error.message === "NAO_ENCONTRADO") {
-          return res.status(404).json({ error: "Fornecedor não encontrado" });
-        } else if (error.message === "ACESSO_NEGADO") {
-          return res
-            .status(403)
-            .json({ error: "Acesso negado! Não pode visualizar fornecedor" });
-        } else if (error.message === "ERRO_AO_BUSCAR") {
-          return res.status(500).json({ error: "Erro ao buscar fornecedor" });
-        };
+        if (error.message === "NAO_ENCONTRADO") return res.status(404).json({ error: "Fornecedor não encontrado" });
+        if (error.message === "ACESSO_NEGADO") return res.status(403).json({ error: "Acesso negado! Não pode visualizar fornecedor" });
+        if (error.message === "ERRO_AO_BUSCAR") return res.status(500).json({ error: "Erro ao buscar fornecedor" });
       }
-    };
-  };
+    }
+  }
 
   public async buscarMeeiroPorId(req: Request, res: Response) {
     try {
@@ -364,18 +287,12 @@ class PessoaController {
       res.status(200).json(meeiro);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        if (error.message === "NAO_ENCONTRADO") {
-          return res.status(404).json({ error: "Meeiro não encontrado" });
-        } else if (error.message === "ACESSO_NEGADO") {
-          return res
-            .status(403)
-            .json({ error: "Acesso negado! Não pode visualizar meeiro" });
-        } else if (error.message === "ERRO_AO_BUSCAR") {
-          return res.status(500).json({ error: "Erro ao buscar meeiro" });
-        };
-      };
-    };
-  };
+        if (error.message === "NAO_ENCONTRADO") return res.status(404).json({ error: "Meeiro não encontrado" });
+        if (error.message === "ACESSO_NEGADO") return res.status(403).json({ error: "Acesso negado! Não pode visualizar meeiro" });
+        if (error.message === "ERRO_AO_BUSCAR") return res.status(500).json({ error: "Erro ao buscar meeiro" });
+      }
+    }
+  }
 
   public async buscarPrestadorPorId(req: Request, res: Response) {
     try {
@@ -386,22 +303,12 @@ class PessoaController {
       res.status(200).json(prestador);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        if (error.message === "NAO_ENCONTRADO") {
-          return res
-            .status(404)
-            .json({ error: "Prestador de Serviço não encontrado" });
-        } else if (error.message === "ACESSO_NEGADO") {
-          return res
-            .status(403)
-            .json({
-              error: "Acesso negado! Não pode visualizar prestador de serviço",
-            });
-        } else if (error.message === "ERRO_AO_BUSCAR") {
-          return res.status(500).json({ error: "Erro ao buscar prestador de serviço" });
-        };
-      };
-    };
-  };
+        if (error.message === "NAO_ENCONTRADO") return res.status(404).json({ error: "Prestador de Serviço não encontrado" });
+        if (error.message === "ACESSO_NEGADO") return res.status(403).json({ error: "Acesso negado! Não pode visualizar prestador de serviço" });
+        if (error.message === "ERRO_AO_BUSCAR") return res.status(500).json({ error: "Erro ao buscar prestador de serviço" });
+      }
+    }
+  }
 
   public async listarPessoas(req: Request, res: Response) {
     try {
@@ -442,20 +349,20 @@ class PessoaController {
           req.body.pais,
           req.body.logradouro,
           req.body.idEndereco
-
-        )
+        ),
+        req.session.idUsuario!
       );
       res.status(201).json({ message: "Endereço cadastrado com sucesso", endereco: req.body });
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "NAO_ENCONTRADO") {
-          return res.status(404).json({ error: "Pessoa não encontrada" });
+          return res.status(404).json({ error: "Pessoa não encontrada ou acesso negado" });
         }
         return res.status(400).json({ error: error.message });
-      };
+      }
       res.status(500).json({ error: "Erro ao cadastrar endereço" });
-    };
-  };
+    }
+  }
 
   public async atualizarEnderecoPessoaGenerica(req: Request, res: Response) {
     const erros = validationResult(req);
@@ -473,19 +380,20 @@ class PessoaController {
           req.body.pais,
           req.body.logradouro,
           req.body.idEndereco
-        )
+        ),
+        req.session.idUsuario!
       );
       res.status(200).json({ message: "Endereço atualizado com sucesso", endereco: req.body });
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "NAO_ENCONTRADO") {
-          return res.status(404).json({ error: "Pessoa não encontrada" });
+          return res.status(404).json({ error: "Pessoa não encontrada ou acesso negado" });
         }
         return res.status(400).json({ error: error.message });
-      };
+      }
       res.status(500).json({ error: "Erro ao atualizar endereço" });
-    };
-  };
+    }
+  }
 
   public async RemoverEnderecoPessoaGenerica(req: Request, res: Response) {
     const erros = validationResult(req);
@@ -494,7 +402,8 @@ class PessoaController {
     }
     try {
       let response = await this.service.removerEnderecoPessoaGenerica(
-        Number(req.params.id)
+        Number(req.params.id),
+        req.session.idUsuario!
       );
       res.status(200).json({ message: "Endereço removido com sucesso", response });
     } catch (error: unknown) {
@@ -503,103 +412,113 @@ class PessoaController {
           return res.status(404).json({ error: "Pessoa ou endereço não encontrado" });
         }
         return res.status(400).json({ error: error.message });
-      };
+      }
       res.status(500).json({ error: "Erro ao remover endereço" });
     }
-  };
-public async AtualizarNomeOuRazaoSocial(req: Request, res: Response) {
-  const erros = validationResult(req);
-  if (!erros.isEmpty()) {
-    return res.status(400).json({ erros: erros.array() });
-  } 
-  
-  try {
-    const pessoaId = Number(req.params.id);
-    await this.service.atualizarNomeOuRazaoSocial(req.body, pessoaId);
-    
-    return res.status(200).json({ 
-      mensagem: "Nome ou Razão Social atualizadas com sucesso.", 
-      novaInformacao: req.body 
-    });
-    
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      if (error.message.includes('não encontrado')) {
-        return res.status(404).json({ mensagem: error.message });
-      }
-      const errosPrevistos = [
-        "Nome é obrigatório.",
-        "Nome deve ter no mínimo 3 caracteres.",
-        "Nome deve ter no máximo 100 caracteres.",
-        "Razão Social é obrigatória.",
-        "Razão Social deve ter no mínimo 3 caracteres.",
-        "Razão Social deve ter no máximo 100 caracteres.",
-        "Tipo de pessoa inválido."
-      ];
-
-      if (errosPrevistos.includes(error.message)) {
-        return res.status(400).json({ mensagem: error.message });
-      }
-      
-    }
-    return res.status(500).json({ mensagem: "Erro interno inesperado ao tentar atualizar." });
   }
-}
+
+  public async AtualizarNomeOuRazaoSocial(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) {
+      return res.status(400).json({ erros: erros.array() });
+    } 
+    
+    try {
+      const pessoaId = Number(req.params.id);
+      await this.service.atualizarNomeOuRazaoSocial(req.body, pessoaId, req.session.idUsuario!);
+      
+      return res.status(200).json({ 
+        mensagem: "Nome ou Razão Social atualizadas com sucesso.", 
+        novaInformacao: req.body 
+      });
+      
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message.includes('não encontrada') || error.message.includes('acesso negado')) {
+          return res.status(404).json({ mensagem: error.message });
+        }
+        const errosPrevistos = [
+          "Nome é obrigatório.",
+          "Nome deve ter no mínimo 3 caracteres.",
+          "Nome deve ter no máximo 100 caracteres.",
+          "Razão Social é obrigatória.",
+          "Razão Social deve ter no mínimo 3 caracteres.",
+          "Razão Social deve ter no máximo 100 caracteres.",
+          "Tipo de pessoa inválido."
+        ];
+
+        if (errosPrevistos.includes(error.message)) {
+          return res.status(400).json({ mensagem: error.message });
+        }
+      }
+      return res.status(500).json({ mensagem: "Erro interno inesperado ao tentar atualizar." });
+    }
+  }
+
   public async atualizarCpf(req: Request, res: Response) {
     const erros = validationResult(req);
     if (!erros.isEmpty()) {
       return res.status(400).json({ erros: erros.array() })
-    } try {
+    } 
+    try {
       const pessoaId = Number(req.params.id);
-      const cpf = req.body.cpf
-      let resposta = await this.service.atualizarCpf(cpf, pessoaId);
+      const cpf = req.body.cpf;
+      let resposta = await this.service.atualizarCpf(cpf, pessoaId, req.session.idUsuario!);
       res.status(200).json({ mensagem: "CPF Atualizado com sucesso.", resposta });
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "CPF_EXISTENTE") {
           return res.status(409).json({ error: "CPF já cadastrado no sistema." });
+        } else if (error.message === "ACESSO_NEGADO") {
+          return res.status(403).json({ error: "Acesso negado." });
         }
       }
       res.status(500).json({ error: "Erro ao atualizar CPF." });
     }
   }
+
   public async atualizarCpnj(req: Request, res: Response) {
     const erros = validationResult(req);
     if (!erros.isEmpty()) {
       return res.status(400).json({ erros: erros.array() })
-    } try {
-      const pessoaId = Number(req.params.id)
-      const cnpj = req.body.cnpj
-      let resposta = await this.service.atualizarCNPJ(cnpj, pessoaId)
-      return res.status(200).json({ mensagem: "CNPJ atualizado com sucesso.", resposta })
+    } 
+    try {
+      const pessoaId = Number(req.params.id);
+      const cnpj = req.body.cnpj;
+      let resposta = await this.service.atualizarCNPJ(cnpj, pessoaId, req.session.idUsuario!);
+      return res.status(200).json({ mensagem: "CNPJ atualizado com sucesso.", resposta });
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "CNPJ_EXISTENTE") {
           return res.status(409).json({ error: "CNPJ já cadastrado no sistema." });
-        }
-        if (error.message === "CNPJ_INVALIDO") {
+        } else if (error.message === "CNPJ_INVALIDO") {
           return res.status(404).json({ error: "CNPJ em formato inválido." });
+        } else if (error.message === "ACESSO_NEGADO") {
+          return res.status(403).json({ error: "Acesso negado." });
         }
-        res.status(500).json({ error: "Erro ao atualizar CNPJ." })
       }
+      res.status(500).json({ error: "Erro ao atualizar CNPJ." })
     }
   }
+
   public async atualizarInscricaoEstadual(req: Request, res: Response) {
     const erros = validationResult(req);
     if (!erros.isEmpty()) {
       return res.status(400).json({ erros: erros.array() })
-    } try {
-      const pessoaId = Number(req.params.id)
-      const novaIE = req.body.inscricaoEstadual
-      let resposta = await this.service.atualizarInscricaoEstadual(novaIE, pessoaId)
-      return res.status(200).json({ mensagem: "Inscrição Estadual atualizada com sucesso.", resposta })
+    } 
+    try {
+      const pessoaId = Number(req.params.id);
+      const novaIE = req.body.inscricaoEstadual;
+      let resposta = await this.service.atualizarInscricaoEstadual(novaIE, pessoaId, req.session.idUsuario!);
+      return res.status(200).json({ mensagem: "Inscrição Estadual atualizada com sucesso.", resposta });
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === "INSCRICAO_INVALIDA") {
           return res.status(400).json({ error: "Inscrição estadual inválida." })
-        }
-        if(error.message === "INSCRICAO_EM_USO"){
-          return res.status(409).json({error: "Inscrição estadual já em uso."})
+        } else if (error.message === "INSCRICAO_EM_USO") {
+          return res.status(409).json({ error: "Inscrição estadual já em uso." })
+        } else if (error.message === "ACESSO_NEGADO") {
+          return res.status(403).json({ error: "Acesso negado." });
         }
       }
       res.status(500).json({ error: "Erro ao atualizar Inscrição Estadual." })
@@ -616,17 +535,15 @@ public async AtualizarNomeOuRazaoSocial(req: Request, res: Response) {
         if (error.message === "NAO_ENCONTRADO") {
           return res.status(404).json({ error: "Cliente não encontrado" });
         } else if (error.message === "ACESSO_NEGADO") {
-          return res
-            .status(403)
-            .json({ error: "Acesso negado! Não pode excluir cliente" });
+          return res.status(403).json({ error: "Acesso negado! Não pode excluir cliente" });
         } else if (error.message === "CLIENTE_POSSUI_ASSOCIACOES") {
           return res.status(400).json({ error: "Cliente possui associações e não pode ser excluído" });
         } else if (error.message === "ERRO_AO_EXCLUIR") {
           return res.status(500).json({ error: "Erro ao excluir cliente" });
-        };
-      };
-    };
-  };
+        }
+      }
+    }
+  }
 
   public async excluirFornecedor(req: Request, res: Response) {
     try {
@@ -638,17 +555,15 @@ public async AtualizarNomeOuRazaoSocial(req: Request, res: Response) {
         if (error.message === "NAO_ENCONTRADO") {
           return res.status(404).json({ error: "Fornecedor não encontrado" });
         } else if (error.message === "ACESSO_NEGADO") {
-          return res
-            .status(403)
-            .json({ error: "Acesso negado! Não pode excluir fornecedor" });
+          return res.status(403).json({ error: "Acesso negado! Não pode excluir fornecedor" });
         } else if (error.message === "FORNECEDOR_POSSUI_ASSOCIACOES") {
           return res.status(403).json({ error: "Fornecedor possui associações e não pode ser excluído" });
         } else if (error.message === "ERRO_AO_EXCLUIR") {
           return res.status(500).json({ error: "Erro ao excluir fornecedor" });
-        };
-      };
-    };
-  };
+        }
+      }
+    }
+  }
 
   public async excluirFuncionario(req: Request, res: Response) {
     try {
@@ -660,17 +575,15 @@ public async AtualizarNomeOuRazaoSocial(req: Request, res: Response) {
         if (error.message === "NAO_ENCONTRADO") {
           return res.status(404).json({ error: "Funcionário não encontrado" });
         } else if (error.message === "ACESSO_NEGADO") {
-          return res
-            .status(403)
-            .json({ error: "Acesso negado! Não pode excluir funcionário" });
+          return res.status(403).json({ error: "Acesso negado! Não pode excluir funcionário" });
         } else if (error.message === "FUNCIONARIO_POSSUI_ASSOCIACOES") {
           return res.status(403).json({ error: "Funcionário possui associações e não pode ser excluído" });
         } else if (error.message === "ERRO_AO_EXCLUIR") {
           return res.status(500).json({ error: "Erro ao excluir funcionário" });
-        };
-      };
-    };
-  };
+        }
+      }
+    }
+  }
 
   public async excluirMeeiro(req: Request, res: Response) {
     try {
@@ -682,17 +595,15 @@ public async AtualizarNomeOuRazaoSocial(req: Request, res: Response) {
         if (error.message === "NAO_ENCONTRADO") {
           return res.status(404).json({ error: "Meeiro não encontrado" });
         } else if (error.message === "ACESSO_NEGADO") {
-          return res
-            .status(403)
-            .json({ error: "Acesso negado! Não pode excluir meeiro" });
+          return res.status(403).json({ error: "Acesso negado! Não pode excluir meeiro" });
         } else if (error.message === "MEEIRO_POSSUI_ASSOCIACOES") {
           return res.status(403).json({ error: "Meeiro possui associações e não pode ser excluído" });
         } else if (error.message === "ERRO_AO_EXCLUIR") {
           return res.status(500).json({ error: "Erro ao excluir meeiro" });
-        };
-      };
-    };
-  };
+        }
+      }
+    }
+  }
 
   public async excluirPrestador(req: Request, res: Response) {
     try {
@@ -704,15 +615,13 @@ public async AtualizarNomeOuRazaoSocial(req: Request, res: Response) {
         if (error.message === "NAO_ENCONTRADO") {
           return res.status(404).json({ error: "Prestador de Serviço não encontrado" });
         } else if (error.message === "ACESSO_NEGADO") {
-          return res
-            .status(403)
-            .json({ error: "Acesso negado! Não pode excluir prestador de serviço" });
+          return res.status(403).json({ error: "Acesso negado! Não pode excluir prestador de serviço" });
         } else if (error.message === "PRESTADOR_POSSUI_ASSOCIACOES") {
           return res.status(403).json({ error: "Prestador de Serviço possui associações e não pode ser excluído" });
         }
-      };
-    };
-  };
-};
+      }
+    }
+  }
+}
 
 export default PessoaController;

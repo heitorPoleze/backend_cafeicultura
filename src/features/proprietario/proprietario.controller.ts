@@ -1,12 +1,7 @@
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import ProprietarioService from "./proprietario.service"
-//Cadê o getter de proprietário para que ele consiga visualizar seus dados cadastrais? O interessante é retornar inclusive junto a um getter de endereço, já que estamos permitindo que ele possa atualizá-lo.
-//feito
-//O frontend precisa que as mensagens de sucesso de getters(obviamente), posts e puts sejam enviados com o domínio mapeado. Mais informações em https://trello.com/c/BBERi2sS/312-issue-backend-n%C3%A3o-est%C3%A1-retornando-dados-do-dom%C3%ADnio-em-post-e-put.
-//falta finalizar, Pessoa model ta feito, falta outros 
-//onde estão os métodos de atualizar nome, razao social, inscricao estadual? É regra de negócio que não pode ser alterado?
-//feito
+
 class ProprietarioController {
   constructor(private service: ProprietarioService) { }
 
@@ -40,7 +35,6 @@ class ProprietarioController {
     if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
     try {
       const pessoaId = Number(req.params.id);
-      // O corpo da requisição deve ser validado antes de passar ao service
       let endereco = await this.service.criarEndereco(req.body, pessoaId);
       res.status(201).json({ mensagem: "Endereço adicionado com sucesso", Endereco: endereco});
     } catch (error: unknown) {
