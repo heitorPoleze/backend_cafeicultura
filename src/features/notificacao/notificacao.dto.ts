@@ -14,6 +14,7 @@ export enum TipoNotificacao {
   FUTURO_DOIS = 'FUTURO_DOIS',
   FUTURO_TRES = 'FUTURO_TRES',
   FUTURO_SETE= 'FUTURO_SETE',
+  PRESENTE = 'PRESENTE',
   PASSADO = 'PASSADO'
 };
 
