@@ -1,37 +1,11 @@
 import cron from 'node-cron';
-import { Prisma } from '@prisma/client';
 import { prisma } from '../../shared/config/database';
 import { GerenciadorWebSocket } from '../websocket/websocket.manager';
 import { TipoEvento, TipoNotificacao } from '../../features/notificacao/notificacao.dto';
-import NotificacaoRepository from '../../features/notificacao/notificacao.repository';
+import NotificacaoRepository, { EventoCronPayload } from '../../features/notificacao/notificacao.repository';
 import Notificacao from '../../features/notificacao/notificacao.entity';
 
 const notificacaoRepo = new NotificacaoRepository(prisma);
-
-const eventoSelect = {
-    idEvento_PK: true,
-    dataInicio: true,
-    safras: {
-        select: {
-            idPropriedade_FK: true,
-            propriedades: { select: { idProprietario_FK: true } }
-        }
-    },
-    eventosagricolas: {
-        select: {
-            armazenagens: { select: { idEventoAgricola_PFK: true } },
-            tratosculturais: { select: { idEventoAgricola_PFK: true } },
-            colheitas: { select: { idEventoAgricola_PFK: true } },
-            fermentacoes: { select: { idEventoAgricola_PFK: true } },
-            presecagens: { select: { idEventoAgricola_PFK: true } },
-            secagens: { select: { idEventoAgricola_PFK: true } },
-            pilagens: { select: { idEventoAgricola_PFK: true } }
-        }
-    },
-    vendas: { select: { idEvento_PFK: true } }
-} satisfies Prisma.eventosSelect;
-
-type EventoPayload = Prisma.eventosGetPayload<{ select: typeof eventoSelect }>;
 
 const mapaAgricola: Record<string, TipoEvento> = {
     armazenagens: TipoEvento.ARMAZENAGENS,
@@ -43,33 +17,25 @@ const mapaAgricola: Record<string, TipoEvento> = {
     pilagens: TipoEvento.PILAGENS
 };
 
-const mapaDiasNotificacao: Record<number, TipoNotificacao> = {
-    7: TipoNotificacao.FUTURO_SETE,
-    3: TipoNotificacao.FUTURO_TRES,
-    2: TipoNotificacao.FUTURO_DOIS,
-    1: TipoNotificacao.FUTURO_UM,
-   [-1]: TipoNotificacao.PASSADO
-};
-
 const MS_POR_DIA = 1000 * 60 * 60 * 24;
 
 function calcularDiferencaDias(dataEvento: Date, dataAtual: Date): number {
     const utcEvento = Date.UTC(
-        dataEvento.getUTCFullYear(), 
-        dataEvento.getUTCMonth(), 
+        dataEvento.getUTCFullYear(),
+        dataEvento.getUTCMonth(),
         dataEvento.getUTCDate()
     );
-    
+
     const utcAtual = Date.UTC(
-        dataAtual.getFullYear(), 
-        dataAtual.getMonth(), 
+        dataAtual.getFullYear(),
+        dataAtual.getMonth(),
         dataAtual.getDate()
     );
-    
+
     return Math.round((utcEvento - utcAtual) / MS_POR_DIA);
 }
 
-function determinarTipoEvento(evento: EventoPayload): TipoEvento {
+function determinarTipoEvento(evento: EventoCronPayload): TipoEvento {
     if (evento.vendas) return TipoEvento.VENDAS;
 
     if (evento.eventosagricolas) {
@@ -80,47 +46,55 @@ function determinarTipoEvento(evento: EventoPayload): TipoEvento {
     throw new Error(`Tipo de evento desconhecido para o evento ${evento.idEvento_PK}`);
 }
 
-async function processarNotificacoes(): Promise<void> {
-    console.log('[CRON] Iniciando verificação de notificações...');
+async function processarLimpezaNotificacoes(): Promise<void> {
+    console.log('[CRON] Iniciando verificação de limpeza de notificações lidas...');
 
     const hoje = new Date();
+    const limiteData = new Date(hoje);
     
-    const limiteInferior = new Date(hoje);
-    limiteInferior.setDate(hoje.getDate() - 2);
+    limiteData.setDate(hoje.getDate() - 7);
 
-    const limiteSuperior = new Date(hoje);
-    limiteSuperior.setDate(hoje.getDate() + 8);
+    let quantidadeExcluida = 0;
 
-    const eventos = await prisma.eventos.findMany({
-        where: {
-            dataFim: null,
-            dataInicio: {
-                gte: limiteInferior,
-                lte: limiteSuperior
-            }
-        },
-        select: eventoSelect
+    await prisma.$transaction(async (tx) => {
+        quantidadeExcluida = await notificacaoRepo.limparNotificacoesAntigasLidas(limiteData, tx);
     });
 
-    if (eventos.length === 0) {
-        console.log('[CRON] Nenhum evento na janela de tempo.');
+    if (quantidadeExcluida === 0) {
+        console.log('[CRON] Nenhuma notificação antiga para limpar hoje.');
         return;
     }
 
-    const notificacoesDesejadas = [];
-    
-    for (const evento of eventos) {
-        const diffDays = calcularDiferencaDias(evento.dataInicio, hoje);
-        const tipoNotificacao = mapaDiasNotificacao[diffDays];
+    console.log(`[CRON] Limpeza concluída. ${quantidadeExcluida} notificações antigas foram excluídas.`);
+}
 
-        if (tipoNotificacao) {
+async function processarNotificacaoAlvo(diasAlvo: number, tipoNotificacao: TipoNotificacao): Promise<void> {
+    console.log(`[CRON] Buscando eventos para notificação: ${tipoNotificacao} (${diasAlvo} dias)`);
+
+    const hoje = new Date();
+    const dataAlvo = new Date(hoje);
+    dataAlvo.setDate(hoje.getDate() + diasAlvo);
+
+    const limiteInferior = new Date(dataAlvo);
+    limiteInferior.setDate(dataAlvo.getDate() - 1);
+
+    const limiteSuperior = new Date(dataAlvo);
+    limiteSuperior.setDate(dataAlvo.getDate() + 1);
+
+    const eventos = await notificacaoRepo.buscarEventosParaCron(limiteInferior, limiteSuperior);
+
+    if (eventos.length === 0) return;
+
+    const notificacoesDesejadas = [];
+
+    for (const evento of eventos) {
+        if (calcularDiferencaDias(evento.dataInicio, hoje) === diasAlvo) {
             try {
-                const tipoEvento = determinarTipoEvento(evento);
                 notificacoesDesejadas.push({
                     idProprietario: evento.safras.propriedades.idProprietario_FK,
                     idPropriedade: evento.safras.idPropriedade_FK,
                     idEvento: evento.idEvento_PK,
-                    tipoEvento,
+                    tipoEvento: determinarTipoEvento(evento),
                     tipoNotificacao
                 });
             } catch (erro) {
@@ -131,37 +105,57 @@ async function processarNotificacoes(): Promise<void> {
 
     if (notificacoesDesejadas.length === 0) return;
 
-    const promisesDeDespacho = notificacoesDesejadas.map(async (dto) => {
+    for (const dto of notificacoesDesejadas) {
         try {
-            const notificacao = new Notificacao(
-                undefined,
-                dto.idProprietario,
-                dto.idPropriedade,
-                dto.idEvento,
-                dto.tipoEvento,
-                dto.tipoNotificacao
-            );
-            const novaNotificacao = await notificacaoRepo.criar(notificacao);
+            await prisma.$transaction(async (tx) => {
+                await notificacaoRepo.limparNotificacoesAntigasDoEvento(dto.idEvento, tx);
 
-            GerenciadorWebSocket.obterInstancia().enviarParaUsuario(dto.idProprietario, novaNotificacao);
+                const notificacao = new Notificacao(
+                    undefined, dto.idProprietario, dto.idPropriedade,
+                    dto.idEvento, dto.tipoEvento, dto.tipoNotificacao
+                );
+
+                const novaNotificacao = await notificacaoRepo.criar(notificacao, tx);
+                GerenciadorWebSocket.obterInstancia().enviarParaUsuario(dto.idProprietario, novaNotificacao);
+            });
         } catch (erro) {
             console.error(`[CRON] Erro ao salvar notificação do evento ${dto.idEvento}:`, erro);
         }
-    });
-
-    await Promise.all(promisesDeDespacho);
-    
-    console.log(`[CRON] Finalizado. ${notificacoesDesejadas.length} novas notificações geradas.`);
+    }
+    console.log(`[CRON] Finalizado. ${notificacoesDesejadas.length} notificações de ${tipoNotificacao} geradas.`);
 }
 
 export function iniciarCronJobs(): void {
-    cron.schedule('0 7 * * *', async () => { // Roda todo dia às 7:00
+    const configuracoesCron = [
+        { hora: 10, diasAlvo: 7, tipo: TipoNotificacao.FUTURO_SETE },
+        { hora: 9, diasAlvo: 3, tipo: TipoNotificacao.FUTURO_TRES },
+        { hora: 8, diasAlvo: 2, tipo: TipoNotificacao.FUTURO_DOIS },
+        { hora: 7, diasAlvo: 1, tipo: TipoNotificacao.FUTURO_UM },
+        { hora: 5, diasAlvo: 0, tipo: TipoNotificacao.PRESENTE },
+        { hora: 6, diasAlvo: -1, tipo: TipoNotificacao.PASSADO }
+    ];
+
+    cron.schedule('0 2 * * *', async () => {
         try {
-            await processarNotificacoes();
+            await processarLimpezaNotificacoes();
         } catch (erro) {
-            console.error('[CRON] Erro geral:', erro);
+            console.error('[CRON] Erro na rotina de limpeza de notificações:', erro);
         }
     }, {
         timezone: 'America/Sao_Paulo'
     });
-}
+
+    for (const config of configuracoesCron) {
+        cron.schedule(`0 ${config.hora} * * *`, async () => {
+            try {
+                await processarNotificacaoAlvo(config.diasAlvo, config.tipo);
+            } catch (erro) {
+                console.error(`[CRON] Erro na rotina de ${config.tipo}:`, erro);
+            }
+        }, {
+            timezone: 'America/Sao_Paulo'
+        });
+    }
+
+    console.log('[CRON] Múltiplos agendamentos registrados com sucesso (incluindo rotina de limpeza).');
+};
