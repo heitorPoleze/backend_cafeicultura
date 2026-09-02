@@ -69,6 +69,19 @@ paths:
           description: Acesso negado. Usuário não é o proprietário.
         '404':
           description: Propriedade ou Beneficiado não encontrado.
+          
+    get:
+      summary: Listar Todas as Despesas do Proprietário
+      description: Retorna todas as despesas vinculadas a todas as propriedades do proprietário logado.
+      tags: 
+        - Despesas
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista geral de despesas retornada com sucesso.
+        '404':
+          description: Nenhuma despesa encontrada.
 
   /api/v1/despesas/{id}:
     get:
@@ -115,7 +128,7 @@ paths:
         '404':
           description: Despesa não encontrada.
 
-  /api/v1/despesas/propriedade/{idPropriedade}:
+  /api/v1/despesas/propriedades/{idPropriedade}:
     get:
       summary: Listar Despesas por Propriedade
       description: Retorna todo o histórico de despesas atreladas a uma propriedade específica.
@@ -137,17 +150,4 @@ paths:
           description: Acesso negado.
         '404':
           description: Propriedade não encontrada ou não possui despesas.
-
-  /api/v1/despesas/proprietario:
-    get:
-      summary: Listar Todas as Despesas do Proprietário
-      description: Retorna todas as despesas vinculadas a todas as propriedades do proprietário logado.
-      tags: 
-        - Despesas
-      security:
-        - cookieAuth: []
-      responses:
-        '200':
-          description: Lista geral de despesas retornada com sucesso.
-        '404':
-          description: Nenhuma despesa encontrada.
+    

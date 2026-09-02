@@ -8,7 +8,7 @@ class CompraInsumo {
     private _despesa: Despesa,
     private _qtdComprada: number
   ) {
-    if (_qtdComprada <= 0) throw new Error("A quantidade comprada deve ser maior que zero.");
+    if (_qtdComprada <= 0) throw new Error('QUANTIDADE_INVALIDA');
   }
 
   public get id(): number | undefined { return this._id; }

@@ -32,18 +32,18 @@ class CompraInsumoRepository {
     return compraDB.idCompra_PK;
   }
 
-  public async buscarPorId(id: number): Promise<CompraInsumo | null> {
-    const compraDB = await this.prisma.comprasinsumos.findUnique({
+  public async buscarPorId(id: number, tx: Prisma.TransactionClient): Promise<CompraInsumo | null> {
+    const compraDB = await tx.comprasinsumos.findUnique({
       where: { idCompra_PK: id },
       include: compraInclude
     });
 
     if (!compraDB) return null;
-    return await this.mapToEntity(compraDB);
+    return await this.mapToEntity(compraDB, tx);
   }
 
-  public async listarPorPropriedade(idPropriedade: number): Promise<CompraInsumo[]> {
-    const comprasDB = await this.prisma.comprasinsumos.findMany({
+  public async listarPorPropriedade(idPropriedade: number, tx: Prisma.TransactionClient): Promise<CompraInsumo[]> {
+    const comprasDB = await tx.comprasinsumos.findMany({
       where: {
         despesas: {
           transacoesfinanceiras: {
@@ -54,7 +54,7 @@ class CompraInsumoRepository {
       include: compraInclude
     });
 
-    const compras = await Promise.all(comprasDB.map(c => this.mapToEntity(c)));
+    const compras = await Promise.all(comprasDB.map(c => this.mapToEntity(c, tx)));
     return compras.filter((c): c is CompraInsumo => c !== null);
   }
 
@@ -99,7 +99,7 @@ class CompraInsumoRepository {
     return compras.filter((c): c is CompraInsumo => c !== null);
   }
 
-  private async mapToEntity(compraDB: CompraInsumoPayload): Promise<CompraInsumo | null> {
+  private async mapToEntity(compraDB: CompraInsumoPayload, tx: Prisma.TransactionClient = this.prisma): Promise<CompraInsumo | null> {
     const insumo = new Insumo(
       compraDB.insumos.idInsumo_PK, 
       compraDB.insumos.idProprietario_FK,
@@ -107,7 +107,7 @@ class CompraInsumoRepository {
       compraDB.insumos.medida as MedidaInsumo
     );
 
-    const despesa = await this.despesaRepo.buscarPorId(compraDB.idDespesa_FK);
+    const despesa = await this.despesaRepo.buscarPorId(compraDB.idDespesa_FK, tx);
     if (!despesa) return null;
 
     return new CompraInsumo(

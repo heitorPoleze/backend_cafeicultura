@@ -47,7 +47,7 @@ model comprasinsumos {
   idCompra_PK  Int      @id @unique(map: "idCompra_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
   idInsumo_FK  Int      @db.UnsignedInt
   idDespesa_FK Int      @db.UnsignedInt
-  qtdComprada  Float    @db.Float
+  qtdComprada  Float
   despesas     despesas @relation(fields: [idDespesa_FK], references: [idTransacaoFinanceira_PFK], onDelete: NoAction, onUpdate: NoAction, map: "compra_despesa")
   insumos      insumos  @relation(fields: [idInsumo_FK], references: [idInsumo_PK], onDelete: NoAction, onUpdate: NoAction, map: "compra_insumo")
 
@@ -116,16 +116,6 @@ model enderecos {
   armazens      armazens[]
   pessoas       pessoas[]
   propriedades  propriedades[]
-}
-
-model estoque {
-  idEstoque_PK     Int   @id @unique(map: "idEstoque_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
-  idEventoAgricola Int   @db.UnsignedInt
-  idPropriedade    Int   @db.UnsignedInt
-  idTalhao         Int   @db.UnsignedInt
-  idSafra          Int   @db.UnsignedInt
-  idTipoCafe       Int   @db.UnsignedInt
-  quantidade       Float
 }
 
 model etiquetas {
@@ -215,6 +205,7 @@ model insumos {
   descricao           String                @db.VarChar(25)
   medida              String                @db.VarChar(3)
   comprasinsumos      comprasinsumos[]
+  estoqueinsumos      estoqueinsumos[]
   insumosfermentacoes insumosfermentacoes[]
   tratosinsumos       tratosinsumos[]
 }
@@ -335,6 +326,7 @@ model propriedades {
   idProprietario_FK     Int                     @db.UnsignedInt
   idTamanho_FK          Int                     @db.UnsignedInt
   nome                  String                  @db.VarChar(25)
+  estoqueinsumos        estoqueinsumos[]
   notificacoes          notificacoes[]
   enderecos             enderecos               @relation(fields: [idEndereco_FK], references: [idEndereco_PK], onDelete: NoAction, onUpdate: NoAction, map: "propriedade_endereco")
   proprietarios         proprietarios           @relation(fields: [idProprietario_FK], references: [idProprietario_PFK], onDelete: NoAction, onUpdate: NoAction, map: "propriedade_proprietario")
@@ -572,4 +564,26 @@ model notificacoes {
   @@index([idEvento_FK], map: "notificacao_evento_idx")
   @@index([idPropriedade_FK], map: "notificacao_propriedade_idx")
   @@index([idProprietario_FK], map: "notificacao_proprietario_idx")
+}
+
+model estoqueinsumos {
+  idEstInsumo_PK   Int          @id @unique(map: "idEstInsumo_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
+  idInsumo_FK      Int          @db.UnsignedInt
+  idPropriedade_FK Int          @db.UnsignedInt
+  quantidade       Float
+  insumos          insumos      @relation(fields: [idInsumo_FK], references: [idInsumo_PK], onDelete: NoAction, onUpdate: NoAction, map: "estoque_insumo")
+  propriedades     propriedades @relation(fields: [idPropriedade_FK], references: [idPropriedade_PK], onDelete: NoAction, onUpdate: NoAction, map: "estoque_propriedade")
+
+  @@index([idPropriedade_FK], map: "estoque_propriedade_idx")
+  @@index([idInsumo_FK, idPropriedade_FK], map: "insumo_propriedade_idx")
+}
+
+model estoquesacas {
+  idEstoque_PK     Int   @id @unique(map: "idEstoque_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
+  idEventoAgricola Int   @db.UnsignedInt
+  idPropriedade    Int   @db.UnsignedInt
+  idTalhao         Int   @db.UnsignedInt
+  idSafra          Int   @db.UnsignedInt
+  idTipoCafe       Int   @db.UnsignedInt
+  quantidade       Float
 }

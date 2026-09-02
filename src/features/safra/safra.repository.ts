@@ -18,8 +18,7 @@ export class SafraRepository {
     const data = await this.prisma.safras.create({
       data: {
         idPropriedade_FK: safra.idPropriedade,
-        dataInicio: safra.dataInicio,
-        arquivada: false,
+        dataInicio: safra.dataInicio
       },
     });
 

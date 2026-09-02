@@ -31,6 +31,8 @@ import Despesa from "../despesa/despesa.entity";
 import Safra from "../safra/safra.entity";
 import Talhao from "../talhao/talhao.entity";
 import { Prisma, PrismaClient } from "@prisma/client";
+import EstoqueInsumoRepository from "../../shared/domain/estoqueinsumo/estoqueinsumo.repository";
+import EstoqueInsumo from "../../shared/domain/estoqueinsumo/estoqueinsumo.entity";
 
 class TratoCulturalService {
   constructor(
@@ -40,8 +42,9 @@ class TratoCulturalService {
     private safraRepo: SafraRepository,
     private insumoRepo: InsumoRepository,
     private talhaoRepo: TalhaoRepository,
-    private pessoaRepo: PessoaRepository  
-  ) {};
+    private pessoaRepo: PessoaRepository,
+    private estoqueRepo: EstoqueInsumoRepository
+  ) { }
 
   private async validarAcessoPropriedade(idPropriedade: number, idUsuarioSessao: number, tx: Prisma.TransactionClient): Promise<void> {
     const propriedade = await this.propriedadeRepo.buscarPorId(idPropriedade, tx);
@@ -87,15 +90,15 @@ class TratoCulturalService {
 
       const tipoTrato = await this.tratoCulturalRepo.buscarTipoTratoPorDescricao(dto.tipoTrato, tx);
 
-      const despesasDomain: Despesa[] = dto.transacoesFinanceiras && dto.transacoesFinanceiras.length > 0 ? 
-      await Promise.all(dto.transacoesFinanceiras.map(async (despesa) => {
-        const pessoa = await this.pessoaRepo.buscarPorId(despesa.beneficiado, tx);
-        if (!pessoa) throw new Error("PESSOA_NAO_ENCONTRADA");
-        return new Despesa(
-          undefined, null, despesa.idPropriedade, new Date(), despesa.valor,
-          despesa.formaPagamento, despesa.tipoOperacao, pessoa, despesa.descricao,
-        )
-      })) : [];
+      const despesasDomain: Despesa[] = dto.transacoesFinanceiras && dto.transacoesFinanceiras.length > 0 ?
+        await Promise.all(dto.transacoesFinanceiras.map(async (despesa) => {
+          const pessoa = await this.pessoaRepo.buscarPorId(despesa.beneficiado, tx);
+          if (!pessoa) throw new Error("PESSOA_NAO_ENCONTRADA");
+          return new Despesa(
+            undefined, null, despesa.idPropriedade, new Date(), despesa.valor,
+            despesa.formaPagamento, despesa.tipoOperacao, pessoa, despesa.descricao,
+          )
+        })) : [];
 
       const responsaveisDomain: Pessoa[] = dto.responsaveisIds && dto.responsaveisIds.length > 0
         ? await Promise.all(dto.responsaveisIds.map(async (idPessoa) => {
@@ -112,6 +115,15 @@ class TratoCulturalService {
         }))
         : [];
 
+      for (const insumo of insumosDomain) {
+        let estoque = await this.estoqueRepo.buscarEstoque(insumo.insumo.id!, safra.idPropriedade, idUsuarioSessao, tx);
+
+        if (estoque) {
+          estoque.remover(insumo.qtdUsada);
+          await this.estoqueRepo.atualizar(estoque, tx);
+        };
+      };
+
       const novoTrato = new TratoCultural(
         undefined, dto.idTalhao, new Date(dto.dataInicio),
         dto.dataFim ? new Date(dto.dataFim) : null,
@@ -119,7 +131,7 @@ class TratoCulturalService {
       );
 
       return await this.tratoCulturalRepo.cadastrar(novoTrato, tipoTrato.id, tx);
-    }
+    };
 
     if (tx) {
       return await executarOperacoes(tx);
@@ -169,18 +181,63 @@ class TratoCulturalService {
   public async inserirInsumos(dto: InserirInsumosTratoDTO, idUsuarioSessao: number): Promise<void> {
     return await this.prisma.$transaction(async (tx) => {
       const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao, tx);
+      const idTrato = trato.id!;
 
-      const novosInsumos: TratoInsumo[] = await Promise.all(
-        dto.insumos.map(async (item) => {
-          const insumoDomain = await this.insumoRepo.buscarPorId(item.idInsumo, idUsuarioSessao, tx);
-          if (!insumoDomain) throw new Error("INSUMO_NAO_ENCONTRADO");
-          return new TratoInsumo(insumoDomain, item.qtdUsada);
-        })
-      );
-      trato.inserirInsumos(novosInsumos);
-      await this.tratoCulturalRepo.inserirInsumos(trato, tx);
+      const insumosTrato = await this.tratoCulturalRepo.buscarInsumosDoTrato(idTrato, tx);
+
+      const mapaExistentes = new Map<number, number>();
+      for (const item of insumosTrato) {
+        mapaExistentes.set(item.idInsumo_PFK, Number(item.qtdUsada));
+      };
+
+      const novosInsumosParaInserir: { idTrato_PFK: number; idInsumo_PFK: number; qtdUsada: number }[] = [];
+      const insumosParaAtualizar: { idInsumo_PFK: number; novaQtdTotal: number }[] = [];
+
+      for (const item of dto.insumos) {
+        const insumoDomain = await this.insumoRepo.buscarPorId(item.idInsumo, idUsuarioSessao, tx);
+        if (!insumoDomain) throw new Error(`INSUMO_NAO_ENCONTRADO`);
+
+        const idInsumo = insumoDomain.id!;
+        const qtdSendoAdicionada = item.qtdUsada;
+
+        if (mapaExistentes.has(idInsumo)) {
+          const qtdAnterior = mapaExistentes.get(idInsumo)!;
+          const qtdTotalAtualizada = qtdAnterior + qtdSendoAdicionada;
+
+          insumosParaAtualizar.push({
+            idInsumo_PFK: idInsumo,
+            novaQtdTotal: qtdTotalAtualizada,
+          });
+        } else {
+          novosInsumosParaInserir.push({
+            idTrato_PFK: idTrato,
+            idInsumo_PFK: idInsumo,
+            qtdUsada: qtdSendoAdicionada,
+          });
+        }
+
+        let estoque = await this.estoqueRepo.buscarEstoque(idInsumo, trato.safra.idPropriedade, idUsuarioSessao, tx);
+
+        if (estoque) {
+          estoque.remover(qtdSendoAdicionada);
+          await this.estoqueRepo.atualizar(estoque, tx);
+        };
+      };
+
+      for (const atualizacao of insumosParaAtualizar) {
+        await this.tratoCulturalRepo.atualizarQtdInsumoTrato(
+          idTrato,
+          atualizacao.idInsumo_PFK,
+          atualizacao.novaQtdTotal,
+          tx
+        );
+      };
+
+      if (novosInsumosParaInserir.length > 0) {
+        await this.tratoCulturalRepo.inserirInsumos(novosInsumosParaInserir, tx);
+      };
     });
-  };
+  }
 
   public async buscarPorId(dto: BuscarTratoPorIdDTO, idUsuarioSessao: number): Promise<ResponseTratoCulturalDTO> {
     return await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao, this.prisma);
@@ -273,12 +330,26 @@ class TratoCulturalService {
     await this.prisma.$transaction(async (tx) => {
       const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao, tx);
       trato.excluirInsumos(dto.idInsumos);
+      const insumosTrato = await this.tratoCulturalRepo.buscarInsumosDoTrato(dto.idTrato, tx);
+      if (insumosTrato && insumosTrato.length > 0) {
+        await Promise.all(
+          insumosTrato.map(async (insumo) => {
+            if (dto.idInsumos.includes(insumo.idInsumo_PFK!)) {
+              let estoque = await this.estoqueRepo.buscarEstoque(insumo.idInsumo_PFK, trato.safra.idPropriedade, idUsuarioSessao, tx);
+              if (estoque) {
+                estoque.adicionar(insumo.qtdUsada);
+                await this.estoqueRepo.atualizar(estoque, tx);
+              };
+            };
+          })
+        );
+      };
       await this.tratoCulturalRepo.excluirInsumos(trato, tx);
     });
   };
 
-  public async excluir(dto: ExcluirTratoCulturalDTO, idUsuarioSessao: number): Promise<void> {
-    return await this.prisma.$transaction(async (tx) => {
+  public async excluir(dto: ExcluirTratoCulturalDTO, idUsuarioSessao: number, tx?: Prisma.TransactionClient): Promise<void> {
+    const executarOperacao = async (tx: Prisma.TransactionClient) => {
       const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao, tx);
       const safras = await this.safraRepo.buscarSafrasPorPropriedade(trato.safra.idPropriedade, tx);
       if (trato.safra.dataFim !== null) {
@@ -287,8 +358,27 @@ class TratoCulturalService {
       if (safras.some((safra) => trato.safra.dataInicio < safra.dataInicio)) {
         throw new Error("TRATO_OUTRA_SAFRA");
       };
+      const insumosTrato = await this.tratoCulturalRepo.buscarInsumosDoTrato(dto.idTrato, tx);
+      if (insumosTrato && insumosTrato.length > 0) {
+        await Promise.all(
+          insumosTrato.map(async (insumo) => {
+            let estoque = await this.estoqueRepo.buscarEstoque(insumo.idInsumo_PFK, trato.safra.idPropriedade, idUsuarioSessao, tx);
+            if (estoque) {
+              estoque.adicionar(insumo.qtdUsada);
+              await this.estoqueRepo.atualizar(estoque, tx);
+            };
+          })
+        );
+      };
       await this.tratoCulturalRepo.excluir(trato, tx);
-    });
+    };
+    if (tx) {
+      await executarOperacao(tx);
+    } else {
+      await this.prisma.$transaction(async (tx) => {
+        await executarOperacao(tx);
+      });
+    };
   };
 
   private formatarRespostaPaginada(

@@ -15,9 +15,9 @@ import {
   RelatorioFinanceiroSafraDTO,
 } from "./safra.dto";
 
-import { 
-  EventoRelatorioDTO, 
-  TratoCulturalDTO 
+import {
+  EventoRelatorioDTO,
+  TratoCulturalDTO
 } from "../evento/evento.dto";
 import { PrismaClient } from "@prisma/client";
 import TratoCulturalRepository from "../tratocultural/tratocultural.repository";
@@ -57,6 +57,7 @@ export class SafraService {
 
     return await this.safraRepository.cadastrar(novaSafra);
   };
+
   public async buscarAtivasPorPropriedade(idPropriedade: number, idUsuarioSessao: number): Promise<SafraRespostaDTO[]> {
     const propriedade = await this.propriedadeRepo.buscarPorId(idPropriedade);
     if (!propriedade) {
@@ -68,7 +69,7 @@ export class SafraService {
     const safras = await this.safraRepository.bucarAtivasPorPropriedade(idPropriedade);
     return safras.map((safra) => safra.toJSON());
   }
-  
+
   public async buscarPorId(id: number, idUsuarioSessao: number): Promise<SafraRespostaDTO> {
     const safra = await this.safraRepository.buscarPorId(id);
     if (!safra) {
@@ -83,6 +84,7 @@ export class SafraService {
     };
     return safra.toJSON();
   };
+
   public async buscarTodasSafrasPorPropriedade(idPropriedade: number, idUsuarioSessao: number): Promise<SafraRespostaDTO[]> {
     const propriedade = await this.propriedadeRepo.buscarPorId(idPropriedade);
     if (!propriedade) {
@@ -94,7 +96,7 @@ export class SafraService {
     const safras = await this.safraRepository.buscarSafrasPorPropriedade(idPropriedade);
     return safras.map((safra) => safra.toJSON());
   }
- 
+
   public async finalizar(dto: FinalizarSafraDTO, idUsuarioSessao: number): Promise<void> {
     const safra = await this.safraRepository.buscarPorId(dto.id);
     if (!safra) {
@@ -110,34 +112,36 @@ export class SafraService {
     safra.finalizar(dto.dataFim);
     await this.safraRepository.finalizar(safra);
   }
-public async reativarSafra(idSafra: number, idPropriedadeRequisicao?: number): Promise<SafraRespostaDTO> {
-  const safraAlvo = await this.safraRepository.buscarPorId(idSafra);
-  
-  if (!safraAlvo) {
-    throw new Error("NAO_ENCONTRADA");
-  }
 
-  if (idPropriedadeRequisicao && safraAlvo.idPropriedade !== idPropriedadeRequisicao) {
-    throw new Error("ACESSO_NEGADO"); 
-  }
+  public async reativarSafra(idSafra: number, idPropriedadeRequisicao?: number): Promise<SafraRespostaDTO> {
+    const safraAlvo = await this.safraRepository.buscarPorId(idSafra);
 
-  const safraReativada = await this.safraRepository.reativar(safraAlvo);
-  
-  if (!safraReativada || !safraReativada.id) {
+    if (!safraAlvo) {
+      throw new Error("NAO_ENCONTRADA");
+    }
+
+    if (idPropriedadeRequisicao && safraAlvo.idPropriedade !== idPropriedadeRequisicao) {
+      throw new Error("ACESSO_NEGADO");
+    }
+
+    const safraReativada = await this.safraRepository.reativar(safraAlvo);
+
+    if (!safraReativada || !safraReativada.id) {
+      throw new Error("NAO_REATIVADA");
+    }
+
+    if (safraReativada.dataFim === null) {
+      return {
+        id: safraReativada.id,
+        idPropriedade: safraReativada.idPropriedade,
+        dataInicio: safraReativada.dataInicio,
+        dataFim: safraReativada.dataFim
+      };
+    }
+
     throw new Error("NAO_REATIVADA");
   }
-
-  if (safraReativada.dataFim === null) {
-    return {
-      id: safraReativada.id,
-      idPropriedade: safraReativada.idPropriedade,
-      dataInicio: safraReativada.dataInicio,
-      dataFim: safraReativada.dataFim
-    };
-  }
-
-  throw new Error("NAO_REATIVADA");
-}
+  
   public async excluir(dto: ExcluirSafraDTO, idUsuarioSessao: number): Promise<void> {
     const safra = await this.safraRepository.buscarPorId(dto.id);
     if (!safra) {
@@ -167,7 +171,7 @@ public async reativarSafra(idSafra: number, idPropriedadeRequisicao?: number): P
     const limiteFim = safra.dataFim ? safra.dataFim : new Date();
 
     const relatorio = await this.prisma.$transaction(async (tx) => {
-      
+
       const [despesasEventos, despesasGerais] = await Promise.all([
         this.despesaRepo.listarDespesasEventosConfirmadosSafra(dto.idSafra, dto.idPropriedade, tx),
         this.despesaRepo.listarDespesasGerais(dto.idPropriedade, safra.dataInicio, limiteFim, tx)
@@ -225,7 +229,7 @@ public async reativarSafra(idSafra: number, idPropriedadeRequisicao?: number): P
     const limiteFim = safra.dataFim ? safra.dataFim : new Date();
 
     const relatorio = await this.prisma.$transaction(async (tx) => {
-      
+
       const [despesasEventos, despesasGerais] = await Promise.all([
         this.despesaRepo.listarDespesasEventosConfirmadosSafra(dto.idSafra, dto.idPropriedade, tx),
         this.despesaRepo.listarDespesasGerais(dto.idPropriedade, safra.dataInicio, limiteFim, tx)
@@ -264,7 +268,7 @@ public async reativarSafra(idSafra: number, idPropriedadeRequisicao?: number): P
     if (safra.idPropriedade !== dto.idPropriedade) throw new Error("SAFRA_NAO_PERTENCE_PROPRIEDADE");
 
     const eventos = await this.prisma.$transaction(async (tx) => {
-      const [{tratos}] = await Promise.all([
+      const [{ tratos }] = await Promise.all([
         this.tratoCulturalRepo.listarTodosSafra(dto.idSafra, dto.idPropriedade, undefined, tx),
         // this.colheitaRepo.listarTodosSafra(dto.idSafra, dto.idPropriedade, tx) 
       ]);

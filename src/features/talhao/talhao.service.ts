@@ -27,10 +27,8 @@ class TalhaoService {
 
       const talhoesExistentes = await this.repository.buscarAbertosPorPropriedade(dto.idPropriedade, tx);
       
-      const nomePadronizadoDto = Formatador.normalizarNome(dto.nome);
-
       const nomeDuplicado = talhoesExistentes.some((t) => {
-        return Formatador.normalizarNome(t.nome) === nomePadronizadoDto;
+        return Formatador.normalizarNome(t.nome) === Formatador.normalizarNome(dto.nome);
       });
 
       if (nomeDuplicado) {
