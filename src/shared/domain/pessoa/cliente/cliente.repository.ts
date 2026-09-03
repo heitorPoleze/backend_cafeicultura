@@ -78,7 +78,7 @@ class ClienteRepository {
     const e = p.enderecos;
     
     const endereco = e 
-      ? new Endereco(e.logradouro, e.bairro, e.cidade, e.uf, e.pais, e.cep, e.idEndereco_PK)
+      ? new Endereco(e.cidade, e.bairro, e.cep, e.uf, e.pais, e.logradouro, e.idEndereco_PK)
       : null;
 
     const tipoPessoa = p.pessoasfisicas ? 'fisica' : 'juridica';

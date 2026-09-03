@@ -35,11 +35,16 @@ class ProprietarioController {
     if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
     try {
       const pessoaId = Number(req.params.id);
-      let endereco = await this.service.criarEndereco(req.body, pessoaId);
+      let endereco = await this.service.criarEndereco(req.body, pessoaId, req.session.idUsuario!);
       res.status(201).json({ mensagem: "Endereço adicionado com sucesso", Endereco: endereco});
     } catch (error: unknown) {
       if (error instanceof Error) {
-        console.log(error)
+        if (error.message === "NAO_ENCONTRADO") {
+          return res.status(404).json({ error: "Proprietário não encontrado" });
+        }
+        if (error.message === "ACESSO_NEGADO") {
+          return res.status(403).json({ error: "Acesso negado" });
+        }
         return res.status(500).json({ error: "Erro ao adicionar endereço" });
       };
     };
@@ -48,10 +53,16 @@ class ProprietarioController {
   public async atualizarEndereco(req: Request, res: Response) {
     try {
       const id = Number(req.params.id);
-      let endereco = await this.service.atualizarEndereco(id, req.body);
+      let endereco = await this.service.atualizarEndereco(id, req.body, req.session.idUsuario!);
       res.status(200).json({ mensagem: "Endereço atualizado com sucesso.", Endereco: endereco });
     } catch (error: unknown) {
       if (error instanceof Error) {
+        if (error.message === "NAO_ENCONTRADO") {
+          return res.status(404).json({ error: "Proprietário não encontrado" });
+        }
+        if (error.message === "ACESSO_NEGADO") {
+          return res.status(403).json({ error: "Acesso negado" });
+        }
         return res.status(500).json({ error: "Erro ao atualizar endereço" });
       };
     };
@@ -60,10 +71,16 @@ class ProprietarioController {
   public async removerEndereco(req: Request, res: Response) {
     try {
       const pessoaId = Number(req.params.id);
-      await this.service.removerEndereco(pessoaId);
+      await this.service.removerEndereco(pessoaId, req.session.idUsuario!);
       res.status(200).json({ mensagem: "Endereço removido com sucesso" });
     } catch (error: unknown) {
       if (error instanceof Error) {
+        if (error.message === "NAO_ENCONTRADO") {
+          return res.status(404).json({ error: "Proprietário não encontrado" });
+        }
+        if (error.message === "ACESSO_NEGADO") {
+          return res.status(403).json({ error: "Acesso negado" });
+        }
         return res.status(500).json({ error: "Erro ao remover endereço" });
       };
     };
@@ -78,7 +95,7 @@ public async atualizarSenha(req: Request, res: Response) {
   try {
     const pessoaId = Number(req.params.id);
     const { senha } = req.body; 
-    await this.service.atualizarSenha(senha, pessoaId);
+    await this.service.atualizarSenha(senha, pessoaId, req.session.idUsuario!);
 
     res.status(200).json({ mensagem: "Senha atualizada com sucesso" });
   } catch (error: unknown) {
@@ -95,14 +112,22 @@ public async atualizarEmail(req: Request, res: Response) {
   try {
     const pessoaId = Number(req.params.id);
     const { email } = req.body; 
-    const emailAtualizado = await this.service.atualizarEmail(email, pessoaId);
+    const emailAtualizado = await this.service.atualizarEmail(email, pessoaId, req.session.idUsuario!);
 
     res.status(200).json({ 
       mensagem: "Email atualizado com sucesso", 
       email: emailAtualizado 
     });
   } catch (error: unknown) {
-    res.status(400).json({ mensagem: (error as Error).message });
+    if (error instanceof Error) {
+      if (error.message === "NAO_ENCONTRADO") {
+          return res.status(404).json({ error: "Proprietário não encontrado" });
+        }
+        if (error.message === "ACESSO_NEGADO") {
+          return res.status(403).json({ error: "Acesso negado" });
+        }
+      res.status(400).json({ mensagem: error.message });
+    }
   }
 }
 
@@ -114,10 +139,18 @@ public async atualizarEmail(req: Request, res: Response) {
 
   try {
     const { telefone } = req.body; 
-    await this.service.atualizarTelefone(telefone, Number(req.params.id));
+    await this.service.atualizarTelefone(telefone, Number(req.params.id), req.session.idUsuario!);
     res.status(200).json({ mensagem: "Telefone atualizado com sucesso", telefone });
   } catch (error: unknown) {
-    res.status(400).json({ mensagem: (error as Error).message });
+    if (error instanceof Error) {
+      if (error.message === "NAO_ENCONTRADO") {
+          return res.status(404).json({ error: "Proprietário não encontrado" });
+        }
+        if (error.message === "ACESSO_NEGADO") {
+          return res.status(403).json({ error: "Acesso negado" });
+        }
+      res.status(400).json({ mensagem: error.message });
+    }
   }
 }
   public async atualizarNomeOuRazaoSocial(req: Request, res: Response) {
@@ -128,9 +161,17 @@ public async atualizarEmail(req: Request, res: Response) {
 
     try {
       const pessoaId = Number(req.params.id);
-      await this.service.atualizarNomeOuRazaoSocial(req.body, pessoaId);
+      await this.service.atualizarNomeOuRazaoSocial(req.body, pessoaId, req.session.idUsuario!);
       res.status(200).json({ mensagem: "Nome ou Razão Social atualizadas com sucesso.", novaInformacao: req.body });
     } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === "NAO_ENCONTRADO") {
+          return res.status(404).json({ error: "Proprietário não encontrado" });
+        }
+        if (error.message === "ACESSO_NEGADO") {
+          return res.status(403).json({ error: "Acesso negado" });
+        }
+      }
       res.status(400).json({ mensagem: (error as Error).message })
     }
   }
@@ -142,10 +183,18 @@ public async atualizarEmail(req: Request, res: Response) {
 
     try {
       const pessoaId = Number(req.params.id);
-      const { inscricaoEstadual, cnpj } = req.body;
-      await this.service.atualizarInscricaoEstadual(inscricaoEstadual, cnpj, pessoaId);
+      const { inscricaoEstadual } = req.body;
+      await this.service.atualizarInscricaoEstadual(inscricaoEstadual, pessoaId, req.session.idUsuario!);
       res.status(200).json({ mensagem: "Atualização de Inscrição Estadual feita com sucesso.", novaInscricaoEstadual: inscricaoEstadual });
     } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === "NAO_ENCONTRADO") {
+          return res.status(404).json({ error: "Proprietário não encontrado" });
+        }
+        if (error.message === "ACESSO_NEGADO") {
+          return res.status(403).json({ error: "Acesso negado" });
+        }
+      }
       res.status(400).json({ mensagem: (error as Error).message });
     }
   }
@@ -155,9 +204,17 @@ public async getProprietarioEEndereco(req: Request, res: Response) {
     if (Number.isNaN(pessoaId)) {
       return res.status(400).json({ mensagem: "ID de pessoa inválido." });
     }
-    const resultado = await this.service.getProprietarioEEndereco(pessoaId);
+    const resultado = await this.service.getProprietarioEEndereco(pessoaId, req.session.idUsuario!);
     res.status(200).json(resultado);
   } catch (error: unknown) {
+    if (error instanceof Error) {
+      if (error.message === "NAO_ENCONTRADO") {
+        return res.status(404).json({ error: "Proprietário não encontrado" });
+      }
+      if (error.message === "ACESSO_NEGADO") {
+        return res.status(403).json({ error: "Acesso negado" });
+      }
+    }
     res.status(400).json({ mensagem: (error as Error).message });
   }
 }
@@ -167,10 +224,18 @@ public async deletarProprietario(req: Request, res: Response) {
     if (Number.isNaN(pessoaId)) {
       return res.status(400).json({ mensagem: "ID de pessoa inválido." });
     }
-    await this.service.deletarProprietario(pessoaId);
+    await this.service.deletarProprietario(pessoaId, req.session.idUsuario!);
     res.status(200).json({ mensagem: "Proprietário deletado com sucesso." });
   } catch (error: unknown) {
-    res.status(400).json({ mensagem: (error as Error).message });
+    if (error instanceof Error) {
+      if (error.message === "NAO_ENCONTRADO") {
+          return res.status(404).json({ error: "Proprietário não encontrado" });
+        }
+        if (error.message === "ACESSO_NEGADO") {
+          return res.status(403).json({ error: "Acesso negado" });
+        }
+      res.status(400).json({ mensagem: error.message });
+    }
   }
 }
 }

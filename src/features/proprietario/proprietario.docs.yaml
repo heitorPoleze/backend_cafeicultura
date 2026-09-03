@@ -88,6 +88,7 @@ components:
       type: object
       required:
         - cidade
+        - bairro
         - cep
         - uf
         - logradouro
@@ -95,6 +96,9 @@ components:
         cidade:
           type: string
           example: "Santa Teresa"
+        bairro:
+          type: string
+          example: "Centro"
         cep:
           type: string
           pattern: '^\d{5}-\d{3}$'

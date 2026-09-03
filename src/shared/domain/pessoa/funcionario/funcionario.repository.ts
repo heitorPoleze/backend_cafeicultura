@@ -62,15 +62,7 @@ class FuncionarioRepository {
     const e = p.enderecos;
 
     const endereco = e
-      ? new Endereco(
-        e.cidade,
-        e.bairro,
-        e.cep,
-        e.uf,
-        e.pais,
-        e.logradouro,
-        e.idEndereco_PK,
-      )
+      ? new Endereco(e.cidade, e.bairro, e.cep, e.uf, e.pais, e.logradouro, e.idEndereco_PK)
       : null;
 
     const dados = {
