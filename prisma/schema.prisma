@@ -192,6 +192,8 @@ model funcionarios {
   ctps           String?  @db.VarChar(14)
   salario        Decimal? @db.Decimal(10, 2)
   pessoasfisicas pessoas  @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_funcionario")
+
+  @@index([ctps], map: "ctps_idx")
 }
 
 model geolocalizacoes {
@@ -283,7 +285,7 @@ model pessoasfisicas {
   cpf            String  @db.Char(14)
   pessoas        pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "PessoaFisica_Pessoa")
 
-  @@index([cpf], map: "cpf_index")
+  @@index([cpf], map: "cpf_idx")
 }
 
 model pessoasjuridicas {
@@ -294,6 +296,7 @@ model pessoasjuridicas {
   pessoas          pessoas @relation(fields: [idPeJuridica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoaJuridica_pessoa")
 
   @@index([cnpj], map: "cnpj_idx")
+  @@index([inscEstadual], map: "inscEstadual_idx")
 }
 
 model pilagens {
