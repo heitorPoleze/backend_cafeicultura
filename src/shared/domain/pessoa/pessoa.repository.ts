@@ -11,7 +11,7 @@ const pessoaInclude = {
   pessoasfisicas: true,
   pessoasjuridicas: true,
   enderecos: true,
-  funcionarios: true 
+  funcionarios: true
 } satisfies Prisma.pessoasInclude;
 
 type PessoaPayload = Prisma.pessoasGetPayload<{
@@ -34,7 +34,7 @@ type PessoaSearchPayload = Prisma.pessoasGetPayload<{
 }>;
 
 class PessoaRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: PrismaClient) { }
 
   private async buscarPessoaGenerica(
     where: Prisma.pessoasWhereInput,
@@ -55,7 +55,6 @@ class PessoaRepository {
     const endereco = e
       ? new Endereco(e.logradouro, e.bairro, e.cidade, e.uf, e.pais, e.cep, e.idEndereco_PK)
       : null;
-
     const isPF = !!p.pessoasfisicas;
 
     return {
@@ -123,9 +122,9 @@ class PessoaRepository {
 
   public async salvar(perfil: PessoaFisica | PessoaJuridica, tx: Prisma.TransactionClient): Promise<number> {
     const pessoa = await tx.pessoas.create({
-      data: { 
-        dataCadastro: perfil.dataCadastro, 
-        idAdministrador_FK: perfil.idAdministrador ? perfil.idAdministrador : null 
+      data: {
+        dataCadastro: perfil.dataCadastro,
+        idAdministrador_FK: perfil.idAdministrador ? perfil.idAdministrador : null
       },
     });
     const id = pessoa.idPessoa_PK;
@@ -196,7 +195,7 @@ class PessoaRepository {
   public async atualizarInscricaoEstadualPorPessoaId(pessoaId: number, inscrEstadual: string, tx?: Prisma.TransactionClient): Promise<PessoaDTO | null> {
     const db = tx ?? this.prisma;
     const pessoa = await this.buscarPessoaPorId(pessoaId, db);
-    
+
     if (!pessoa || pessoa.cnpj === undefined) {
       throw new Error("Pessoa jurídica não encontrada para o ID informado.");
     }
@@ -249,8 +248,8 @@ class PessoaRepository {
     return pessoa?.idEndereco_FK ?? null;
   }
 
-  public async cadastrarEndereco(enderecoData: Endereco, pessoaId: number): Promise<Endereco> {
-    return await this.prisma.$transaction(async (tx) => {
+  public async cadastrarEndereco(enderecoData: Endereco, pessoaId: number, tx?: Prisma.TransactionClient): Promise<Endereco> {
+    const executarOperacao = async (tx: Prisma.TransactionClient) => {
       const enderecoExistenteId = await this.resolverIdEnderecoDaPessoa(pessoaId, tx);
 
       let idEnderecoFinal: number;
@@ -258,7 +257,14 @@ class PessoaRepository {
       if (enderecoExistenteId) {
         const enderecoAtualizado = await tx.enderecos.update({
           where: { idEndereco_PK: enderecoExistenteId },
-          data: { ...enderecoData },
+          data: {
+            cidade: enderecoData.cidade,
+            bairro: enderecoData.bairro,
+            cep: enderecoData.cep,
+            uf: enderecoData.uf,
+            pais: enderecoData.pais,
+            logradouro: enderecoData.logradouro
+          },
         });
         idEnderecoFinal = enderecoAtualizado.idEndereco_PK;
       } else {
@@ -273,7 +279,7 @@ class PessoaRepository {
           },
         });
         idEnderecoFinal = enderecoCriado.idEndereco_PK;
-        
+
         await tx.pessoas.update({
           where: { idPessoa_PK: pessoaId },
           data: { idEndereco_FK: idEnderecoFinal },
@@ -281,14 +287,15 @@ class PessoaRepository {
       }
 
       return new Endereco(
-        enderecoData.logradouro, enderecoData.bairro, enderecoData.cidade,
-        enderecoData.uf, enderecoData.pais, enderecoData.cep, idEnderecoFinal
+        enderecoData.cidade, enderecoData.bairro, enderecoData.cep,
+        enderecoData.uf, enderecoData.pais, enderecoData.logradouro, idEnderecoFinal
       );
-    });
+    }
+    return tx ? await executarOperacao(tx) : await this.prisma.$transaction(executarOperacao);
   }
 
-  public async atualizarEndereco(enderecoData: Endereco, pessoaId: number): Promise<Endereco> {
-    return await this.cadastrarEndereco(enderecoData, pessoaId);
+  public async atualizarEndereco(enderecoData: Endereco, pessoaId: number, tx?: Prisma.TransactionClient): Promise<Endereco> {
+    return await this.cadastrarEndereco(enderecoData, pessoaId, tx);
   }
 
   public async removerEndereco(pessoaId: number, tx?: Prisma.TransactionClient): Promise<PessoaDTO | null> {
@@ -322,10 +329,10 @@ class PessoaRepository {
     });
 
     if (!pessoaDB) return null;
-    
+
     const tipoPessoa = pessoaDB.pessoasfisicas ? 'fisica' : 'juridica';
     const dto = this.mapToPessoaDTOCompleto(pessoaDB);
-    return PessoaFactory.criarPessoa(tipoPessoa, dto as any);
+    return PessoaFactory.criarPessoa(tipoPessoa, dto);
   }
 
   private obterPapel(p: PessoaSearchPayload): string | null {
@@ -353,7 +360,7 @@ class PessoaRepository {
       if (pessoaMapeada) pessoas.push(pessoaMapeada);
     }
 
-    pessoas.sort((a, b) => String(a.papel || "").localeCompare(String(b.papel || "")));
+    pessoas.sort((a, b) => String(a.papel).localeCompare(String(b.papel)));
 
     const total = pessoas.length;
     const startIndex = (pagina - 1) * limite;
@@ -371,7 +378,7 @@ class PessoaRepository {
     if (!p) return null;
 
     const e = p.enderecos;
-    const endereco = e ? new Endereco(e.logradouro, e.bairro, e.cidade, e.uf, e.pais, e.cep, e.idEndereco_PK) : null;
+    const endereco = e ? new Endereco(e.cidade, e.bairro, e.cep, e.uf, e.pais, e.logradouro, e.idEndereco_PK) : null;
     const isPF = !!p.pessoasfisicas;
     const papel = this.obterPapel(p);
 
@@ -380,7 +387,7 @@ class PessoaRepository {
       idAdministrador: p.idAdministrador_FK,
       dataCadastro: p.dataCadastro,
       endereco: endereco,
-      papel,
+      papel: papel,
       nome: isPF ? p.pessoasfisicas!.nome : undefined,
       cpf: isPF ? p.pessoasfisicas!.cpf : undefined,
       razaoSocial: !isPF ? p.pessoasjuridicas!.razaoSocial : undefined,

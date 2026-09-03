@@ -55,10 +55,14 @@ router.put(
       const cidade = value ?? req.body.cidade ?? req.body.Cidade;
       return typeof cidade === "string" && cidade.trim() !== "";
     }).withMessage("Cidade é obrigatória"),
+    body(["bairro", "Bairro"]).custom((value, { req }) => {
+      const bairro = value ?? req.body.bairro ?? req.body.Bairro;
+      return typeof bairro === "string" && bairro.trim() !== "";
+    }).withMessage("Bairro é obrigatório"),
     body(["CEP", "cep", "Cep"]).custom((value, { req }) => {
       const cep = value ?? req.body.CEP ?? req.body.cep ?? req.body.Cep;
       return typeof cep === "string" && /^\d{5}-\d{3}$/.test(cep);
-    }).withMessage("CEP inválido"),
+    }).withMessage("CEP deve estar no formato 00000-000"),
     body(["UF", "uf", "Uf"]).custom((value, { req }) => {
       const uf = value ?? req.body.UF ?? req.body.uf ?? req.body.Uf;
       return typeof uf === "string" && uf.length === 2;
@@ -106,6 +110,7 @@ router.delete(
   exigeLogin(),
   proprietarioController.removerEndereco.bind(proprietarioController)
 );
+
 //revisar
 // Atualizar senha de um proprietário
 router.put(
@@ -119,6 +124,7 @@ router.put(
   ],
   proprietarioController.atualizarSenha.bind(proprietarioController)
 );
+
 //revisar
 // Atualizar email de um proprietário
 router.put(
@@ -129,6 +135,7 @@ router.put(
   ],
   proprietarioController.atualizarEmail.bind(proprietarioController)
 );
+
 //revisar
 // Atualizar telefone de um proprietário
 router.put(
@@ -141,6 +148,7 @@ router.put(
   ],
   proprietarioController.atualizarTelefone.bind(proprietarioController)
 );
+
 router.put(
   "/:id/identificacao",
   exigeLogin(),
