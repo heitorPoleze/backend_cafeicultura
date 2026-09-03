@@ -3,44 +3,38 @@ import Proprietario from "./proprietario.entity";
 import PessoaRepository from "../../shared/domain/pessoa/pessoa.repository";
 import UsuarioRepository from "../usuario/usuario.repository";
 import Endereco from "../../shared/domain/endereco/endereco.vo";
-import { Prisma, PrismaClient } from "@prisma/client/extension";
+import { Prisma, PrismaClient } from "@prisma/client"; // Fixed import path
 
 class ProprietarioRepository {
   constructor(
     private prisma: PrismaClient,
     private pessoaRepo: PessoaRepository,
     private usuarioRepo: UsuarioRepository
-  ) {}
+  ) {};
 
-
-  public async salvarComTransacao(prop: Proprietario): Promise<number> {
-    
-    // Inicia a transação (Unit of Work)
-    return await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      
-      // 1. Delega a criação da Pessoa (Física/Jurídica) passando o 'tx'
-      const id = await this.pessoaRepo.salvar(prop.perfil, tx);
-
-      // 2. Delega a criação da Credencial de Usuário passando o 'tx'
-      await this.usuarioRepo.salvar(prop, id, tx);
-      
-      // 3. O próprio repositório salva sua entidade principal
-      await tx.proprietarios.create({ 
-        data: { idProprietario_PFK: id } 
+  public async salvarComTransacao(prop: Proprietario, tx?: Prisma.TransactionClient): Promise<number> {
+    const execute = async (db: Prisma.TransactionClient) => {
+      const id = await this.pessoaRepo.salvar(prop.perfil, db);
+      await this.usuarioRepo.salvar(prop, id, db);
+      await db.proprietarios.create({
+        data: { idProprietario_PFK: id }
       });
-
       return id;
-    });
-  };
+    };
 
-  public async buscarPorId(id: number): Promise<Proprietario | null> {
-    const prop = await this.prisma.proprietarios.findUnique({
+    return tx ? await execute(tx) : await this.prisma.$transaction(execute);
+  }
+
+  public async buscarPorId(id: number, tx?: Prisma.TransactionClient): Promise<Proprietario | null> {
+    const db = tx ?? this.prisma;
+
+    const prop = await db.proprietarios.findUnique({
       where: { idProprietario_PFK: id }
     });
 
     if (!prop) return null;
 
-    const p = await this.prisma.pessoas.findUnique({
+    const p = await db.pessoas.findUnique({
       where: { idPessoa_PK: id },
       include: {
         pessoasfisicas: true,
@@ -54,15 +48,15 @@ class ProprietarioRepository {
 
     const u = p.usuarios;
     const e = p.enderecos;
-    
-    const endereco = e 
-      ? new Endereco(e.cidade, e.bairro, e.cep, e.uf, e.pais, e.logradouro, e.idEndereco_PK)
+
+    const endereco = e
+      ? new Endereco(e.logradouro, e.bairro, e.cidade, e.uf, e.pais, e.cep, e.idEndereco_PK)
       : null;
 
     const tipoPessoa = p.pessoasfisicas ? 'fisica' : 'juridica';
 
     const dados = {
-      id: u.idUsuario_PFK, 
+      id: u.idUsuario_PFK,
       idAdministrador: p.idAdministrador_FK,
       dataCadastro: p.dataCadastro,
       endereco: endereco,
@@ -73,77 +67,79 @@ class ProprietarioRepository {
       inscrEstadual: p.pessoasjuridicas?.inscEstadual ?? null,
     };
 
-    const perfil = PessoaFactory.criarPessoa(tipoPessoa, dados);
+    const perfil = PessoaFactory.criarPessoa(tipoPessoa, dados as any);
 
     return new Proprietario(perfil, u.email, u.telefone, u.senha);
-  };
-  //revisar
-  public async updateSenhaProprietario(novaSenha: string, id: number){
-    await this.usuarioRepo.updateSenhaUser(novaSenha, id);
   }
-  public async updateEmailProprietario(email: string, id: number){
-    await this.usuarioRepo.updateEmail(email, id);
-  }
-  public async updateTelefoneProprietario(telefone: string, id: number){
-    await this.usuarioRepo.updateTelefone(telefone, id);
-  }
-  public async updateNome(novoNome:string,id:number){
-    await this.usuarioRepo.updateNomeUser(novoNome,id)
-  }
-  public async updateRazaoSocial(novaRazao:string,id:number){
-    await this.usuarioRepo.updateRazaoSocialUser(novaRazao,id)
-  }
-  public async updateInscricaoEstadual(novaInscricao:string, cnpj:string){
-    await this.pessoaRepo.atualizarInscricaoEstadual(novaInscricao, cnpj)
-  }
-public async deletarProprietario(pessoaId: number): Promise<void> {
-  await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    const pessoa = await tx.pessoas.findUnique({
-      where: { idPessoa_PK: pessoaId },
-      include: {
-        pessoasfisicas: true,
-        pessoasjuridicas: true,
-        enderecos: true,
-        usuarios: true
-      }
-    });
 
-    if (!pessoa) return;
-    await tx.propriedades.deleteMany({
-      where: { idProprietario_FK: pessoaId }
-    });
-    await tx.proprietarios.delete({
-      where: { idProprietario_PFK: pessoaId }
-    });
+  public async updateSenhaProprietario(novaSenha: string, id: number, tx?: Prisma.TransactionClient) {
+    await this.usuarioRepo.updateSenhaUser(novaSenha, id, tx);
+  }
 
-    if (pessoa.pessoasfisicas) {
-      await tx.pessoasfisicas.delete({ where: { idPeFisica_PFK: pessoaId } });
-    }
+  public async updateEmailProprietario(email: string, id: number, tx?: Prisma.TransactionClient) {
+    await this.usuarioRepo.updateEmail(email, id, tx);
+  }
 
-    if (pessoa.pessoasjuridicas) {
-      await tx.pessoasjuridicas.delete({ where: { idPeJuridica_PFK: pessoaId } });
-    }
+  public async updateTelefoneProprietario(telefone: string, id: number, tx?: Prisma.TransactionClient) {
+    await this.usuarioRepo.updateTelefone(telefone, id, tx);
+  }
 
-    if (pessoa.usuarios) {
-      await tx.usuarios.delete({ where: { idUsuario_PFK: pessoaId } });
-    }
+  public async updateNome(novoNome: string, id: number, tx?: Prisma.TransactionClient) {
+    await this.usuarioRepo.updateNomeUser(novoNome, id, tx);
+  }
 
-    if (pessoa.enderecos) {
-      await tx.pessoas.update({
+  public async updateRazaoSocial(novaRazao: string, id: number, tx?: Prisma.TransactionClient) {
+    await this.usuarioRepo.updateRazaoSocialUser(novaRazao, id, tx);
+  }
+
+  public async updateInscricaoEstadual(novaInscricao: string, id: number, tx?: Prisma.TransactionClient) {
+    await this.usuarioRepo.updateInscricaoEstadualUser(novaInscricao, id, tx);
+  }
+
+  public async deletarProprietario(pessoaId: number, tx?: Prisma.TransactionClient): Promise<void> {
+    const execute = async (db: Prisma.TransactionClient) => {
+      const pessoa = await db.pessoas.findUnique({
         where: { idPessoa_PK: pessoaId },
-        data: { idEndereco_FK: null }
+        include: {
+          pessoasfisicas: true,
+          pessoasjuridicas: true,
+          enderecos: true,
+          usuarios: true
+        }
       });
+      if (!pessoa) return;
 
-      await tx.enderecos.delete({
-        where: { idEndereco_PK: pessoa.enderecos.idEndereco_PK }
+      await db.propriedades.deleteMany({
+        where: { idProprietario_FK: pessoaId }
       });
-    }
+      await db.proprietarios.delete({
+        where: { idProprietario_PFK: pessoaId }
+      });
+      if (pessoa.pessoasfisicas) {
+        await db.pessoasfisicas.delete({ where: { idPeFisica_PFK: pessoaId } });
+      }
+      if (pessoa.pessoasjuridicas) {
+        await db.pessoasjuridicas.delete({ where: { idPeJuridica_PFK: pessoaId } });
+      }
+      if (pessoa.usuarios) {
+        await db.usuarios.delete({ where: { idUsuario_PFK: pessoaId } });
+      }
+      if (pessoa.enderecos) {
+        await db.pessoas.update({
+          where: { idPessoa_PK: pessoaId },
+          data: { idEndereco_FK: null }
+        });
+        await db.enderecos.delete({
+          where: { idEndereco_PK: pessoa.enderecos.idEndereco_PK }
+        });
+      }
+      await db.pessoas.delete({
+        where: { idPessoa_PK: pessoaId }
+      });
+    };
 
-    await tx.pessoas.delete({
-      where: { idPessoa_PK: pessoaId }
-    });
-  });
-}
+    return tx ? await execute(tx) : await this.prisma.$transaction(execute);
+  }
 }
 
 export default ProprietarioRepository;

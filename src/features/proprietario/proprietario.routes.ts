@@ -13,7 +13,7 @@ const router = Router();
 const pessoaRepo = new PessoaRepository(prisma);
 const usuarioRepo = new UsuarioRepository(prisma);
 const proprietarioRepo = new ProprietarioRepository(prisma, pessoaRepo, usuarioRepo);
-const proprietarioService = new ProprietarioService(proprietarioRepo, pessoaRepo, usuarioRepo);
+const proprietarioService = new ProprietarioService(prisma, proprietarioRepo, pessoaRepo, usuarioRepo);
 const proprietarioController = new ProprietarioController(proprietarioService);
 
 

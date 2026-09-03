@@ -280,16 +280,20 @@ model pessoas {
 model pessoasfisicas {
   idPeFisica_PFK Int     @id @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
   nome           String  @db.VarChar(100)
-  cpf            String  @unique(map: "cpf_UNIQUE") @db.Char(14)
+  cpf            String  @db.Char(14)
   pessoas        pessoas @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "PessoaFisica_Pessoa")
+
+  @@index([cpf], map: "cpf_index")
 }
 
 model pessoasjuridicas {
   idPeJuridica_PFK Int     @id @unique(map: "idPeJuridica_PFK_UNIQUE") @db.UnsignedInt
   razaoSocial      String  @db.VarChar(100)
-  cnpj             String  @unique(map: "cnpj_UNIQUE") @db.Char(18)
-  inscEstadual     String? @unique(map: "inscEstadual_UNIQUE") @db.VarChar(45)
+  cnpj             String  @db.Char(18)
+  inscEstadual     String? @db.VarChar(45)
   pessoas          pessoas @relation(fields: [idPeJuridica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoaJuridica_pessoa")
+
+  @@index([cnpj], map: "cnpj_idx")
 }
 
 model pilagens {
