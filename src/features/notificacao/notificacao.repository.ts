@@ -41,7 +41,8 @@ class NotificacaoRepository {
         idPropriedade_FK: dto.idPropriedade,
         idEvento_FK: dto.idEvento,
         tipoEvento: dto.tipoEvento,
-        tipoNotificacao: dto.tipoNotificacao
+        tipoNotificacao: dto.tipoNotificacao,
+        dataCriacao: dto.dataCriacao
       }
     });
     return this.mapToEntity(notificacao);

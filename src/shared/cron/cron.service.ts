@@ -49,10 +49,12 @@ function determinarTipoEvento(evento: EventoCronPayload): TipoEvento {
 async function processarLimpezaNotificacoes(): Promise<void> {
     console.log('[CRON] Iniciando verificação de limpeza de notificações lidas...');
 
-    const hoje = new Date();
+    const agora = new Date().toLocaleDateString('en-US', { timeZone: 'America/Sao_Paulo' });
+    const hoje = new Date(agora);
     const limiteData = new Date(hoje);
     
     limiteData.setDate(hoje.getDate() - 7);
+    console.log(`[CRON] Limite de data para limpeza: ${limiteData.toISOString()}`);
 
     let quantidadeExcluida = 0;
 
@@ -71,7 +73,8 @@ async function processarLimpezaNotificacoes(): Promise<void> {
 async function processarNotificacaoAlvo(diasAlvo: number, tipoNotificacao: TipoNotificacao): Promise<void> {
     console.log(`[CRON] Buscando eventos para notificação: ${tipoNotificacao} (${diasAlvo} dias)`);
 
-    const hoje = new Date();
+    const agora = new Date().toLocaleDateString('en-US', { timeZone: 'America/Sao_Paulo' });
+    const hoje = new Date(agora);
     const dataAlvo = new Date(hoje);
     dataAlvo.setDate(hoje.getDate() + diasAlvo);
 
@@ -95,7 +98,8 @@ async function processarNotificacaoAlvo(diasAlvo: number, tipoNotificacao: TipoN
                     idPropriedade: evento.safras.idPropriedade_FK,
                     idEvento: evento.idEvento_PK,
                     tipoEvento: determinarTipoEvento(evento),
-                    tipoNotificacao
+                    tipoNotificacao,
+                    dataCriacao: new Date(new Date().setHours(new Date().getHours() - 3))
                 });
             } catch (erro) {
                 console.error(`[CRON] Erro ao classificar evento ${evento.idEvento_PK}:`, erro);
@@ -112,7 +116,7 @@ async function processarNotificacaoAlvo(diasAlvo: number, tipoNotificacao: TipoN
 
                 const notificacao = new Notificacao(
                     undefined, dto.idProprietario, dto.idPropriedade,
-                    dto.idEvento, dto.tipoEvento, dto.tipoNotificacao
+                    dto.idEvento, dto.tipoEvento, dto.tipoNotificacao, dto.dataCriacao
                 );
 
                 const novaNotificacao = await notificacaoRepo.criar(notificacao, tx);
