@@ -8,15 +8,11 @@ class PrestadorRepository {
   constructor(
     private prisma: PrismaClient,
     private pessoaRepo: PessoaRepository,
-  ) {}
+  ) { }
 
   public async salvarComTransacao(p: Prestador): Promise<number> {
-    // Inicia a transação (Unit of Work)
     return await this.prisma.$transaction(async (tx) => {
-      // 1. Delega a criação da Pessoa (Física) passando o 'tx'
       const id = await this.pessoaRepo.salvar(p.pessoa, tx);
-
-      // 2. O próprio repositório salva sua entidade principal
       await tx.prestadoresdeservico.create({
         data: { idPeFisica_PFK: id },
       });
@@ -24,18 +20,16 @@ class PrestadorRepository {
       return id;
     });
   };
-  public async buscarPrestadoresPorAdministrador(idAdministrador: number, pagina: number, limite: number): Promise<{ pagina: number; limite: number; dados: Prestador[] }> {
+  public async buscarPrestadoresPorAdministrador(idAdministrador: number): Promise<{dados: Prestador[] }> {
     const prestadoresDb = await this.prisma.prestadoresdeservico.findMany({
       include: {
         pessoas: true
       },
-      where: {  
+      where: {
         pessoas: {
           idAdministrador_FK: idAdministrador
         }
-      },
-      skip: (pagina - 1) * limite,
-      take: limite
+      }
     });
     const prestadores: Prestador[] = [];
     for (const p of prestadoresDb) {
@@ -44,14 +38,11 @@ class PrestadorRepository {
         prestadores.push(pessoa);
       }
     }
-    return {
-      pagina,
-      limite,
-      dados: prestadores
-    };
+    return {dados: prestadores};
   }
+  
   public async buscarPorId(id: number): Promise<Prestador | null> {
-    if(!id || id <= 0 || !Number.isInteger(id)) {
+    if (!id || id <= 0 || !Number.isInteger(id)) {
       throw new Error("ID_INVALIDO");
     }
     const m = await this.prisma.prestadoresdeservico.findUnique({
@@ -76,9 +67,9 @@ class PrestadorRepository {
     const endereco = e
       ? new Endereco(e.cidade, e.bairro, e.cep, e.uf, e.pais, e.logradouro, e.idEndereco_PK)
       : null;
-      
-  let dados 
-  if(p.pessoasfisicas?.cpf){
+
+    let dados
+    if (p.pessoasfisicas?.cpf) {
       dados = {
         id: m.idPeFisica_PFK,
         idAdministrador: p.idAdministrador_FK,
@@ -86,26 +77,24 @@ class PrestadorRepository {
         endereco: endereco,
         nome: p.pessoasfisicas?.nome,
         cpf: p.pessoasfisicas?.cpf
-    }
-  }else{
-     dados = {
-      id: m.idPeFisica_PFK,
-      idAdministrador: p.idAdministrador_FK,
-      dataCadastro: p.dataCadastro,
-      endereco: endereco,
-      razaoSocial:p.pessoasjuridicas?.razaoSocial,
-      inscrEstadual:p.pessoasjuridicas?.inscEstadual,
-      cnpj:p.pessoasjuridicas?.cnpj
-      
-    }
-  }
-    
+      }
+    } else {
+      dados = {
+        id: m.idPeFisica_PFK,
+        idAdministrador: p.idAdministrador_FK,
+        dataCadastro: p.dataCadastro,
+        endereco: endereco,
+        razaoSocial: p.pessoasjuridicas?.razaoSocial,
+        inscrEstadual: p.pessoasjuridicas?.inscEstadual,
+        cnpj: p.pessoasjuridicas?.cnpj
 
-    // 4. Delega a criação para a Factory
+      }
+    }
+
     let pessoa;
-    if(dados.cpf){
-       pessoa = PessoaFactory.criarPessoa("fisica", dados);
-    }else{
+    if (dados.cpf) {
+      pessoa = PessoaFactory.criarPessoa("fisica", dados);
+    } else {
       pessoa = PessoaFactory.criarPessoa("juridica", dados)
     }
 

@@ -9,15 +9,15 @@ class Funcionario implements IPessoa {
 
     constructor(pessoa: PessoaFisica | PessoaJuridica, ctps: string | null, salario: number) {
         this._pessoa = pessoa;
-        if(ctps){
+        if (ctps) {
             this.validarCTPS(ctps);
             this._ctps = ctps;
-        }else{
+        } else {
             this._ctps = "";
         }
-        if(salario){
+        if (salario) {
             this._salario = salario;
-        }else{
+        } else {
             this._salario = 0;
         }
     };
@@ -27,13 +27,13 @@ class Funcionario implements IPessoa {
     };
 
     get ctps(): string | null {
-        if(!this._ctps || this._ctps.trim() === "") {
+        if (!this._ctps || this._ctps.trim() === "") {
             return null;
         }
         return this._ctps;
     };
 
-    get salario(): number  {
+    get salario(): number {
         return this._salario;
     };
 

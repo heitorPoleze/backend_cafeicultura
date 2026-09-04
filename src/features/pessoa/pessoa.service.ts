@@ -201,14 +201,15 @@ class PessoaService {
     return { data: pessoasDTO, total, pagina, totalPaginas };
   }
 
-  public async buscarFuncionariosPorIdAdministrador(idAdministrador: number, pagina: number, limite: number): Promise<BuscaPaginadaDTO> {
-    const funcionarios = await this.funcionarioRepo.listarFuncionarios(idAdministrador, pagina, limite);
+  public async buscarFuncionariosPorIdAdministrador(idAdministrador: number): Promise<{ dados: FuncionarioResponseDTO[] }> {
+    const funcionarios = await this.funcionarioRepo.listarFuncionarios(idAdministrador);
 
     if (!funcionarios || !Array.isArray(funcionarios.dados)) {
-      return { pagina, limite, dados: [] };
+      return { dados: [] };
     }
 
     const funcionariosDTO: FuncionarioResponseDTO[] = [];
+    
     for (const item of funcionarios.dados) {
       if (item instanceof Funcionario && item.pessoa instanceof PessoaFisica) {
         funcionariosDTO.push({
@@ -221,32 +222,17 @@ class PessoaService {
           ctps: item.ctps,
           salario: item.salario,
         });
-        continue;
+      } else {
+        throw new Error("ERRO_AO_BUSCAR");
       }
-
-      if (typeof item === "object" && item !== null && "nome" in item && "cpf" in item && "ctps" in item && "salario" in item) {
-        const dto = item as FuncionarioResponseDTO;
-        funcionariosDTO.push({
-          id: dto.id,
-          idAdministrador: dto.idAdministrador,
-          dataCadastro: dto.dataCadastro,
-          nome: dto.nome,
-          cpf: dto.cpf,
-          endereco: dto.endereco,
-          ctps: dto.ctps,
-          salario: dto.salario,
-        });
-        continue;
-      }
-      throw new Error("ERRO_AO_BUSCAR");
     }
 
-    return { pagina, limite, dados: funcionariosDTO };
-  }
+    return { dados: funcionariosDTO };
+}
 
-  public async buscarClientesPorIdAdministrador(idAdministrador: number, pagina: number, limite: number): Promise<BuscaPaginadaDTO> {
-    const clientes = await this.clienteRepo.buscarClientesPorAdministrador(idAdministrador, pagina, limite);
-    if (!clientes) return { pagina, limite, dados: [] };
+  public async buscarClientesPorIdAdministrador(idAdministrador: number): Promise<{ dados: ClienteResponseDTO[] }> {
+    const clientes = await this.clienteRepo.buscarClientesPorAdministrador(idAdministrador);
+    if (!clientes) return { dados: [] };
     const clientesDTO: ClienteResponseDTO[] = [];
 
     for (const c of clientes.dados) {
@@ -271,12 +257,12 @@ class PessoaService {
         });
       }
     }
-    return { pagina, limite, dados: clientesDTO };
+    return { dados: clientesDTO };
   }
 
-  public async buscarFornecedoresPorIdAdministrador(idAdministrador: number, pagina: number, limite: number): Promise<BuscaPaginadaDTO[]> {
-    const fornecedores = await this.fornecedorRepo.buscarFornecedoresPorAdministrador(idAdministrador, pagina, limite);
-    if (!fornecedores) return [{ pagina, limite, dados: [] }];
+  public async buscarFornecedoresPorIdAdministrador(idAdministrador: number): Promise<{ dados: FornecedorResponseDTO[] }> {
+    const fornecedores = await this.fornecedorRepo.buscarFornecedoresPorAdministrador(idAdministrador);
+    if (!fornecedores) return { dados: [] };
     const fornecedoresDTO: FornecedorResponseDTO[] = [];
 
     for (const f of fornecedores.dados) {
@@ -301,12 +287,12 @@ class PessoaService {
         });
       }
     }
-    return [{ pagina, limite, dados: fornecedoresDTO }];
+    return { dados: fornecedoresDTO };
   }
 
-  public async buscarMeeirosPorIdAdministrador(idAdministrador: number, pagina: number, limite: number): Promise<BuscaPaginadaDTO[]> {
-    const meeiros = await this.meeiroRepo.buscarMeeirosPorAdministrador(idAdministrador, pagina, limite);
-    if (!meeiros) return [{ pagina, limite, dados: [] }];
+  public async buscarMeeirosPorIdAdministrador(idAdministrador: number): Promise<{ dados: MeeiroResponseDTO[] }> {
+    const meeiros = await this.meeiroRepo.buscarMeeirosPorAdministrador(idAdministrador);
+    if (!meeiros) return { dados: [] };
     const meeirosDTO: MeeiroResponseDTO[] = [];
 
     for (const m of meeiros.dados) {
@@ -331,12 +317,12 @@ class PessoaService {
         });
       }
     }
-    return [{ pagina, limite, dados: meeirosDTO }];
+    return { dados: meeirosDTO };
   }
 
-  public async buscarPrestadoresDeServicoPorIdAdministrador(idAdministrador: number, pagina: number, limite: number): Promise<BuscaPaginadaDTO[]> {
-    const prestadores = await this.prestadorRepo.buscarPrestadoresPorAdministrador(idAdministrador, pagina, limite);
-    if (!prestadores) return [{ pagina, limite, dados: [] }];
+  public async buscarPrestadoresDeServicoPorIdAdministrador(idAdministrador: number): Promise<{ dados: PrestadorResponseDTO[] }> {
+    const prestadores = await this.prestadorRepo.buscarPrestadoresPorAdministrador(idAdministrador);
+    if (!prestadores) return { dados: [] };
     const prestadoresDTO: PrestadorResponseDTO[] = [];
 
     for (const p of prestadores.dados) {
@@ -361,7 +347,7 @@ class PessoaService {
         });
       }
     }
-    return [{ pagina, limite, dados: prestadoresDTO }];
+    return { dados: prestadoresDTO };
   }
 
   public async cadastrarEnderecoPessoaGenerica(pessoaId: number, enderecoData: Endereco, idAdministrador: number): Promise<Endereco> {

@@ -10,8 +10,9 @@ class FornecedorRepository {
   constructor(
     private prisma: PrismaClient,
     private pessoaRepo: PessoaRepository,
-  ) {}
-  public async buscarFornecedoresPorAdministrador(idAdministrador: number,pagina: number, limite: number): Promise<{ pagina: number; limite: number; dados: Fornecedor[] }> {
+  ) { }
+  public async buscarFornecedoresPorAdministrador(idAdministrador: number): Promise<
+    { dados: Fornecedor[] }> {
     const fornecedoresDb = await this.prisma.fornecedores.findMany({
       include: {
         pessoas: true
@@ -20,9 +21,7 @@ class FornecedorRepository {
         pessoas: {
           idAdministrador_FK: idAdministrador
         }
-      },
-      skip: (pagina - 1) * limite,
-      take: limite
+      }
     });
     const fornecedores: Fornecedor[] = [];
     for (const f of fornecedoresDb) {
@@ -32,18 +31,12 @@ class FornecedorRepository {
       }
     }
     return {
-      pagina,
-      limite,
       dados: fornecedores
     };
   }
   public async salvarComTransacao(f: Fornecedor): Promise<number> {
-    // Inicia a transação (Unit of Work)
     return await this.prisma.$transaction(async (tx) => {
-      // 1. Delega a criação da Pessoa (Física/Jurídica) passando o 'tx'
       const id = await this.pessoaRepo.salvar(f.pessoa, tx);
-
-      // 2. O próprio repositório salva sua entidade principal
       await tx.fornecedores.create({
         data: { idFornecedor_PFK: id },
       });
@@ -53,7 +46,7 @@ class FornecedorRepository {
   };
 
   public async buscarPorId(id: number, tx?: Prisma.TransactionClient): Promise<Fornecedor | null> {
-     if(!id || id <= 0 || !Number.isInteger(id)) {
+    if (!id || id <= 0 || !Number.isInteger(id)) {
       throw new Error("ID_INVALIDO");
     }
     const f = await (tx || this.prisma).fornecedores.findUnique({
@@ -99,7 +92,7 @@ class FornecedorRepository {
     return new Fornecedor(pessoa);
   };
 
-   public async excluir(fornecedor: Fornecedor): Promise<void> {
+  public async excluir(fornecedor: Fornecedor): Promise<void> {
     try {
       await this.prisma.$transaction(async (tx) => {
         await tx.fornecedores.delete({

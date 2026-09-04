@@ -39,7 +39,7 @@ class FuncionarioRepository {
   };
 
   public async buscarPorId(id: number): Promise<Funcionario | null> {
-     if(!id || id <= 0 || !Number.isInteger(id)) {
+    if (!id || id <= 0 || !Number.isInteger(id)) {
       throw new Error("ID_INVALIDO");
     }
     const f = await this.prisma.funcionarios.findUnique({
@@ -74,25 +74,22 @@ class FuncionarioRepository {
       cpf: p.pessoasfisicas?.cpf
     };
 
-    // 4. Delega a criação para a Factory
     const pessoa = PessoaFactory.criarPessoa("fisica", dados);
 
     return new Funcionario(pessoa, f.ctps, Number(f.salario));
   };
 
-  public async listarFuncionarios(idAdministrador: number, pagina: number, limite: number): Promise<BuscaPaginadaDTO> {
+  public async listarFuncionarios(idAdministrador: number): Promise<{ dados: Funcionario[] }> {
     const pessoas = await this.prisma.pessoas.findMany({
       where: { idAdministrador_FK: idAdministrador },
       include: {
         pessoasfisicas: true,
         enderecos: true,
         usuarios: true,
-      },
-      skip: (pagina - 1) * limite,
-      take: limite
+      }
     });
 
-    if (!pessoas || pessoas.length === 0) return { pagina, limite, dados: [] };
+    if (!pessoas || pessoas.length === 0) return { dados: [] };
 
     const pessoasIds = pessoas.map((p) => p.idPessoa_PK);
 
@@ -100,7 +97,7 @@ class FuncionarioRepository {
       where: { idPeFisica_PFK: { in: pessoasIds } },
     });
 
-    const funcionarios: FuncionarioResponseDTO[] = [];
+    const funcionarios: Funcionario[] = [];
 
     pessoas.forEach((p) => {
       const funcData = funcionariosData.find((f) => f.idPeFisica_PFK === p.idPessoa_PK);
@@ -120,20 +117,22 @@ class FuncionarioRepository {
           )
           : null;
 
-        funcionarios.push({
+        const pessoa = PessoaFactory.criarPessoa("fisica", {
           id: p.idPessoa_PK,
           idAdministrador: p.idAdministrador_FK,
           dataCadastro: p.dataCadastro,
           endereco: endereco,
-          nome: p.pessoasfisicas.nome,
-          cpf: p.pessoasfisicas.cpf,
-          ctps: funcData.ctps,
-          salario: Number(funcData.salario),
+          nome: p.pessoasfisicas?.nome,
+          cpf: p.pessoasfisicas?.cpf
         });
+
+        funcionarios.push(
+          new Funcionario(pessoa, funcData.ctps, Number(funcData.salario))
+        );
       }
     });
 
-    return { pagina, limite, dados: funcionarios };
+    return { dados: funcionarios };
   }
 
   public async excluir(funcionario: Funcionario): Promise<void> {

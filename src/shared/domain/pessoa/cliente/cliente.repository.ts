@@ -28,7 +28,7 @@ class ClienteRepository {
       return id;
     });
   };
-  public async buscarClientesPorAdministrador(idAdministrador: number, pagina: number, limite: number): Promise<{ pagina: number; limite: number; dados: Cliente[] }> {
+  public async buscarClientesPorAdministrador(idAdministrador: number): Promise<{ dados: Cliente[] }> {
     const clientesDb = await this.prisma.clientes.findMany({
       include: {
         pessoas: true
@@ -37,9 +37,7 @@ class ClienteRepository {
         pessoas: {
           idAdministrador_FK: idAdministrador
         }
-      },
-      skip: (pagina - 1) * limite,
-      take: limite
+      }
     });
     const clientes: Cliente[] = [];
     for (const c of clientesDb) {
@@ -48,11 +46,7 @@ class ClienteRepository {
         clientes.push(pessoa);
       }
     }
-    return {
-      pagina,
-      limite,
-      dados: clientes
-    };
+    return { dados: clientes };
   }
   public async buscarPorId(id: number): Promise<Cliente | null> {
      if(!id || id <= 0 || !Number.isInteger(id)) {
@@ -95,7 +89,6 @@ class ClienteRepository {
       inscEstadual: p.pessoasjuridicas?.inscEstadual
     };
 
-    // 4. Delega a criação para a Factory
     const pessoa = PessoaFactory.criarPessoa(tipoPessoa, dados);
 
     return new Cliente(pessoa);

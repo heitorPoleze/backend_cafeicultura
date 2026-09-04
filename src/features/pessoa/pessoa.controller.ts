@@ -179,13 +179,9 @@ class PessoaController {
   }
 
   public async buscarFuncionarioPorIdAdministrador(req: Request, res: Response) {
-    const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
-    const limite = req.query.limite ? Number(req.query.limite) : 10;
     try {
       const funcionarios = await this.service.buscarFuncionariosPorIdAdministrador(
-        req.session.idUsuario!,
-        pagina,
-        limite
+        req.session.idUsuario!
       );
       res.status(200).json(funcionarios);
     } catch (error: unknown) {
@@ -198,13 +194,9 @@ class PessoaController {
   }
 
   public async buscarClientesPorIdAdministrador(req: Request, res: Response) {
-    const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
-    const limite = req.query.limite ? Number(req.query.limite) : 10;
     try {
       const clientes = await this.service.buscarClientesPorIdAdministrador(
-        req.session.idUsuario!,
-        pagina,
-        limite
+        req.session.idUsuario!
       );
       res.status(200).json(clientes);
     } catch (error: unknown) {
@@ -217,13 +209,9 @@ class PessoaController {
   }
 
   public async buscarMeeirosPorIdAdministrador(req: Request, res: Response) {
-    const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
-    const limite = req.query.limite ? Number(req.query.limite) : 10;
     try {
       const meeiros = await this.service.buscarMeeirosPorIdAdministrador(
-        req.session.idUsuario!,
-        pagina,
-        limite
+        req.session.idUsuario!
       );
       res.status(200).json(meeiros);
     } catch (error: unknown) {
@@ -236,8 +224,6 @@ class PessoaController {
   }
 
   public async buscarPrestadoresDeServicoPorIdAdministrador(req: Request, res: Response) {
-    const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
-    const limite = req.query.limite ? Number(req.query.limite) : 10;
     const idSessao = req.session.idUsuario!;
     
     try {
@@ -245,9 +231,7 @@ class PessoaController {
         return res.status(401).json({ error: "Usuário não autenticado" });
       }
       const prestadores = await this.service.buscarPrestadoresDeServicoPorIdAdministrador(
-        idSessao,
-        pagina,
-        limite
+        idSessao
       );
       res.status(200).json(prestadores);
     } catch (error: unknown) {
@@ -260,13 +244,9 @@ class PessoaController {
   }
 
   public async buscarFornecedoresPorIdAdministrador(req: Request, res: Response) {
-    const pagina = req.query.pagina ? Number(req.query.pagina) : 1;
-    const limite = req.query.limite ? Number(req.query.limite) : 10;
     try {
       const fornecedores = await this.service.buscarFornecedoresPorIdAdministrador(
-        req.session.idUsuario!,
-        pagina,
-        limite
+        req.session.idUsuario!
       );
       res.status(200).json(fornecedores);
     } catch (error: unknown) {
@@ -318,7 +298,7 @@ class PessoaController {
       const pessoas = await this.service.listarPessoas({
         idAdministrador: req.session.idUsuario!,
         pagina,
-        limite,
+        limite
       });
 
       res.status(200).json(pessoas);

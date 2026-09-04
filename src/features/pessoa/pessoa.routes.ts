@@ -56,31 +56,26 @@ const validarCriacaoPessoaFisica = [
 
 router.get(
   "/funcionarios",
-  // Só de estar logado já vai puxar o ID administrador do usuário logado.
   exigeLogin(),
   pessoaController.buscarFuncionarioPorIdAdministrador.bind(pessoaController)
 )
 router.get(
   "/meeiros",
-  // Só de estar logado já vai puxar o ID administrador do usuário logado.
   exigeLogin(),
   pessoaController.buscarMeeirosPorIdAdministrador.bind(pessoaController)
 )
 router.get(
   "/prestadores",
-  // Só de estar logado já vai puxar o ID administrador do usuário logado.
   exigeLogin(),
   pessoaController.buscarPrestadoresDeServicoPorIdAdministrador.bind(pessoaController)
 )
 router.get(
   "/fornecedores",
-  // Só de estar logado já vai puxar o ID administrador do usuário logado.
   exigeLogin(),
   pessoaController.buscarFornecedoresPorIdAdministrador.bind(pessoaController)
 )
 router.get(
   "/clientes",
-  // Só de estar logado já vai puxar o ID administrador do usuário logado.
   exigeLogin(),
   pessoaController.buscarClientesPorIdAdministrador.bind(pessoaController)
 )
