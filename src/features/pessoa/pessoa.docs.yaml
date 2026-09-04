@@ -113,7 +113,7 @@ components:
           nullable: true
         papel:
           type: string
-          example: CLIENTE
+          example: cliente
 
 paths:
   /api/v1/clientes:
@@ -358,17 +358,6 @@ paths:
         - Pessoas
       security:
         - cookieAuth: []
-      parameters:
-        - in: query
-          name: pagina
-          schema:
-            type: integer
-            default: 1
-        - in: query
-          name: limite
-          schema:
-            type: integer
-            default: 10
       responses:
         '200':
           description: Lista de funcionários retornada com sucesso.
@@ -529,17 +518,6 @@ paths:
         - Pessoas
       security:
         - cookieAuth: []
-      parameters:
-        - in: query
-          name: pagina
-          schema:
-            type: integer
-            default: 1
-        - in: query
-          name: limite
-          schema:
-            type: integer
-            default: 10
       responses:
         '200':
           description: Lista de meeiros retornada com sucesso.
@@ -655,17 +633,6 @@ paths:
         - Pessoas
       security:
         - cookieAuth: []
-      parameters:
-        - in: query
-          name: pagina
-          schema:
-            type: integer
-            default: 1
-        - in: query
-          name: limite
-          schema:
-            type: integer
-            default: 10
       responses:
         '200':
           description: Lista de prestadores retornada com sucesso.

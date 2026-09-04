@@ -11,12 +11,9 @@ class MeeiroRepository {
   ) {}
 
   public async salvarComTransacao(m: Meeiro): Promise<number> {
-    // Inicia a transação (Unit of Work)
     return await this.prisma.$transaction(async (tx) => {
-      // 1. Delega a criação da Pessoa (Física) passando o 'tx'
       const id = await this.pessoaRepo.salvar(m.pessoa, tx);
 
-      // 2. O próprio repositório salva sua entidade principal
       await tx.meeiros.create({
         data: { idPeFisica_PFK: id },
       });
@@ -24,7 +21,7 @@ class MeeiroRepository {
       return id;
     });
   };
-  public async buscarMeeirosPorAdministrador(idAdministrador: number,pagina: number, limite: number): Promise<{ pagina: number; limite: number; dados: Meeiro[] }> {
+  public async buscarMeeirosPorAdministrador(idAdministrador: number): Promise<{ dados: Meeiro[] }> {
     const meeirosDb = await this.prisma.meeiros.findMany({
       include: {
         pessoas: true
@@ -33,9 +30,7 @@ class MeeiroRepository {
         pessoas: {
           idAdministrador_FK: idAdministrador
         }
-      },
-      skip: (pagina - 1) * limite,
-      take: limite
+      }
     });
     const meeiros: Meeiro[] = [];
     for (const m of meeirosDb) {
@@ -44,11 +39,7 @@ class MeeiroRepository {
         meeiros.push(pessoa);
       }
     }
-    return {
-      pagina,
-      limite,
-      dados: meeiros
-    };
+    return { dados: meeiros };
   }
   public async buscarPorId(id: number): Promise<Meeiro | null> {
     if(!id || id <= 0 || !Number.isInteger(id)) {
@@ -85,7 +76,6 @@ class MeeiroRepository {
       cpf: p.pessoasfisicas?.cpf
     };
 
-    // 4. Delega a criação para a Factory
     const pessoa = PessoaFactory.criarPessoa("fisica", dados);
 
     return new Meeiro(pessoa);
