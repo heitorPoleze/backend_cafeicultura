@@ -246,8 +246,14 @@ class TratoCulturalController {
           return res.status(404).json({ error: 'Trato Cultural não encontrado' });
         case 'TRATOS_NAO_ENCONTRADOS':
           return res.status(404).json({ error: 'Nenhum trato encontrado' });
+        case 'TIPO_TRATO_INVALIDO':
+          return res.status(422).json({ error: 'Tipo de trato inválido' });
         case 'TIPOS_TRATOS_NAO_ENCONTRADOS':
           return res.status(404).json({ error: 'Nenhum tipo de trato encontrado' });
+        case 'DESCRICAO_OBRIGATORIA':
+          return res.status(422).json({ error: 'A descrição é obrigatória quando o tipo de trato é Outros' });
+        case 'DESCRICAO_INVALIDA':
+          return res.status(422).json({ error: 'Descrição inválida' });
         case 'PESSOA_NAO_ENCONTRADA':
           return res.status(404).json({ error: 'Responsável ou Beneficiado não encontrado' });
         case 'ACESSO_NEGADO':

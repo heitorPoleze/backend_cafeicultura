@@ -31,24 +31,25 @@ abstract class Evento {
         if (dataFim && dataFim < dataInicio) throw new Error(`DATA_FIM_ANTERIOR`);
         this._dataFim = dataFim;
 
+        this.validarDescricao(descricao);
         this._descricao = descricao;
 
         this._dataCadastro = dataCadastro;
 
-        if (!safra) 
+        if (!safra)
             throw new Error('A safra do evento é obrigatória.');
-        if (!(safra instanceof Safra)) 
+        if (!(safra instanceof Safra))
             throw new Error('A safra do evento é inválida.');
         this._safra = safra;
 
         if (transacoesFinanceiras && transacoesFinanceiras.length > 0) {
-            if (!(transacoesFinanceiras[0] instanceof Despesa)) 
+            if (!(transacoesFinanceiras[0] instanceof Despesa))
                 throw new Error('As transações financeiras do evento é inválida.');
         };
         this._transacoesFinanceiras = transacoesFinanceiras;
 
         if (responsaveis && responsaveis.length > 0) {
-            if (!(responsaveis[0] instanceof Pessoa)) 
+            if (!(responsaveis[0] instanceof Pessoa))
                 throw new Error('Os responsáveis do evento é inválido.');
         };
         this._responsaveis = responsaveis;
@@ -63,8 +64,11 @@ abstract class Evento {
     public get transacoesFinanceiras(): Despesa[] | undefined { return this._transacoesFinanceiras; };
     public get responsaveis(): Pessoa[] | undefined { return this._responsaveis; }
 
-    public set descricao(descricao: string) { this._descricao = descricao; };
-    
+    public set descricao(descricao: string) {
+        this.validarDescricao(descricao);
+        this._descricao = descricao;
+    };
+
     public editarResponsaveis(responsaveis: Pessoa[]): void {
         if (!this._responsaveis)
             this._responsaveis = [];
@@ -76,24 +80,24 @@ abstract class Evento {
     };
 
     public editarInicio(dataInicio: Date): void {
-        if (dataInicio < this._safra.dataInicio) 
+        if (dataInicio < this._safra.dataInicio)
             throw new Error("DATA_INICIO_ANTERIOR");
         if (this._dataFim) {
-            if (dataInicio > this._dataFim) 
+            if (dataInicio > this._dataFim)
                 throw new Error("DATA_INICIO_SUPERIOR");
         }
         this._dataInicio = dataInicio;
     };
 
-    public finalizar(dataInicio: Date,dataFim: Date): void {
+    public finalizar(dataInicio: Date, dataFim: Date): void {
         const agora = new Date().toLocaleDateString('en-US', { timeZone: 'America/Sao_Paulo' });
-        if (dataInicio < this._safra.dataInicio) 
+        if (dataInicio < this._safra.dataInicio)
             throw new Error("DATA_INICIO_ANTERIOR");
-        if (dataInicio > dataFim) 
+        if (dataInicio > dataFim)
             throw new Error("DATA_INICIO_SUPERIOR");
-        if (dataFim < dataInicio) 
+        if (dataFim < dataInicio)
             throw new Error("DATA_FIM_ANTERIOR");
-        if (dataFim > new Date(agora)) 
+        if (dataFim > new Date(agora))
             throw new Error("DATA_FIM_SUPERIOR");
         this._dataInicio = dataInicio;
         this._dataFim = dataFim;
@@ -112,6 +116,15 @@ abstract class Evento {
             ...filhos
         };
     };
+
+    private validarDescricao(descricao: string): void {
+        if (descricao && descricao.trim() !== "") {
+            const regexDescricao = /^(?![0-9.]+$)(?=(?:[^a-zA-Z]*[a-zA-Z]){4}).*$/;
+            if (!regexDescricao.test(descricao)) {
+                throw new Error("DESCRICAO_INVALIDA");
+            }
+        }
+    }
 }
 
 export default Evento;

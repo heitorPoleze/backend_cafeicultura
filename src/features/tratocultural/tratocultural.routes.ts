@@ -53,7 +53,12 @@ const validarCriacaoTratoCultural = [
     body('idSafra').isInt({ gt: 0 }).withMessage('O ID da safra é obrigatório e deve ser um número inteiro válido.'),
     body('dataInicio').notEmpty().withMessage('A data de início é obrigatória.').isISO8601().withMessage('A data de início deve estar em formato ISO8601.'),
     body('dataFim').optional({ nullable: true }).isISO8601().withMessage('A data de fim deve estar em formato ISO8601.'),
-    body('descricao').optional().isString().withMessage('A descrição deve ser um texto.'),
+    body('descricao').custom((value, { req }) => {
+        if (req.body.tipoTrato === TipoTrato.OUTROS && (!value || value.trim() === '')) {
+            throw new Error('A descrição é obrigatória quando o tipo de trato é Outros');
+        }
+        return true;
+    }),
     body('tipoTrato').notEmpty().withMessage('O tipo de trato é obrigatório.').isIn(Object.values(TipoTrato)).withMessage(`O tipo de trato deve ser um dos seguintes: ${Object.values(TipoTrato).join(', ')}.`),
 
     body('insumosUtilizados').optional().isArray().withMessage('Os insumos utilizados devem ser uma lista (array).'),
@@ -155,7 +160,8 @@ router.patch(
     body('descricao')
       .optional({ values: 'falsy' })
       .isString().withMessage('A descrição deve ser um texto.')
-      .matches(/^(?=.*[a-zA-Zá-úÁ-ÚãõÃÕçÇ]).*$/)
+      .isLength({ min: 4}).withMessage('A descrição deve ter pelo menos 4 caracteres.')
+      .matches(/^(?![0-9.]+$)(?=(?:[^a-zA-Z]*[a-zA-Z]){4}).*$/)
       .withMessage('A descrição não pode conter apenas números, espaços ou sinais.')
   ],
   tratoCulturalController.atualizarDescricao.bind(tratoCulturalController)
