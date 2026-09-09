@@ -73,6 +73,23 @@ class TratoCulturalService {
     return talhao;
   }
 
+  private async validarDescricao(descricao: string, tipoTrato: TipoTrato) {
+    if (
+      tipoTrato === TipoTrato.OUTROS &&
+      (!descricao || descricao.trim() === "")
+    ) {
+      throw new Error("DESCRICAO_OBRIGATORIA");
+    }
+
+    if (descricao && descricao.trim() !== "") {
+      const regexDescricao = /^(?![0-9.]+$)(?=(?:[^a-zA-Z]*[a-zA-Z]){4}).*$/;
+      if (!regexDescricao.test(descricao)) {
+        throw new Error("DESCRICAO_INVALIDA");
+      }
+    }
+  }
+
+
   public async cadastrar(
     dto: CadastrarTratoCulturalDTO,
     idUsuarioSessao: number,
@@ -84,9 +101,12 @@ class TratoCulturalService {
       const safra = await this.buscarEValidarSafra(dto.idSafra, tx);
       await this.validarAcessoPropriedade(safra.idPropriedade, idUsuarioSessao, tx);
       const talhao = await this.buscarEValidarTalhao(dto.idTalhao, tx);
-
+    
       if (talhao.idPropriedade !== safra.idPropriedade) throw new Error("ACESSO_NEGADO");
+
       if (!Object.values(TipoTrato).includes(dto.tipoTrato)) throw new Error("TIPO_TRATO_INVALIDO");
+
+      await this.validarDescricao(dto.descricao, dto.tipoTrato);
 
       const tipoTrato = await this.tratoCulturalRepo.buscarTipoTratoPorDescricao(dto.tipoTrato, tx);
 
@@ -156,6 +176,7 @@ class TratoCulturalService {
   public async atualizarDescricao(dto: AtualizarDescricaoDTO, idUsuarioSessao: number): Promise<void> {
     return await this.prisma.$transaction(async (tx) => {
       const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao, tx);
+      await this.validarDescricao(dto.descricao, trato.tipoTrato);
       trato.descricao = dto.descricao;
       await this.tratoCulturalRepo.atualizarDescricao(trato, tx);
     })
