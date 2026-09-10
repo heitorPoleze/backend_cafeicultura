@@ -1,8 +1,18 @@
-# ☕ Backend - API Cafeicultura
+# Backend - API do sistema Sysgrano
 
-Este repositório contém o código-fonte do backend do sistema de gestão de cafeicultura, construído com Node.js, Express, Prisma ORM e documentado nativamente com Swagger.
+Este repositório contém o código-fonte do backend do sistema Sysgrano, construído com Node.js, Express, Prisma ORM e documentado nativamente com Swagger.
 
 Siga as instruções abaixo para inicializar o ambiente de desenvolvimento local, configurar o banco de dados e rodar a aplicação.
+
+## Principais Funcionalidades (v1.0.0)
+
+Nesta primeira versão, o sistema entrega as operações essenciais para a gestão da propriedade cafeeira:
+* **Eventos Agrícolas:** Registro e acompanhamento de tratos culturais.
+* **Gestão de Insumos:** Controle de catálogo e controle do estoque de insumos.
+* **Gestão de Pessoas:** Gerenciamento de funcionários, meeiros, fornecedores e prestadores de serviço.
+* **Automação e Alertas:** Sistema de notificações automatizadas para eventos agrícolas pendentes ou futuros.
+
+---
 
 ## Pré-requisitos
 
@@ -20,7 +30,7 @@ Certifique-se de ter instalado em sua máquina:
 Faça o clone do projeto para a sua máquina local e acesse o diretório do backend:
 
 ```bash
-git clone -b develop https://github.com/heitorPoleze/backend_cafeicultura.git
+git clone -b develop [https://github.com/heitorPoleze/backend_cafeicultura.git](https://github.com/heitorPoleze/backend_cafeicultura.git)
 ```
 
 ### 2. Configurar o Banco de Dados
@@ -75,4 +85,4 @@ npx nodemon
 
 Ao rodar o servidor com sucesso, a interface interativa da documentação da API estará disponível. Você pode visualizar todos os endpoints, schemas esperados e realizar testes diretamente pelo navegador acessando:
 
-**http://localhost:3333/api-docs**
+**http://localhost:3000/api-docs**
