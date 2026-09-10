@@ -1,0 +1,39 @@
+paths:
+  /api/v1/eventos/propriedade/{id}:
+    get:
+      summary: Relatório de Eventos da Propriedade (Com Filtro Temporal)
+      description: Retorna uma lista de todos os eventos ocorridos em uma propriedade, ordenados do mais recente para o mais antigo, dentro de um intervalo de datas.
+      tags: 
+        - Eventos Gerais
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID da Propriedade rural.
+        - in: query
+          name: dataInicio
+          required: true
+          schema:
+            type: string
+            format: date-time
+          description: Data inicial do filtro temporal.
+        - in: query
+          name: dataFim
+          required: true
+          schema:
+            type: string
+            format: date-time
+          description: Data final do filtro temporal.
+      responses:
+        '200':
+          description: Lista de eventos retornada com sucesso.
+        '403':
+          description: Acesso negado. Usuário não tem permissão para a propriedade.
+        '404':
+          description: Propriedade ou Eventos não encontrados.
+        '500':
+          description: Erro interno ao listar eventos.

@@ -1,0 +1,633 @@
+tags:
+  - name: Tratos Culturais
+    description: Gerenciamento dos tratos culturais (eventos agrícolas), incluindo insumos utilizados, responsáveis e transações financeiras geradas.
+
+components:
+  schemas:
+    InsumoUtilizadoInput:
+      type: object
+      required:
+        - idInsumo
+        - qtdUsada
+      properties:
+        idInsumo:
+          type: integer
+          description: ID do insumo registrado no estoque.
+          example: 12
+        qtdUsada:
+          type: number
+          format: float
+          description: Quantidade utilizada do insumo na unidade de medida correspondente.
+          example: 50.5
+
+    TransacaoFinanceiraInput:
+      type: object
+      required:
+        - idPropriedade
+        - valor
+        - formaPagamento
+        - tipoOperacao
+        - beneficiado
+        - descricao
+      properties:
+        idPropriedade:
+          type: integer
+          description: ID da propriedade associada à transação.
+          example: 1
+        valor:
+          type: number
+          format: float
+          description: Valor monetário da transação.
+          example: 150.50
+        formaPagamento:
+          type: string
+          description: Método de pagamento utilizado.
+          example: "Pix"
+        tipoOperacao:
+          type: string
+          description: Tipo da operação financeira.
+          example: "Monetária"
+        beneficiado:
+          type: integer
+          description: ID da pessoa (física ou jurídica) beneficiada pela transação.
+          example: 10
+        descricao:
+          type: string
+          description: Descrição detalhada da despesa.
+          example: "Pagamento de diária do tratorista."
+
+    CadastrarTratoCulturalInput:
+      type: object
+      required:
+        - idTalhao
+        - idSafra
+        - dataInicio
+        - tipoTrato
+      properties:
+        idTalhao:
+          type: integer
+          description: ID numérico do talhão onde o trato será realizado.
+          example: 3
+        idSafra:
+          type: integer
+          description: ID numérico da safra associada.
+          example: 2
+        dataInicio:
+          type: string
+          format: date-time
+          description: Data de início do trato cultural no formato ISO8601.
+          example: "2024-03-15T08:00:00Z"
+        dataFim:
+          type: string
+          format: date-time
+          nullable: true
+          description: Data de encerramento do trato cultural (Opcional).
+          example: "2024-03-16T17:00:00Z"
+        descricao:
+          type: string
+          description: Descrição ou observação sobre o trato realizado (opcional).
+          example: "Adubação foliar realizada no período da manhã."
+        tipoTrato:
+          type: string
+          description: Tipo de trato cultural realizado.
+          example: "Adubação"
+        insumosUtilizados:
+          type: array
+          description: Lista opcional de insumos gastos neste trato.
+          items:
+            $ref: '#/components/schemas/InsumoUtilizadoInput'
+        responsaveisIds:
+          type: array
+          description: Lista opcional contendo os IDs dos funcionários/pessoas responsáveis pelo trato.
+          items:
+            type: integer
+          example: [5, 8]
+        transacoesFinanceiras:
+          type: array
+          description: Lista opcional de transações financeiras atreladas a este trato.
+          items:
+            $ref: '#/components/schemas/TransacaoFinanceiraInput'
+
+    FinalizarTratoCulturalInput:
+      type: object
+      required:
+        - dataInicio
+        - dataFim
+      properties:
+        dataInicio:
+          type: string
+          format: date-time
+          description: Data em que o trato cultural foi iniciado.
+          example: "2024-03-15T08:00:00Z"
+        dataFim:
+          type: string
+          format: date-time
+          description: Data em que o trato cultural foi finalizado.
+          example: "2024-03-20T18:00:00Z"
+
+paths:
+  /api/v1/tratosculturais:
+    post:
+      summary: Cadastra um novo Trato Cultural
+      description: Rota privada para registrar um novo evento de trato cultural, vinculando insumos, responsáveis e transações financeiras de forma opcional.
+      tags: 
+        - Tratos Culturais
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CadastrarTratoCulturalInput'
+      responses:
+        '201':
+          description: Trato Cultural cadastrado com sucesso.
+        '400':
+          description: Erro de validação nos dados enviados ou tipo de trato inválido.
+        '403':
+          description: Acesso negado. Usuário não tem permissão para a propriedade.
+        '404':
+          description: Safra, Talhão, Propriedade, Insumo ou Responsável não encontrado.
+        '500':
+          description: Erro interno ao cadastrar o trato cultural.
+
+  /api/v1/tratosculturais/tipos:
+    get:
+      summary: Lista os Tipos de Tratos
+      description: Retorna o catálogo de tipos de tratos disponíveis para preencher os selects do frontend.
+      tags: 
+        - Tratos Culturais
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista retornada com sucesso.
+        '500':
+          description: Erro interno ao buscar tipos de tratos.
+
+  /api/v1/tratosculturais/{id}:
+    get:
+      summary: Busca um Trato Cultural por ID
+      description: Retorna os dados completos de um trato cultural.
+      tags: 
+        - Tratos Culturais
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico do trato cultural.
+      responses:
+        '200':
+          description: Trato Cultural retornado com sucesso.
+        '403':
+          description: Acesso negado.
+        '404':
+          description: Trato Cultural não encontrado.
+        '500':
+          description: Erro interno ao buscar o trato cultural.
+    put:
+      summary: Exclui e cadastra um novo Trato Cultural
+      description: Rota para excluir um trato cultural e cadastrar um novo com dados atualizados.
+      tags:
+        - Tratos Culturais
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico do trato cultural.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CadastrarTratoCulturalInput'
+      responses:
+        '201':
+          description: Trato Cultural retornado com sucesso.
+        '400':
+          description: Erro de validação nos dados enviados ou tipo de trato inválido.
+        '403':
+          description: Acesso negado.
+        '404':
+          description: Safra, Talhão, Propriedade, Insumo ou Responsável não encontrado.
+        '500':
+          description: Erro interno ao atualizar o trato cultural.
+    delete: 
+      summary: Exclui um Trato Cultural
+      description: Rota para excluir um trato cultural.
+      tags: 
+        - Tratos Culturais
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico do trato cultural.
+      responses:
+        '200':
+          description: Trato Cultural excluído com sucesso.
+        '403':
+          description: Acesso negado.
+        '404':
+          description: Trato cultural ou Propriedade não encontrada.
+        '422':
+          description: Trato cultural não pode ser excluído.
+        '500':
+          description: Erro interno ao excluir o trato cultural.
+          
+  /api/v1/tratosculturais/{id}/descricao:
+    patch:
+      summary: Altera a descrição de um Trato Cultural
+      description: Atualiza a descrição de um trato cultural existente.
+      tags: 
+        - Tratos Culturais
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico do trato cultural.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - descricao
+              properties:
+                descricao:
+                  type: string
+                  description: Nova descrição do trato cultural.
+                  example: "Adubação foliar realizada no período da manhã."
+      responses:
+        '200':
+          description: Descrição alterada com sucesso.
+        '403':
+          description: Acesso negado.
+        '404':
+          description: Trato Cultural ou Propriedade não encontrada.
+        '500':
+          description: Erro interno.
+
+  /api/v1/tratosculturais/{id}/alterarInicio:
+    patch:
+      summary: Altera a data de início de um Trato Cultural
+      description: Atualiza a data de início de um trato cultural existente.
+      tags: 
+        - Tratos Culturais
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico do trato cultural.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - dataInicio
+              properties:
+                dataInicio:
+                  type: string
+                  format: date-time
+                  description: Nova data de início do trato cultural.
+                  example: "2024-03-15T08:00:00Z"
+      responses:
+        '200':
+          description: Data de início alterada com sucesso.
+        '403':
+          description: Acesso negado.
+        '404':
+          description: Trato Cultural ou Propriedade não encontrada.
+        '500':
+          description: Erro interno.
+
+  /api/v1/tratosculturais/{id}/finalizar:
+    patch:
+      summary: Finaliza um Trato Cultural
+      description: Finaliza um trato cultural existente. Informando uma data de fim, podendo alterar também a data de início por algum motivo.
+      tags: 
+        - Tratos Culturais
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico do trato cultural.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinalizarTratoCulturalInput'
+      responses:
+        '200':
+          description: Trato Cultural recebeu uma data de fim com sucesso.
+        '400':
+          description: Erro de validação da data.
+        '403':
+          description: Acesso negado.
+        '404':
+          description: Trato Cultural ou Propriedade não encontrada.
+        '500':
+          description: Erro interno.
+
+  /api/v1/tratosculturais/{id}/responsaveis:
+    patch:
+      summary: Edita os responsáveis
+      description: Edita os responsáveis pelo trato cultural.
+      tags: 
+        - Tratos Culturais
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - responsaveisIds
+              properties:
+                responsaveisIds:
+                  type: array
+                  items:
+                    type: integer
+                  example: [2, 7]
+      responses:
+        '201':
+          description: Responsáveis editados com sucesso
+        '400':
+          description: Erro de validação
+        '404':
+          description: Trato Cultural ou Pessoa não encontrada
+
+  /api/v1/tratosculturais/{id}/insumos:
+    patch:
+      summary: Adiciona ou atualiza insumos
+      description: Vincula novos insumos ou adiciona à quantidade já existente para o trato cultural.
+      tags: 
+        - Tratos Culturais
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - insumos
+              properties:
+                insumos:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/InsumoUtilizadoInput'
+      responses:
+        '201':
+          description: Novos insumos inseridos com sucesso.
+        '400':
+          description: Erro de validação.
+        '404':
+          description: Trato Cultural ou Insumo não encontrado.
+    delete:
+      summary: Remove insumos
+      description: Exclui completamente a relação dos insumos especificados com o trato cultural.
+      tags: 
+        - Tratos Culturais
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - idInsumos
+              properties:
+                idInsumos:
+                  type: array
+                  items:
+                    type: integer
+                  example: [12, 14]
+      responses:
+        '200':
+          description: Insumos excluídos com sucesso.
+        '404':
+          description: Trato Cultural não encontrado.
+
+  /api/v1/tratosculturais/{id}/transacoes:
+    delete:
+      summary: Remove transações financeiras
+      description: Desvincula as despesas especificadas do trato cultural e as exclui.
+      tags: 
+        - Tratos Culturais
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - idTransacoes
+              properties:
+                idTransacoes:
+                  type: array
+                  items:
+                    type: integer
+                  example: [102, 105]
+      responses:
+        '200':
+          description: Transações excluídas com sucesso.
+        '403':
+          description: Acesso negado.
+        '404':
+          description: Trato Cultural não encontrado.
+
+  /api/v1/tratosculturais/propriedade/{id}:
+    get:
+      summary: Listar Tratos Culturais da Propriedade (Filtros e Paginação Dinâmica)
+      description: Retorna os tratos culturais ordenados do mais recente para o mais antigo. Suporta filtros temporais e de status. A paginação é opcional; se `pagina` for fornecida, o limite é fixado em 25 itens.
+      tags: 
+        - Tratos Culturais
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID da Propriedade.
+        - in: query
+          name: filtroInicio
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: Filtro temporal opcional.
+        - in: query
+          name: filtroFim
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: Filtro temporal opcional.
+        - in: query
+          name: status
+          required: false
+          schema:
+            type: string
+            enum: [agendados, em_andamento, finalizados]
+          description: Filtra tratos culturais baseando-se no momento atual e nas datas de início e fim.
+        - in: query
+          name: pagina
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+          description: Número da página. Se omitido, retorna todos os resultados sem paginação. O limite por página é fixado em 25.
+      responses:
+        '200':
+          description: Lista retornada com sucesso.
+        '400':
+          description: Parâmetros de query ou path inválidos.
+        '403':
+          description: Acesso negado.
+        '404':
+          description: Tratos Culturais ou Propriedade não encontrados.
+        '500':
+          description: Erro interno ao listar tratos culturais.
+
+  /api/v1/tratosculturais/propriedade/{id}/safra/{idSafra}:
+    get:
+      summary: Listar Tratos por Safra (com paginação)
+      description: Retorna os tratos culturais vinculados a uma safra específica de uma propriedade.
+      tags: 
+        - Tratos Culturais
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico da Propriedade.
+        - in: path
+          name: idSafra
+          required: true
+          schema:
+            type: integer
+          description: ID numérico da Safra.
+        - in: query
+          name: pagina
+          required: true
+          schema:
+            type: integer
+            default: 1
+          description: Número da página desejada.
+      responses:
+        '200':
+          description: Lista de tratos retornada com sucesso.
+        '403':
+          description: Acesso negado.
+        '404':
+          description: Safra, Propriedade ou tratos culturais não encontrados.
+
+  /api/v1/tratosculturais/propriedade/{id}/talhao/{idTalhao}:
+    get:
+      summary: Listar Tratos por Talhão (Paginado e com status)
+      description: Retorna os tratos culturais realizados em um talhão específico.
+      tags: 
+        - Tratos Culturais
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico da Propriedade.
+        - in: path
+          name: idTalhao
+          required: true
+          schema:
+            type: integer
+          description: ID numérico do Talhão.
+        - in: query
+          name: pagina
+          required: true
+          schema:
+            type: integer
+            default: 1
+          description: Número da página desejada.
+        - in: query
+          name: status
+          required: false
+          schema:
+            type: string
+            enum: [agendados, em_andamento, finalizados, todos]
+          description: Filtra tratos culturais baseando-se no status do evento de trato cultural.
+      responses:
+        '200':
+          description: Lista de tratos retornada com sucesso.
+        '403':
+          description: Acesso negado.
+        '404':
+          description: Talhão, Propriedade ou tratos culturais não encontrados.
+        '500':
+          description: Erro interno ao buscar tratos culturais.

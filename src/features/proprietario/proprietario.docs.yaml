@@ -1,0 +1,560 @@
+tags:
+  - name: Proprietários
+    description: Gerenciamento de proprietários (cadastro base de usuários) e seus endereços
+
+components:
+  schemas:
+    ProprietarioInput:
+      type: object
+      required:
+        - email
+        - telefone
+        - senha
+        - tipoPessoa
+      properties:
+        email:
+          type: string
+          format: email
+          example: "joao.silva@email.com"
+        telefone:
+          type: string
+          pattern: '^(\d{10,11}|\(\d{2}\) \s?\d{4,5}-\d{4})$'
+          description: Pode conter 10 ou 11 dígitos, com ou sem máscara.
+          example: "(27) 99999-9999"
+        senha:
+          type: string
+          format: password
+          minLength: 8
+          description: Deve conter maiúscula, minúscula, número e símbolo.
+          example: "SenhaForte@123"
+        tipoPessoa:
+          type: string
+          enum: [fisica, juridica]
+          description: Se 'fisica', exige nome e cpf. Se 'juridica', exige razaoSocial e cnpj.
+        nome:
+          type: string
+          description: Obrigatório para Pessoa Física.
+          example: "João da Silva"
+        cpf:
+          type: string
+          description: Obrigatório para Pessoa Física.
+          example: "123.456.789-00"
+        razaoSocial:
+          type: string
+          description: Obrigatório para Pessoa Jurídica.
+          example: "Fazenda Silva Agropecuária LTDA"
+        cnpj:
+          type: string
+          description: Obrigatório para Pessoa Jurídica.
+          example: "12.345.678/0001-90"
+        inscrEstadual:
+          type: string
+          description: Opcional para Pessoa Jurídica.
+        idAdministrador:
+          type: integer
+          description: ID do administrador que cria o proprietário (opcional).
+        endereco:
+          $ref: '#/components/schemas/EnderecoProprietarioInput'
+
+    EnderecoProprietarioInput:
+      type: object
+      required:
+        - cidade
+        - bairro
+        - cep
+        - uf
+        - logradouro
+      properties:
+        cidade:
+          type: string
+          example: "Santa Teresa"
+        bairro:
+          type: string
+          example: "Centro"
+        cep:
+          type: string
+          pattern: '^\d{5}-\d{3}$'
+          example: "29650-000"
+        uf:
+          type: string
+          minLength: 2
+          maxLength: 2
+          example: "ES"
+        logradouro:
+          type: string
+          example: "Rua das Flores, 123"
+
+    AtualizarEnderecoProprietarioInput:
+      type: object
+      required:
+        - cidade
+        - bairro
+        - cep
+        - uf
+        - logradouro
+      properties:
+        cidade:
+          type: string
+          example: "Santa Teresa"
+        bairro:
+          type: string
+          example: "Centro"
+        cep:
+          type: string
+          pattern: '^\d{5}-\d{3}$'
+          example: "29650-000"
+        uf:
+          type: string
+          minLength: 2
+          maxLength: 2
+          example: "ES"
+        logradouro:
+          type: string
+          example: "Rua das Flores, 123"
+
+    ProprietarioResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        email:
+          type: string
+        telefone:
+          type: string
+        dataCadastro:
+          type: string
+          format: date-time
+        endereco:
+          $ref: '#/components/schemas/EnderecoProprietarioInput'
+
+    ProprietarioDetalhado:
+      type: object
+      properties:
+        id:
+          type: integer
+        tipoPessoa:
+          type: string
+        tipoConta:
+          type: string
+          enum: [fisica, juridica]
+        idAdministrador:
+          type: integer
+          nullable: true
+        nome:
+          type: string
+        cpf:
+          type: string
+        razaoSocial:
+          type: string
+        cnpj:
+          type: string
+        inscrEstadual:
+          type: string
+        email:
+          type: string
+        telefone:
+          type: string
+        dataCadastro:
+          type: string
+          format: date-time
+        endereco:
+          $ref: '#/components/schemas/EnderecoProprietarioInput'
+
+    AtualizarSenhaInput:
+      type: object
+      required: [senha]
+      properties:
+        senha:
+          type: string
+          minLength: 8
+          description: Deve conter maiúscula, minúscula, número e símbolo.
+
+    AtualizarEmailInput:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+
+    AtualizarTelefoneInput:
+      type: object
+      required: [telefone]
+      properties:
+        telefone:
+          type: string
+          pattern: '^(\\d{10,11}|\\(\\d{2}\\) \\s?\\d{4,5}-\\d{4})$'
+
+    IdentificacaoInput:
+      type: object
+      properties:
+        nome:
+          type: string
+        razaoSocial:
+          type: string
+
+    InscricaoEstadualInput:
+      type: object
+      required: [inscricaoEstadual]
+      properties:
+        inscricaoEstadual:
+          type: string
+        cnpj:
+          type: string
+
+paths:
+  /api/v1/proprietarios:
+    post:
+      summary: Cadastra um novo Proprietário
+      description: Rota pública para registro inicial do usuário no sistema. Pode ser Pessoa Física ou Jurídica.
+      tags: 
+        - Proprietários
+      security: [] # Rota pública, não exige cookie
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProprietarioInput'
+      responses:
+        '201':
+          description: Proprietário cadastrado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  dados:
+                    $ref: '#/components/schemas/ProprietarioResponse'
+        '400':
+          description: Erro de validação nos dados enviados (ex. senha fraca, formato de email inválido)
+        '409':
+          description: Conflito. CPF, CNPJ, Email ou Telefone já cadastrado no sistema.
+        '500':
+          description: Erro interno ao cadastrar proprietário
+
+  /api/v1/proprietarios/{id}/endereco:
+    post:
+      summary: Adiciona um endereço a um Proprietário
+      tags: 
+        - Proprietários
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico do proprietário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnderecoProprietarioInput'
+      responses:
+        '201':
+          description: Endereço adicionado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  Endereco:
+                    $ref: '#/components/schemas/EnderecoProprietarioInput'
+        '400':
+          description: Erro de validação nos campos do endereço
+        '500':
+          description: Erro interno ao adicionar endereço
+
+    put:
+      summary: Atualiza o endereço de um Proprietário
+      tags: 
+        - Proprietários
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico do proprietário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtualizarEnderecoProprietarioInput'
+      responses:
+        '200':
+          description: Endereço atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  Endereco:
+                    $ref: '#/components/schemas/AtualizarEnderecoProprietarioInput'
+        '400':
+          description: Erro de validação nos campos de atualização
+        '500':
+          description: Erro interno ao atualizar endereço
+
+    delete:
+      summary: Remove o endereço de um Proprietário
+      tags: 
+        - Proprietários
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico do proprietário
+      responses:
+        '200':
+          description: Endereço removido com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+        '500':
+          description: Erro interno ao remover endereço
+
+  /api/v1/proprietarios/{id}/senha:
+    put:
+      summary: Atualiza a senha de um Proprietário
+      tags:
+        - Proprietários
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtualizarSenhaInput'
+      responses:
+        '200':
+          description: Senha atualizada com sucesso
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  /api/v1/proprietarios/{id}/email:
+    put:
+      summary: Atualiza o email de um Proprietário
+      tags:
+        - Proprietários
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtualizarEmailInput'
+      responses:
+        '200':
+          description: Email atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  email:
+                    type: string
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  /api/v1/proprietarios/{id}/telefone:
+    put:
+      summary: Atualiza o telefone de um Proprietário
+      tags:
+        - Proprietários
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtualizarTelefoneInput'
+      responses:
+        '200':
+          description: Telefone atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  telefone:
+                    type: string
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  /api/v1/proprietarios/{id}/identificacao:
+    put:
+      summary: Atualiza nome ou razão social do Proprietário
+      tags:
+        - Proprietários
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IdentificacaoInput'
+      responses:
+        '200':
+          description: Nome ou Razão Social atualizadas com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  novaInformacao:
+                    type: object
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  /api/v1/proprietarios/{id}/inscricao-estadual:
+    put:
+      summary: Atualiza a Inscrição Estadual do Proprietário
+      tags:
+        - Proprietários
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InscricaoEstadualInput'
+      responses:
+        '200':
+          description: Inscrição Estadual atualizada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  novaInscricaoEstadual:
+                    type: string
+        '400':
+          description: Erro de validação
+        '500':
+          description: Erro interno
+
+  /api/v1/proprietarios/{id}/:
+    get:
+      summary: Recupera dados do Proprietário junto com endereço
+      tags:
+        - Proprietários
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dados do proprietário retornados com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProprietarioDetalhado'
+        '400':
+          description: ID inválido ou erro de requisição
+        '500':
+          description: Erro interno
+
+    delete:
+      summary: Deleta um Proprietário
+      tags:
+        - Proprietários
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Proprietário deletado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+        '400':
+          description: ID inválido ou erro de requisição
+        '500':
+          description: Erro interno

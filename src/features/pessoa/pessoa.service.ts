@@ -1,0 +1,471 @@
+import ClienteRepo from "../../shared/domain/pessoa/cliente/cliente.repository";
+import FornecedorRepo from "../../shared/domain/pessoa/fornecedor/fornecedor.repository";
+import FuncionarioRepo from "../../shared/domain/pessoa/funcionario/funcionario.repository";
+import MeeiroRepo from "../../shared/domain/pessoa/meeiro/meeiro.repository";
+import PrestadorRepo from "../../shared/domain/pessoa/prestadordeservico/prestador.repository";
+import PessoaRepo from "../../shared/domain/pessoa/pessoa.repository";
+import PessoaFactory from "../../shared/domain/pessoa/pessoafactory.entity";
+import { cnpj as ValidarCNPJ } from "cpf-cnpj-validator";
+import {
+  BuscaPaginadaDTO,
+  ClienteResponseDTO,
+  CreateClienteDTO,
+  CreateFornecedorDTO,
+  CreateFuncionarioDTO,
+  CreateMeeiroDTO,
+  CreatePessoaDTO,
+  CreatePrestadorDTO,
+  ExcluirPessoaDTO,
+  FornecedorResponseDTO,
+  FuncionarioResponseDTO,
+  ListarPessoasDTO,
+  MeeiroResponseDTO,
+  PessoaFisicaResponseDTO,
+  PessoaJuridicaResponseDTO,
+  PrestadorResponseDTO,
+  updateSalarioFuncionarioDTO,
+} from "./pessoa.dto";
+import Cliente from "../../shared/domain/pessoa/cliente/cliente.entity";
+import Fornecedor from "../../shared/domain/pessoa/fornecedor/fornecedor.entity";
+import Funcionario from "../../shared/domain/pessoa/funcionario/funcionario.entity";
+import Meeiro from "../../shared/domain/pessoa/meeiro/meeiro.entity";
+import Prestador from "../../shared/domain/pessoa/prestadordeservico/prestador.entity";
+import PessoaFisica from "../../shared/domain/pessoa/pessoafisica.entity";
+import PessoaJuridica from "../../shared/domain/pessoa/pessoajuridica.entity";
+import Endereco from "../../shared/domain/endereco/endereco.vo";
+import { ResultadoPaginacao } from "../../shared/utils/pagination.dto";
+
+class PessoaService {
+  constructor(
+    private readonly clienteRepo: ClienteRepo,
+    private readonly fornecedorRepo: FornecedorRepo,
+    private readonly funcionarioRepo: FuncionarioRepo,
+    private readonly meeiroRepo: MeeiroRepo,
+    private readonly prestadorRepo: PrestadorRepo,
+    private readonly pessoaRepo: PessoaRepo,
+  ) { }
+
+  private async verificarCadastro(dados: CreatePessoaDTO) {
+    if (!dados.idAdministrador) {
+      throw new Error("ID_ADMINISTRADOR_OBRIGATORIO");
+    }
+
+    if (dados.tipoPessoa === "fisica") {
+      const cpfExistente = await this.pessoaRepo.verificarCpfExistente(dados.cpf!, dados.idAdministrador);
+      if (cpfExistente) {
+        throw new Error(`CPF_EXISTENTE`);
+      }
+    } else if (dados.tipoPessoa === "juridica") {
+      const cnpjExistente = await this.pessoaRepo.verificarCnpjExistente(dados.cnpj!, dados.idAdministrador);
+      if (cnpjExistente) {
+        throw new Error(`CNPJ_EXISTENTE`);
+      }
+      if (dados.inscrEstadual != null) {
+        const inscricaoExistente = await this.pessoaRepo.verificarInscricaoEstadualExistente(
+          dados.inscrEstadual!,
+          dados.idAdministrador
+        );
+        if (inscricaoExistente) {
+          throw new Error(`INSCRICAO_ESTADUAL_EXISTENTE`);
+        }
+      }
+    }
+  }
+
+  public async cadastrarCliente(c: CreateClienteDTO) {
+    await this.verificarCadastro(c);
+    const cliente = new Cliente(PessoaFactory.criarPessoa(c.tipoPessoa, c));
+    return await this.clienteRepo.salvarComTransacao(cliente);
+  }
+
+  public async cadastrarFornecedor(f: CreateFornecedorDTO) {
+    await this.verificarCadastro(f);
+    const fornecedor = new Fornecedor(PessoaFactory.criarPessoa(f.tipoPessoa, f));
+    return await this.fornecedorRepo.salvarComTransacao(fornecedor);
+  }
+
+  public async cadastrarFuncionario(f: CreateFuncionarioDTO) {
+    await this.verificarCadastro(f);
+    const funcionario = new Funcionario(PessoaFactory.criarPessoa(f.tipoPessoa, f), f.ctps, f.salario);
+    return await this.funcionarioRepo.salvarComTransacao(funcionario);
+  }
+
+  public async atualizarFuncionarioSalario(dto: updateSalarioFuncionarioDTO, idUsuarioSessao: number) {
+    const f = await this.funcionarioRepo.buscarPorId(dto.id);
+    if (!f) throw new Error("NAO_ENCONTRADO");
+    if (f.pessoa.idAdministrador !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
+
+    f.salario = dto.salario;
+    const resultado = await this.funcionarioRepo.atualizarSalario(dto.id, f.salario);
+    if (!resultado) throw new Error("NAO_ATUALIZADO");
+    return resultado;
+  }
+
+  public async cadastrarMeeiro(m: CreateMeeiroDTO) {
+    await this.verificarCadastro(m);
+    const meeiro = new Meeiro(PessoaFactory.criarPessoa(m.tipoPessoa, m));
+    return await this.meeiroRepo.salvarComTransacao(meeiro);
+  }
+
+  public async cadastrarPrestador(p: CreatePrestadorDTO) {
+    await this.verificarCadastro(p);
+    const prestador = new Prestador(PessoaFactory.criarPessoa(p.tipoPessoa, p));
+    return await this.prestadorRepo.salvarComTransacao(prestador);
+  }
+
+  public async buscarClientePorId(idCliente: number, idUsuarioSessao: number): Promise<ClienteResponseDTO> {
+    const c = await this.clienteRepo.buscarPorId(idCliente);
+    if (!c) throw new Error("NAO_ENCONTRADO");
+    if (c.pessoa.idAdministrador !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
+
+    if (c.pessoa instanceof PessoaFisica) {
+      return { id: c.pessoa.id!, idAdministrador: c.pessoa.idAdministrador, dataCadastro: c.pessoa.dataCadastro, nome: c.pessoa.nome, cpf: c.pessoa.cpf, endereco: c.pessoa.endereco };
+    } else if (c.pessoa instanceof PessoaJuridica) {
+      return { id: c.pessoa.id!, idAdministrador: c.pessoa.idAdministrador, dataCadastro: c.pessoa.dataCadastro, razaoSocial: c.pessoa.razaoSocial, cnpj: c.pessoa.cnpj, inscrEstadual: c.pessoa.inscrEstadual, endereco: c.pessoa.endereco };
+    } else {
+      throw new Error("ERRO_AO_BUSCAR");
+    }
+  }
+
+  public async buscarFornecedorPorId(idFornecedor: number, idUsuarioSessao: number): Promise<FornecedorResponseDTO> {
+    const f = await this.fornecedorRepo.buscarPorId(idFornecedor);
+    if (!f) throw new Error("NAO_ENCONTRADO");
+    if (f.pessoa.idAdministrador !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
+
+    if (f.pessoa instanceof PessoaFisica) {
+      return { id: f.pessoa.id!, idAdministrador: f.pessoa.idAdministrador, dataCadastro: f.pessoa.dataCadastro, nome: f.pessoa.nome, cpf: f.pessoa.cpf, endereco: f.pessoa.endereco };
+    } else if (f.pessoa instanceof PessoaJuridica) {
+      return { id: f.pessoa.id!, idAdministrador: f.pessoa.idAdministrador, dataCadastro: f.pessoa.dataCadastro, razaoSocial: f.pessoa.razaoSocial, cnpj: f.pessoa.cnpj, inscrEstadual: f.pessoa.inscrEstadual, endereco: f.pessoa.endereco };
+    } else {
+      throw new Error("ERRO_AO_BUSCAR");
+    }
+  }
+
+  public async buscarFuncionarioPorId(idFuncionario: number, idUsuarioSessao: number): Promise<FuncionarioResponseDTO> {
+    const f = await this.funcionarioRepo.buscarPorId(idFuncionario);
+    if (!f) throw new Error("NAO_ENCONTRADO");
+    if (f.pessoa.idAdministrador !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
+
+    if (f.pessoa instanceof PessoaFisica) {
+      return { id: f.pessoa.id!, idAdministrador: f.pessoa.idAdministrador, dataCadastro: f.pessoa.dataCadastro, nome: f.pessoa.nome, cpf: f.pessoa.cpf, endereco: f.pessoa.endereco, ctps: f.ctps, salario: f.salario };
+    } else {
+      throw new Error("ERRO_AO_BUSCAR");
+    }
+  }
+
+  public async buscarMeeiroPorId(idMeeiro: number, idUsuarioSessao: number): Promise<MeeiroResponseDTO> {
+    const m = await this.meeiroRepo.buscarPorId(idMeeiro);
+    if (!m) throw new Error("NAO_ENCONTRADO");
+    if (m.pessoa.idAdministrador !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
+
+    if (m.pessoa instanceof PessoaFisica) {
+      return { id: m.pessoa.id!, idAdministrador: m.pessoa.idAdministrador, dataCadastro: m.pessoa.dataCadastro, nome: m.pessoa.nome, cpf: m.pessoa.cpf, endereco: m.pessoa.endereco };
+    } else {
+      throw new Error("ERRO_AO_BUSCAR");
+    }
+  }
+
+  public async buscarPrestadorPorId(idPrestador: number, idUsuarioSessao: number): Promise<PrestadorResponseDTO> {
+    const p = await this.prestadorRepo.buscarPorId(idPrestador);
+    if (!p) throw new Error("NAO_ENCONTRADO");
+    if (p.pessoa.idAdministrador !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
+
+    if (p.pessoa instanceof PessoaFisica) {
+      return { id: p.pessoa.id!, idAdministrador: p.pessoa.idAdministrador, dataCadastro: p.pessoa.dataCadastro, nome: p.pessoa.nome, cpf: p.pessoa.cpf, endereco: p.pessoa.endereco };
+    } else {
+      throw new Error("ERRO_AO_BUSCAR");
+    }
+  }
+
+  public async listarPessoas(dto: ListarPessoasDTO): Promise<ResultadoPaginacao<PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO>> {
+    const { data: pessoas, total, pagina, totalPaginas } = await this.pessoaRepo.listarPessoas(
+      dto.idAdministrador,
+      dto.pagina,
+      dto.limite,
+    );
+
+    if (!pessoas) throw new Error("ERRO_AO_BUSCAR");
+    if (pessoas.length === 0) throw new Error("SEM_REGISTROS");
+
+    const pessoasDTO: (PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO)[] = [];
+    for (const p of pessoas) {
+      if (p instanceof PessoaFisica) {
+        pessoasDTO.push({ id: p.id!, idAdministrador: p.idAdministrador, dataCadastro: p.dataCadastro, nome: p.nome, cpf: p.cpf, endereco: p.endereco, papel: p.papel });
+      } else if (p instanceof PessoaJuridica) {
+        pessoasDTO.push({ id: p.id!, idAdministrador: p.idAdministrador, dataCadastro: p.dataCadastro, razaoSocial: p.razaoSocial, cnpj: p.cnpj, inscrEstadual: p.inscrEstadual, endereco: p.endereco, papel: p.papel });
+      } else {
+        throw new Error("ERRO_AO_BUSCAR");
+      }
+    }
+
+    return { data: pessoasDTO, total, pagina, totalPaginas };
+  }
+
+  public async buscarFuncionariosPorIdAdministrador(idAdministrador: number): Promise<{ dados: FuncionarioResponseDTO[] }> {
+    const funcionarios = await this.funcionarioRepo.listarFuncionarios(idAdministrador);
+
+    if (!funcionarios || !Array.isArray(funcionarios.dados)) {
+      return { dados: [] };
+    }
+
+    const funcionariosDTO: FuncionarioResponseDTO[] = [];
+    
+    for (const item of funcionarios.dados) {
+      if (item instanceof Funcionario && item.pessoa instanceof PessoaFisica) {
+        funcionariosDTO.push({
+          id: item.pessoa.id!,
+          idAdministrador: item.pessoa.idAdministrador,
+          dataCadastro: item.pessoa.dataCadastro,
+          nome: item.pessoa.nome,
+          cpf: item.pessoa.cpf,
+          endereco: item.pessoa.endereco,
+          ctps: item.ctps,
+          salario: item.salario,
+        });
+      } else {
+        throw new Error("ERRO_AO_BUSCAR");
+      }
+    }
+
+    return { dados: funcionariosDTO };
+}
+
+  public async buscarClientesPorIdAdministrador(idAdministrador: number): Promise<{ dados: ClienteResponseDTO[] }> {
+    const clientes = await this.clienteRepo.buscarClientesPorAdministrador(idAdministrador);
+    if (!clientes) return { dados: [] };
+    const clientesDTO: ClienteResponseDTO[] = [];
+
+    for (const c of clientes.dados) {
+      if ('pessoa' in c && c.pessoa instanceof PessoaFisica) {
+        clientesDTO.push({
+          id: c.pessoa.id!,
+          idAdministrador: c.pessoa.idAdministrador,
+          dataCadastro: c.pessoa.dataCadastro,
+          nome: c.pessoa.nome,
+          cpf: c.pessoa.cpf,
+          endereco: c.pessoa.endereco,
+        });
+      } else if (c.pessoa instanceof PessoaJuridica) {
+        clientesDTO.push({
+          id: c.pessoa.id!,
+          idAdministrador: c.pessoa.idAdministrador,
+          dataCadastro: c.pessoa.dataCadastro,
+          razaoSocial: c.pessoa.razaoSocial,
+          cnpj: c.pessoa.cnpj,
+          inscrEstadual: c.pessoa.inscrEstadual,
+          endereco: c.pessoa.endereco,
+        });
+      }
+    }
+    return { dados: clientesDTO };
+  }
+
+  public async buscarFornecedoresPorIdAdministrador(idAdministrador: number): Promise<{ dados: FornecedorResponseDTO[] }> {
+    const fornecedores = await this.fornecedorRepo.buscarFornecedoresPorAdministrador(idAdministrador);
+    if (!fornecedores) return { dados: [] };
+    const fornecedoresDTO: FornecedorResponseDTO[] = [];
+
+    for (const f of fornecedores.dados) {
+      if (f.pessoa instanceof PessoaFisica) {
+        fornecedoresDTO.push({
+          id: f.pessoa.id!,
+          idAdministrador: f.pessoa.idAdministrador,
+          dataCadastro: f.pessoa.dataCadastro,
+          nome: f.pessoa.nome,
+          cpf: f.pessoa.cpf,
+          endereco: f.pessoa.endereco,
+        });
+      } else if (f.pessoa instanceof PessoaJuridica) {
+        fornecedoresDTO.push({
+          id: f.pessoa.id!,
+          idAdministrador: f.pessoa.idAdministrador,
+          dataCadastro: f.pessoa.dataCadastro,
+          razaoSocial: f.pessoa.razaoSocial,
+          cnpj: f.pessoa.cnpj,
+          inscrEstadual: f.pessoa.inscrEstadual,
+          endereco: f.pessoa.endereco,
+        });
+      }
+    }
+    return { dados: fornecedoresDTO };
+  }
+
+  public async buscarMeeirosPorIdAdministrador(idAdministrador: number): Promise<{ dados: MeeiroResponseDTO[] }> {
+    const meeiros = await this.meeiroRepo.buscarMeeirosPorAdministrador(idAdministrador);
+    if (!meeiros) return { dados: [] };
+    const meeirosDTO: MeeiroResponseDTO[] = [];
+
+    for (const m of meeiros.dados) {
+      if (m.pessoa instanceof PessoaFisica) {
+        meeirosDTO.push({
+          id: m.pessoa.id!,
+          idAdministrador: m.pessoa.idAdministrador,
+          dataCadastro: m.pessoa.dataCadastro,
+          nome: m.pessoa.nome,
+          cpf: m.pessoa.cpf,
+          endereco: m.pessoa.endereco,
+        });
+      } else if (m.pessoa instanceof PessoaJuridica) {
+        meeirosDTO.push({
+          id: m.pessoa.id!,
+          idAdministrador: m.pessoa.idAdministrador,
+          dataCadastro: m.pessoa.dataCadastro,
+          razaoSocial: m.pessoa.razaoSocial,
+          cnpj: m.pessoa.cnpj,
+          inscrEstadual: m.pessoa.inscrEstadual,
+          endereco: m.pessoa.endereco,
+        });
+      }
+    }
+    return { dados: meeirosDTO };
+  }
+
+  public async buscarPrestadoresDeServicoPorIdAdministrador(idAdministrador: number): Promise<{ dados: PrestadorResponseDTO[] }> {
+    const prestadores = await this.prestadorRepo.buscarPrestadoresPorAdministrador(idAdministrador);
+    if (!prestadores) return { dados: [] };
+    const prestadoresDTO: PrestadorResponseDTO[] = [];
+
+    for (const p of prestadores.dados) {
+      if (p.pessoa instanceof PessoaFisica) {
+        prestadoresDTO.push({
+          id: p.pessoa.id!,
+          idAdministrador: p.pessoa.idAdministrador,
+          dataCadastro: p.pessoa.dataCadastro,
+          nome: p.pessoa.nome,
+          cpf: p.pessoa.cpf,
+          endereco: p.pessoa.endereco,
+        });
+      } else if (p.pessoa instanceof PessoaJuridica) {
+        prestadoresDTO.push({
+          id: p.pessoa.id!,
+          idAdministrador: p.pessoa.idAdministrador,
+          dataCadastro: p.pessoa.dataCadastro,
+          razaoSocial: p.pessoa.razaoSocial,
+          cnpj: p.pessoa.cnpj,
+          inscrEstadual: p.pessoa.inscrEstadual,
+          endereco: p.pessoa.endereco,
+        });
+      }
+    }
+    return { dados: prestadoresDTO };
+  }
+
+  public async cadastrarEnderecoPessoaGenerica(pessoaId: number, enderecoData: Endereco, idAdministrador: number): Promise<Endereco> {
+    const pessoa = await this.pessoaRepo.buscarPorId(pessoaId);
+    if (!pessoa || pessoa.idAdministrador !== idAdministrador) throw new Error("NAO_ENCONTRADO");
+    return await this.pessoaRepo.cadastrarEndereco(enderecoData, pessoaId);
+  }
+
+  public async atualizarEnderecoPessoaGenerica(pessoaId: number, enderecoData: Endereco, idAdministrador: number): Promise<Endereco> {
+    const pessoa = await this.pessoaRepo.buscarPorId(pessoaId);
+    if (!pessoa || pessoa.idAdministrador !== idAdministrador) throw new Error("NAO_ENCONTRADO");
+    return await this.pessoaRepo.atualizarEndereco(enderecoData, pessoaId);
+  }
+
+  public async removerEnderecoPessoaGenerica(pessoaId: number, idAdministrador: number) {
+    const pessoa = await this.pessoaRepo.buscarPorId(pessoaId);
+    if (!pessoa || pessoa.idAdministrador !== idAdministrador) throw new Error("NAO_ENCONTRADO");
+    return await this.pessoaRepo.removerEndereco(pessoaId);
+  }
+
+  public async atualizarNomeOuRazaoSocial(dados: Record<string, unknown>, pessoaId: number, idAdministrador: number): Promise<void> {
+    const pessoa = await this.pessoaRepo.buscarPorId(pessoaId);
+
+    if (!pessoa || pessoa.idAdministrador !== idAdministrador) {
+      throw new Error(`Pessoa com ID ${pessoaId} não encontrada ou acesso negado.`);
+    }
+
+    if (pessoa instanceof PessoaFisica) {
+      const novoNome = dados.nome as string;
+      if (!novoNome || novoNome.trim() === "") throw new Error("Nome é obrigatório.");
+      if (novoNome.length < 3) throw new Error("Nome deve ter no mínimo 3 caracteres.");
+      if (novoNome.length > 100) throw new Error("Nome deve ter no máximo 100 caracteres.");
+
+      await this.pessoaRepo.atualizarNomePessoaFisica(pessoa.cpf, novoNome, idAdministrador);
+    } else if (pessoa instanceof PessoaJuridica) {
+      const novaRazaoSocial = dados.razaoSocial as string;
+      if (!novaRazaoSocial || novaRazaoSocial.trim() === "") throw new Error("Razão Social é obrigatória.");
+      if (novaRazaoSocial.length < 3) throw new Error("Razão Social deve ter no mínimo 3 caracteres.");
+      if (novaRazaoSocial.length > 100) throw new Error("Razão Social deve ter no máximo 100 caracteres.");
+
+      await this.pessoaRepo.atualizarRazaoSocial(pessoa.cnpj, novaRazaoSocial, idAdministrador);
+    } else {
+      throw new Error("Tipo de pessoa inválido.");
+    }
+  }
+
+  public async atualizarCpf(novoCpf: string, pessoaId: number, idAdministrador: number) {
+    const pessoa = await this.pessoaRepo.buscarPorId(pessoaId);
+    if (!pessoa || pessoa.idAdministrador !== idAdministrador) throw new Error("ACESSO_NEGADO");
+
+    const cpfExistente = await this.pessoaRepo.verificarCpfExistente(novoCpf, idAdministrador);
+    if (cpfExistente) throw new Error(`CPF_EXISTENTE`);
+
+    return await this.pessoaRepo.atualizarCpfPessoa(novoCpf, pessoaId);
+  }
+
+  public async atualizarCNPJ(novoCnpj: string, pessoaId: number, idAdministrador: number) {
+    const pessoa = await this.pessoaRepo.buscarPorId(pessoaId);
+    if (!pessoa || pessoa.idAdministrador !== idAdministrador) throw new Error("ACESSO_NEGADO");
+
+    const cnpjExistente = await this.pessoaRepo.verificarCnpjExistente(novoCnpj, idAdministrador);
+    if (cnpjExistente) throw new Error(`CNPJ_EXISTENTE`);
+
+    if (!ValidarCNPJ.isValid(novoCnpj, true)) {
+      throw new Error(`CNPJ_INVALIDO`);
+    }
+
+    return await this.pessoaRepo.atualizarCnpj(novoCnpj, pessoaId);
+  }
+
+  public async atualizarInscricaoEstadual(novaIE: string, pessoaId: number, idAdministrador: number) {
+    const pessoa = await this.pessoaRepo.buscarPorId(pessoaId);
+    if (!pessoa || pessoa.idAdministrador !== idAdministrador) throw new Error("ACESSO_NEGADO");
+
+    return await this.pessoaRepo.atualizarInscricaoEstadualPorPessoaId(pessoaId, novaIE);
+  }
+
+  public async verificarInscricaoEstadualExistente(ie: string, idAdministrador: number) {
+    const ieExistente = await this.pessoaRepo.verificarInscricaoEstadualExistente(ie, idAdministrador);
+    if (ieExistente) {
+      throw new Error(`INSCRICAO_ESTADUAL_EXISTENTE`);
+    }
+  }
+
+  public async excluirCliente(dto: ExcluirPessoaDTO, idUsuarioSessao: number): Promise<void> {
+    const c = await this.clienteRepo.buscarPorId(dto.id);
+    if (!c) throw new Error("NAO_ENCONTRADO");
+    if (c.pessoa.idAdministrador !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
+    await this.clienteRepo.excluir(c);
+  }
+
+  public async excluirFornecedor(dto: ExcluirPessoaDTO, idUsuarioSessao: number): Promise<void> {
+    const fornecedor = await this.fornecedorRepo.buscarPorId(dto.id);
+    if (!fornecedor) throw new Error("NAO_ENCONTRADO");
+    if (fornecedor.pessoa.idAdministrador !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
+    await this.fornecedorRepo.excluir(fornecedor);
+  }
+
+  public async excluirFuncionario(dto: ExcluirPessoaDTO, idUsuarioSessao: number): Promise<void> {
+    const funcionario = await this.funcionarioRepo.buscarPorId(dto.id);
+    if (!funcionario) throw new Error("NAO_ENCONTRADO");
+    if (funcionario.pessoa.idAdministrador !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
+    await this.funcionarioRepo.excluir(funcionario);
+  }
+
+  public async excluirMeeiro(dto: ExcluirPessoaDTO, idUsuarioSessao: number): Promise<void> {
+    const meeiro = await this.meeiroRepo.buscarPorId(dto.id);
+    if (!meeiro) throw new Error("NAO_ENCONTRADO");
+    if (meeiro.pessoa.idAdministrador !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
+    await this.meeiroRepo.excluir(meeiro);
+  }
+
+  public async excluirPrestador(dto: ExcluirPessoaDTO, idUsuarioSessao: number): Promise<void> {
+    const prestador = await this.prestadorRepo.buscarPorId(dto.id);
+    if (!prestador) throw new Error("NAO_ENCONTRADO");
+    if (prestador.pessoa.idAdministrador !== idUsuarioSessao) throw new Error("ACESSO_NEGADO");
+    await this.prestadorRepo.excluir(prestador);
+  }
+}
+
+export default PessoaService;
