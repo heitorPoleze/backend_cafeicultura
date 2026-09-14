@@ -5,8 +5,7 @@ import InsumoController from './insumo.controller';
 import InsumoService from './insumo.service';
 import InsumoRepository from '../../shared/domain/insumo/insumo.repository';
 import { prisma } from "../../shared/config/database"; 
-import { MedidaInsumo } from '../../shared/domain/insumo/insumo.entity';
-import EstoqueInsumoRepository from '../../shared/domain/estoqueinsumo/estoqueinsumo.repository';
+import EstoqueInsumoRepository from '../../shared/domain/insumo/estoqueinsumo/estoqueinsumo.repository';
 
 const router = Router();
 
