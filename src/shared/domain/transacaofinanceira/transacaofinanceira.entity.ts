@@ -1,5 +1,6 @@
 export enum FormaPagamento {
   TED = 'TED',
+  BOLETO = 'Boleto',
   ESPECIE = 'Espécie',
   CARTAO_CREDITO = 'Cartão de Crédito',
   CARTAO_DEBITO = 'Cartão de Débito',
