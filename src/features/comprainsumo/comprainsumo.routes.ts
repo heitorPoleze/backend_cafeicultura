@@ -13,7 +13,7 @@ import InsumoRepository from '../../shared/domain/insumo/insumo.repository';
 import TransacaoFinanceiraRepository from '../../shared/domain/transacaofinanceira/transacaofinanceira.repository';
 import { prisma } from "../../shared/config/database"; 
 import { FormaPagamento, TipoOperacao } from '../../shared/domain/transacaofinanceira/transacaofinanceira.entity';
-import EstoqueInsumoRepository from '../../shared/domain/estoqueinsumo/estoqueinsumo.repository';
+import EstoqueInsumoRepository from '../../shared/domain/insumo/estoqueinsumo/estoqueinsumo.repository';
 import InsumoService from '../insumo/insumo.service';
 import DespesaService from '../despesa/despesa.service';
 

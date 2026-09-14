@@ -31,8 +31,8 @@ import Despesa from "../despesa/despesa.entity";
 import Safra from "../safra/safra.entity";
 import Talhao from "../talhao/talhao.entity";
 import { Prisma, PrismaClient } from "@prisma/client";
-import EstoqueInsumoRepository from "../../shared/domain/estoqueinsumo/estoqueinsumo.repository";
-import EstoqueInsumo from "../../shared/domain/estoqueinsumo/estoqueinsumo.entity";
+import EstoqueInsumoRepository from "../../shared/domain/insumo/estoqueinsumo/estoqueinsumo.repository";
+import EstoqueInsumo from "../../shared/domain/insumo/estoqueinsumo/estoqueinsumo.entity";
 
 class TratoCulturalService {
   constructor(

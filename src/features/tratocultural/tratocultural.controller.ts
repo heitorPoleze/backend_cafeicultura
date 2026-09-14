@@ -275,8 +275,8 @@ class TratoCulturalController {
         case 'VALOR_INVALIDO':
           return res.status(422).json({ error: 'Valor da quantidade usada inválido' });
         case 'ESTOQUE_INSUFICIENTE':
-          return res.status(422).json({ error: 'Estoque insuficiente' });
-      }
+          return res.status(422).json({ error: 'Estoque insuficiente. Verifique o estoque disponível do insumo para esta propriedade' });
+      } 
 
       return res.status(400).json({ error: msg });
     }

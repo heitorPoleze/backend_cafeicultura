@@ -87,8 +87,8 @@ class PropriedadeRepository {
     });
   };
 
-  public async listarPorProprietario(idProprietario: number): Promise<Propriedade[] | null> {
-    const propriedades = await this.db.propriedades.findMany({
+  public async listarPorProprietario(idProprietario: number, tx: Prisma.TransactionClient = this.db): Promise<Propriedade[] | null> {
+    const propriedades = await tx.propriedades.findMany({
       where: { idProprietario_FK: idProprietario },
       include: {
         tamanhos: true,
