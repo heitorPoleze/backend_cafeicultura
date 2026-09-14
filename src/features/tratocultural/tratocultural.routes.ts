@@ -18,7 +18,7 @@ import TransacaoFinanceiraRepository from '../../shared/domain/transacaofinancei
 import { FormaPagamento, TipoOperacao } from '../../shared/domain/transacaofinanceira/transacaofinanceira.entity';
 import { StatusTrato } from './tratocultural.dto';
 import { TipoTrato } from './tratocultural.entity';
-import EstoqueInsumoRepository from '../../shared/domain/estoqueinsumo/estoqueinsumo.repository';
+import EstoqueInsumoRepository from '../../shared/domain/insumo/estoqueinsumo/estoqueinsumo.repository';
 
 const router = Router();
 

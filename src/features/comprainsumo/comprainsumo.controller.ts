@@ -30,6 +30,8 @@ export class CompraInsumoController {
           return res.status(404).json({ error: "Fornecedor não encontrado" });
         if (error.message === 'INSUMO_NAO_ENCONTRADO') 
           return res.status(404).json({ error: "Insumo não encontrado" });
+        if (error.message === 'PROPRIEDADES_NAO_ENCONTRADAS')
+          return res.status(404).json({ error: "Propriedades do proprietário não encontradas" });
         if (error.message === 'ACESSO_NEGADO')
           return res.status(403).json({ error: 'Acesso negado! Você não é o proprietário.' });
         if (error.message === 'INSUMO_EXISTENTE')

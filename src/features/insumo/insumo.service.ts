@@ -2,7 +2,7 @@ import { Prisma, PrismaClient } from '@prisma/client';
 import Insumo, { MedidaInsumo } from '../../shared/domain/insumo/insumo.entity';
 import InsumoRepository from '../../shared/domain/insumo/insumo.repository';
 import { BuscarInsumoPorDescricaoDTO, BuscarInsumoPorIdDTO, BuscarTodosInsumosDTO, CadastrarInsumoDTO, InsumoResponseDTO } from './insumo.dto';
-import EstoqueInsumoRepository from '../../shared/domain/estoqueinsumo/estoqueinsumo.repository';
+import EstoqueInsumoRepository from '../../shared/domain/insumo/estoqueinsumo/estoqueinsumo.repository';
 import Formatador from '../../shared/utils/Formatador';
 
 class InsumoService {

@@ -5,10 +5,10 @@ import PropriedadeRepository from "../propriedade/propriedade.repository";
 import FornecedorRepository from "../../shared/domain/pessoa/fornecedor/fornecedor.repository";
 import InsumoRepository from "../../shared/domain/insumo/insumo.repository";
 import { CadastrarCompraInsumoDTO, CompraInsumoDTO, ListarPorInsumoDescricaoDTO, ListarPorPropriedadeDTO, ListarPorProprietarioDTO } from "./comprainsumo.dto";
-import EstoqueInsumoRepository from "../../shared/domain/estoqueinsumo/estoqueinsumo.repository";
+import EstoqueInsumoRepository from "../../shared/domain/insumo/estoqueinsumo/estoqueinsumo.repository";
 import DespesaService from "../despesa/despesa.service";
 import InsumoService from "../insumo/insumo.service";
-import EstoqueInsumo from "../../shared/domain/estoqueinsumo/estoqueinsumo.entity";
+import EstoqueInsumo from "../../shared/domain/insumo/estoqueinsumo/estoqueinsumo.entity";
 
 class CompraInsumoService {
   constructor(
@@ -20,7 +20,7 @@ class CompraInsumoService {
     private fornecedorRepo: FornecedorRepository,
     private insumoRepo: InsumoRepository,
     private estoqueRepo: EstoqueInsumoRepository
-  ) {};
+  ) { };
 
   private async verificarPropriedade(idPropriedade: number, idProprietario: number, tx: Prisma.TransactionClient): Promise<void> {
     const propriedade = await this.propriedadeRepo.buscarPorId(idPropriedade, tx);
@@ -36,13 +36,12 @@ class CompraInsumoService {
       if (!fornecedor) throw new Error("FORNECEDOR_NAO_ENCONTRADO");
 
       let insumoDomain;
-
       if (dto.idInsumo) {
         insumoDomain = await this.insumoRepo.buscarPorId(dto.idInsumo, idUsuarioSessao, tx);
         if (!insumoDomain) throw new Error("INSUMO_NAO_ENCONTRADO");
       } else if (dto.novoInsumo) {
         insumoDomain = await this.insumoService.cadastrar(dto.novoInsumo, idUsuarioSessao, tx);
-      };
+      }
 
       if (!insumoDomain || !insumoDomain.id) throw new Error("FALHA_CADASTRO_INSUMO");
 
@@ -50,7 +49,6 @@ class CompraInsumoService {
       if (!despesa) throw new Error("FALHA_CADASTRO_DESPESA");
 
       const novaCompra = new CompraInsumo(undefined, insumoDomain, despesa, dto.qtdComprada);
-
       const idCompraGerada = await this.compraRepo.cadastrar(novaCompra, despesa.id!, tx);
       if (!idCompraGerada) throw new Error("FALHA_CADASTRO_COMPRA");
 
@@ -61,9 +59,20 @@ class CompraInsumoService {
         await this.estoqueRepo.atualizar(estoque, tx);
       } else {
         estoque = new EstoqueInsumo(undefined, insumoDomain.id, dto.idPropriedade, dto.qtdComprada);
-        if (!await this.estoqueRepo.cadastrar(estoque, tx)) 
-          throw new Error("FALHA_CADASTRO_ESTOQUE");
-      };
+        await this.estoqueRepo.cadastrar(estoque, tx);
+
+        const propriedadesDoDono = await this.propriedadeRepo.listarPorProprietario(idUsuarioSessao, tx);
+
+        if (!propriedadesDoDono || propriedadesDoDono.length === 0) throw new Error("PROPRIEDADES_NAO_ENCONTRADAS");
+
+        const outrasPropriedadesIds = propriedadesDoDono
+          .map((p) => p.id!)
+          .filter((id) => id !== dto.idPropriedade);
+
+        if (outrasPropriedadesIds && outrasPropriedadesIds.length > 0) {
+          await this.estoqueRepo.cadastrarLoteZerado(insumoDomain.id, outrasPropriedadesIds, tx);
+        }
+      }
 
       return idCompraGerada;
     });
