@@ -266,10 +266,8 @@ class TratoCulturalController {
           return res.status(422).json({ error: 'A data de fim deve ser maior que a data de início' });
         case 'DATA_FIM_SUPERIOR':
           return res.status(422).json({ error: 'A data de fim deve ser menor ou igual que a data atual' });
-        case 'SAFRA_FECHADA':
-          return res.status(422).json({ error: 'Não é possível excluir um trato cultural de uma safra fechada' });
-        case 'TRATO_OUTRA_SAFRA':
-          return res.status(422).json({ error: 'Não é possível excluir um trato cultural de uma safra diferente da atual' });
+        case 'SAFRA_ENCERRADA':
+          return res.status(422).json({ error: 'Não é possível excluir um trato cultural de uma safra encerrada' });
         case 'FORMA_NAO_ENCONTRADA':
           return res.status(422).json({ error: 'Forma de pagamento inválida' });
         case 'VALOR_INVALIDO':

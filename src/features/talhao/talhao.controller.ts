@@ -27,7 +27,7 @@ export class TalhaoController {
         } else if (error.message === 'NAO_ENCONTRADA') {
           return res.status(404).json({ error: 'Propriedade não encontrada' });
         } else if (error.message === 'ACESSO_NEGADO') {
-          return res.status(401).json({ error: 'Acesso negado! Não foi possível cadastrar talhão' });
+          return res.status(403).json({ error: 'Acesso negado! Não foi possível cadastrar talhão' });
         }
         return res.status(400).json({ error: error.message });
       };
@@ -66,7 +66,7 @@ export class TalhaoController {
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === 'ACESSO_NEGADO') {
-          return res.status(401).json({ error: 'Acesso negado! Não foi possível encerrar talhão' });
+          return res.status(403).json({ error: 'Acesso negado! Não foi possível encerrar talhão' });
         } else if (error.message === 'NAO_ENCONTRADO') {
           return res.status(404).json({ error: 'Talhão nao encontrado' });
         } else if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
@@ -93,7 +93,7 @@ export class TalhaoController {
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === 'ACESSO_NEGADO') {
-          return res.status(401).json({ error: 'Acesso negado! Não foi possível excluir talhão' });
+          return res.status(403).json({ error: 'Acesso negado! Não foi possível excluir talhão' });
         } else if (error.message === 'NAO_ENCONTRADO') {
           return res.status(404).json({ error: 'Talhão nao encontrado' });
         } else if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {

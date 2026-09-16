@@ -6,7 +6,11 @@ import EstoqueInsumoRepository from '../../shared/domain/insumo/estoqueinsumo/es
 import Formatador from '../../shared/utils/Formatador';
 
 class InsumoService {
-    constructor(private prisma: PrismaClient, private readonly insumoRepo: InsumoRepository, private readonly estoqueRepo: EstoqueInsumoRepository) { }
+    constructor(
+        private prisma: PrismaClient, 
+        private readonly insumoRepo: InsumoRepository, 
+        private readonly estoqueRepo: EstoqueInsumoRepository
+    ) { }
 
     private async verificarExistente(descricao: string, idProprietario: number, tx: Prisma.TransactionClient): Promise<boolean> {
         const insumos = await this.insumoRepo.buscarTodos(idProprietario, tx);
@@ -73,7 +77,7 @@ class InsumoService {
                     async (insumo) => {
                     const estoque = await this.estoqueRepo.buscarEstoque(insumo.id!, dto.idPropriedade, idUsuario, tx);
                     if (!estoque) 
-                        throw new Error('ACESSO_NEGADO');
+                        throw new Error('ESTOQUE_NAO_ENCONTRADO');
                     return {
                         id: insumo.id,
                         descricao: insumo.descricao,

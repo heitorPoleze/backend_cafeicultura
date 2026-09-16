@@ -1,16 +1,8 @@
-import { type } from "os";
-import TratoInsumo from "../../shared/domain/insumo/tratoinsumo/tratoinsumo.entity";
-import Pessoa from "../../shared/domain/pessoa/pessoa.interface";
-import PessoaBase from "../../shared/domain/pessoa/pessoabase.entity";
-import { FormaPagamento, TipoOperacao } from "../../shared/domain/transacaofinanceira/transacaofinanceira.entity";
-import Despesa from "../despesa/despesa.entity";
-import { TipoTrato } from "../tratocultural/tratocultural.entity";
-import Safra from "./safra.entity";
 import { TransacaoRelatorioWrapperDTO } from "../transacaofinanceira/transacaofinanceira.dto";
 
 export type CadastrarSafraDTO = {
   idPropriedade: number;
-  dataInicio: Date | string;
+  dataInicio: Date;
 };
 
 export type SafraRespostaDTO = {
@@ -22,7 +14,7 @@ export type SafraRespostaDTO = {
 
 export type FinalizarSafraDTO = {
   id: number;
-  dataFim: Date | string;
+  dataFim: Date;
 };
 
 export type ExcluirSafraDTO = {

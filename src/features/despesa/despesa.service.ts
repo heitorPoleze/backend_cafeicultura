@@ -4,7 +4,8 @@ import { BuscarDespesaDTO, CriarDespesaDTO, ExcluirDespesaDTO, ListarDespesasPro
 import PropriedadeRepository from "../propriedade/propriedade.repository";
 import PessoaRepository from "../../shared/domain/pessoa/pessoa.repository";
 import { Prisma, PrismaClient } from "@prisma/client";
-import PessoaBase from "../../shared/domain/pessoa/pessoabase.entity";
+import CompraInsumoRepository from "../comprainsumo/comprainsumo.repository";
+import EstoqueInsumoRepository from "../../shared/domain/insumo/estoqueinsumo/estoqueinsumo.repository";
 
 class DespesaService {
   constructor(
@@ -12,6 +13,8 @@ class DespesaService {
     private readonly repo: DespesaRepository,
     private readonly propriedadeRepo: PropriedadeRepository,
     private readonly pessoaRepo: PessoaRepository,
+    private readonly compraRepo: CompraInsumoRepository,
+    private readonly estoqueRepo: EstoqueInsumoRepository,
   ) { };
 
   private async buscarDespesa(id: number, tx: Prisma.TransactionClient): Promise<Despesa> {
@@ -71,9 +74,32 @@ class DespesaService {
   };
 
   public async excluir(dto: ExcluirDespesaDTO, idUsuarioSessao: number): Promise<void> {
-    const despesa = await this.buscarDespesa(dto.id, this.prisma);
-    await this.verificarPropriedade(despesa.idPropriedade, idUsuarioSessao, this.prisma);
-    await this.repo.excluir(dto.id);
+    await this.prisma.$transaction(async (tx) => {
+      const despesa = await this.buscarDespesa(dto.id, tx);
+      await this.verificarPropriedade(despesa.idPropriedade, idUsuarioSessao, tx);
+
+      const compra = await this.compraRepo.buscarPorIdDespesa(despesa.id!, tx);
+
+      if (compra) {
+        const estoque = await this.estoqueRepo.buscarEstoque(
+          compra.insumo.id!, 
+          despesa.idPropriedade, 
+          idUsuarioSessao,
+          tx
+        );
+
+        if (!estoque) {
+            throw new Error("ESTOQUE_NAO_ENCONTRADO");
+        }
+        if (estoque.quantidade - compra.qtdComprada < 0) {
+            throw new Error("EXCLUSAO_NEGADA_ESTOQUE_NEGATIVO");
+        }
+        estoque.remover(compra.qtdComprada);
+        await this.estoqueRepo.atualizar(estoque, tx);
+        await this.compraRepo.excluir(compra.id!, tx);
+      }
+      await this.repo.excluir(despesa.id!, tx);
+    });
   };
 }
 

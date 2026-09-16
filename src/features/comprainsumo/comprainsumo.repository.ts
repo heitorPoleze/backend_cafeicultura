@@ -15,7 +15,7 @@ class CompraInsumoRepository {
   constructor(
     private prisma: PrismaClient,
     private despesaRepo: DespesaRepository
-  ) {};
+  ) { };
 
   public async cadastrar(
     compra: CompraInsumo,
@@ -40,6 +40,14 @@ class CompraInsumoRepository {
 
     if (!compraDB) return null;
     return await this.mapToEntity(compraDB, tx);
+  }
+
+  public async buscarPorIdDespesa(idDespesa: number, tx: Prisma.TransactionClient): Promise<CompraInsumo | null> {
+    const dado = await tx.comprasinsumos.findFirst({
+      where: { idDespesa_FK: idDespesa },
+      include: compraInclude
+    });
+    return dado ? await this.mapToEntity(dado, tx) : null;
   }
 
   public async listarPorPropriedade(idPropriedade: number, tx: Prisma.TransactionClient): Promise<CompraInsumo[]> {
@@ -99,11 +107,17 @@ class CompraInsumoRepository {
     return compras.filter((c): c is CompraInsumo => c !== null);
   }
 
+  public async excluir(id: number, tx: Prisma.TransactionClient): Promise<void> { 
+    await tx.comprasinsumos.delete({
+      where: { idCompra_PK: id }
+    });
+  };
+
   private async mapToEntity(compraDB: CompraInsumoPayload, tx: Prisma.TransactionClient = this.prisma): Promise<CompraInsumo | null> {
     const insumo = new Insumo(
-      compraDB.insumos.idInsumo_PK, 
+      compraDB.insumos.idInsumo_PK,
       compraDB.insumos.idProprietario_FK,
-      compraDB.insumos.descricao, 
+      compraDB.insumos.descricao,
       compraDB.insumos.medida as MedidaInsumo
     );
 

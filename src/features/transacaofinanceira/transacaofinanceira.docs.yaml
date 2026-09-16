@@ -63,7 +63,7 @@ paths:
                     items:
                       type: object
                       description: DTO da transação financeira.
-        '401':
+        '403':
           description: Acesso negado.
         '404':
           description: Propriedade não encontrada.

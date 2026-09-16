@@ -34,127 +34,129 @@ export class SafraService {
   ) { }
 
   public async cadastrar(dto: CadastrarSafraDTO, idUsuarioSessao: number): Promise<number> {
-    const propriedade = await this.propriedadeRepo.buscarPorId(dto.idPropriedade);
-    if (!propriedade) {
-      throw new Error('NAO_ENCONTRADA');
-    };
-    if (propriedade.idProprietario !== idUsuarioSessao) {
-      throw new Error('ACESSO_NEGADO');
-    };
+    return await this.prisma.$transaction(async (tx) => {
+      const propriedade = await this.propriedadeRepo.buscarPorId(dto.idPropriedade, tx);
+      if (!propriedade) {
+        throw new Error('NAO_ENCONTRADA');
+      };
+      if (propriedade.idProprietario !== idUsuarioSessao) {
+        throw new Error('ACESSO_NEGADO');
+      };
 
-    const totalAtivas = await this.safraRepository.contarSafrasAtivas(
-      dto.idPropriedade,
-    );
-    if (totalAtivas >= 2) {
-      throw new Error("DUAS_ATIVAS");
-    };
+      const totalAtivas = await this.safraRepository.contarSafrasAtivas(
+        dto.idPropriedade,
+        tx
+      );
+      if (totalAtivas >= 2) {
+        throw new Error("DUAS_ATIVAS");
+      };
 
-    const novaSafra = new Safra({
-      id: undefined,
-      idPropriedade: dto.idPropriedade,
-      dataInicio: dto.dataInicio,
+      const novaSafra = new Safra(undefined, dto.idPropriedade, new Date(dto.dataInicio));
+      return await this.safraRepository.cadastrar(novaSafra, tx);
     });
-
-    return await this.safraRepository.cadastrar(novaSafra);
   };
 
   public async buscarAtivasPorPropriedade(idPropriedade: number, idUsuarioSessao: number): Promise<SafraRespostaDTO[]> {
-    const propriedade = await this.propriedadeRepo.buscarPorId(idPropriedade);
-    if (!propriedade) {
-      throw new Error('NAO_ENCONTRADA');
-    }
-    if (propriedade.idProprietario !== idUsuarioSessao) {
-      throw new Error('ACESSO_NEGADO');
-    }
-    const safras = await this.safraRepository.bucarAtivasPorPropriedade(idPropriedade);
-    return safras.map((safra) => safra.toJSON());
+    return await this.prisma.$transaction(async (tx) => {
+      const propriedade = await this.propriedadeRepo.buscarPorId(idPropriedade, tx);
+      if (!propriedade) {
+        throw new Error('NAO_ENCONTRADA');
+      }
+      if (propriedade.idProprietario !== idUsuarioSessao) {
+        throw new Error('ACESSO_NEGADO');
+      }
+      const safras = await this.safraRepository.bucarAtivasPorPropriedade(idPropriedade, tx);
+      return safras.map((safra) => safra.toJSON());
+    });
   }
 
   public async buscarPorId(id: number, idUsuarioSessao: number): Promise<SafraRespostaDTO> {
-    const safra = await this.safraRepository.buscarPorId(id);
-    if (!safra) {
-      throw new Error("NAO_ENCONTRADA");
-    };
-    const propriedade = await this.propriedadeRepo.buscarPorId(safra.idPropriedade);
-    if (!propriedade) {
-      throw new Error('PROPRIEDADE_NAO_ENCONTRADA');
-    };
-    if (propriedade.idProprietario !== idUsuarioSessao) {
-      throw new Error('ACESSO_NEGADO');
-    };
-    return safra.toJSON();
+    return await this.prisma.$transaction(async (tx) => {
+      const safra = await this.safraRepository.buscarPorId(id, tx);
+      if (!safra) {
+        throw new Error("NAO_ENCONTRADA");
+      };
+      const propriedade = await this.propriedadeRepo.buscarPorId(safra.idPropriedade, tx);
+      if (!propriedade) {
+        throw new Error('PROPRIEDADE_NAO_ENCONTRADA');
+      };
+      if (propriedade.idProprietario !== idUsuarioSessao) {
+        throw new Error('ACESSO_NEGADO');
+      };
+      return safra.toJSON();
+    });
   };
 
   public async buscarTodasSafrasPorPropriedade(idPropriedade: number, idUsuarioSessao: number): Promise<SafraRespostaDTO[]> {
-    const propriedade = await this.propriedadeRepo.buscarPorId(idPropriedade);
-    if (!propriedade) {
-      throw new Error('NAO_ENCONTRADA');
-    }
-    if (propriedade.idProprietario !== idUsuarioSessao) {
-      throw new Error('ACESSO_NEGADO');
-    }
-    const safras = await this.safraRepository.buscarSafrasPorPropriedade(idPropriedade);
-    return safras.map((safra) => safra.toJSON());
+    return await this.prisma.$transaction(async (tx) => {
+      const propriedade = await this.propriedadeRepo.buscarPorId(idPropriedade, tx);
+      if (!propriedade) {
+        throw new Error('NAO_ENCONTRADA');
+      }
+      if (propriedade.idProprietario !== idUsuarioSessao) {
+        throw new Error('ACESSO_NEGADO');
+      }
+      const safras = await this.safraRepository.buscarSafrasPorPropriedade(idPropriedade, tx);
+      return safras.map((safra) => safra.toJSON());
+    });
   }
 
   public async finalizar(dto: FinalizarSafraDTO, idUsuarioSessao: number): Promise<void> {
-    const safra = await this.safraRepository.buscarPorId(dto.id);
-    if (!safra) {
-      throw new Error("NAO_ENCONTRADA");
-    };
-    const propriedade = await this.propriedadeRepo.buscarPorId(safra.idPropriedade);
-    if (!propriedade) {
-      throw new Error('NAO_ENCONTRADA');
-    };
-    if (propriedade.idProprietario !== idUsuarioSessao) {
-      throw new Error('ACESSO_NEGADO');
-    };
-    safra.finalizar(dto.dataFim);
-    await this.safraRepository.finalizar(safra);
+    return await this.prisma.$transaction(async (tx) => {
+      const safra = await this.safraRepository.buscarPorId(dto.id, tx);
+      if (!safra) {
+        throw new Error("NAO_ENCONTRADA");
+      };
+      const propriedade = await this.propriedadeRepo.buscarPorId(safra.idPropriedade, tx);
+      if (!propriedade) {
+        throw new Error('NAO_ENCONTRADA');
+      };
+      if (propriedade.idProprietario !== idUsuarioSessao) {
+        throw new Error('ACESSO_NEGADO');
+      };
+      safra.finalizar(dto.dataFim);
+      await this.safraRepository.finalizar(safra, tx);
+    });
   }
 
   public async reativarSafra(idSafra: number, idPropriedadeRequisicao?: number): Promise<SafraRespostaDTO> {
-    const safraAlvo = await this.safraRepository.buscarPorId(idSafra);
+    return await this.prisma.$transaction(async (tx) => {
+      const safraAlvo = await this.safraRepository.buscarPorId(idSafra);
 
-    if (!safraAlvo) {
-      throw new Error("NAO_ENCONTRADA");
-    }
-
-    if (idPropriedadeRequisicao && safraAlvo.idPropriedade !== idPropriedadeRequisicao) {
-      throw new Error("ACESSO_NEGADO");
-    }
-
-    const safraReativada = await this.safraRepository.reativar(safraAlvo);
-
-    if (!safraReativada || !safraReativada.id) {
-      throw new Error("NAO_REATIVADA");
-    }
-
-    if (safraReativada.dataFim === null) {
-      return {
-        id: safraReativada.id,
-        idPropriedade: safraReativada.idPropriedade,
-        dataInicio: safraReativada.dataInicio,
-        dataFim: safraReativada.dataFim
+      if (!safraAlvo) {
+        throw new Error("NAO_ENCONTRADA");
+      }
+      if (idPropriedadeRequisicao && safraAlvo.idPropriedade !== idPropriedadeRequisicao) {
+        throw new Error("ACESSO_NEGADO");
+      }
+      const totalAtivas = await this.safraRepository.contarSafrasAtivas(
+        safraAlvo.idPropriedade,
+        tx
+      );
+      if (totalAtivas >= 2) {
+        throw new Error("DUAS_ATIVAS");
       };
-    }
 
-    throw new Error("NAO_REATIVADA");
+      const safraReativada = await this.safraRepository.reativar(safraAlvo, tx);
+      return safraReativada.toJSON();
+    });
   }
-  
+
   public async excluir(dto: ExcluirSafraDTO, idUsuarioSessao: number): Promise<void> {
-    const safra = await this.safraRepository.buscarPorId(dto.id);
-    if (!safra) {
-      throw new Error("NAO_ENCONTRADA");
-    };
-    const propriedade = await this.propriedadeRepo.buscarPorId(safra.idPropriedade);
-    if (!propriedade) {
-      throw new Error('NAO_ENCONTRADA');
-    };
-    if (propriedade.idProprietario !== idUsuarioSessao) {
-      throw new Error('ACESSO_NEGADO');
-    };
-    await this.safraRepository.excluir(safra);
+    return await this.prisma.$transaction(async (tx) => {
+      const safra = await this.safraRepository.buscarPorId(dto.id, tx);
+      if (!safra) {
+        throw new Error("NAO_ENCONTRADA");
+      };
+      const propriedade = await this.propriedadeRepo.buscarPorId(safra.idPropriedade, tx);
+      if (!propriedade) {
+        throw new Error('NAO_ENCONTRADA');
+      };
+      if (propriedade.idProprietario !== idUsuarioSessao) {
+        throw new Error('ACESSO_NEGADO');
+      };
+      await this.safraRepository.excluir(safra, tx);
+    });
   };
 
   // ---- Relatórios -----

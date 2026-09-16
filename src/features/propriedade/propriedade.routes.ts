@@ -8,12 +8,14 @@ import PropriedadeRepository from "./propriedade.repository";
 import PropriedadeService from "./propriedade.service";
 import PropriedadeController from "./propriedade.controller";
 import TalhaoRepository from "../talhao/talhao.repository";
+import EstoqueInsumoRepository from "../../shared/domain/insumo/estoqueinsumo/estoqueinsumo.repository";
 
 const router = Router();
 
-const talhaoRepo = new TalhaoRepository(prisma);
 const propriedadeRepo = new PropriedadeRepository(prisma);
-const propriedadeService = new PropriedadeService(prisma, propriedadeRepo, talhaoRepo);
+const talhaoRepo = new TalhaoRepository(prisma);
+const estoqueRepo = new EstoqueInsumoRepository();
+const propriedadeService = new PropriedadeService(prisma, propriedadeRepo, talhaoRepo, estoqueRepo);
 const propriedadeController = new PropriedadeController(propriedadeService);
 
 router.post(

@@ -83,7 +83,7 @@ paths:
                         example: 5
         '400':
           description: Erro de validação nos campos.
-        '401':
+        '403':
           description: Acesso negado; usuário não pode cadastrar safra nesta propriedade.
         '404':
           description: Propriedade da safra não encontrada.
@@ -308,7 +308,7 @@ paths:
                 $ref: '#/components/schemas/SafraResponse'
         '400':
           description: ID da safra inválido.
-        '401':
+        '403':
           description: Acesso negado ou propriedade da safra não encontrada.
         '404':
           description: Safra não encontrada.
@@ -341,7 +341,7 @@ paths:
                     example: Safra excluida com sucesso!
         '400':
           description: ID da safra inválido.
-        '401':
+        '403':
           description: Acesso negado ou não é possível excluir safra com atividades vinculadas.
         '404':
           description: Safra ou propriedade não encontrados.
@@ -389,7 +389,7 @@ paths:
                     example: Safra finalizada com sucesso
         '400':
           description: Erro de validação da data.
-        '401':
+        '403':
           description: Acesso negado 
         '404':
           description: Safra ou propriedade não encontrada.
@@ -397,6 +397,43 @@ paths:
           description: Erro de processamento (data fim anterior à data de início ou superior ao dia atual).
         '500':
           description: Erro interno inesperado ao finalizar safra.
+    
+  /api/v1/safras/{id}/reativar:
+    patch:
+      summary: Reativa uma safra finalizada
+      description: Remove a data de fim de uma safra, tornando ela ativa novamente.
+      tags:
+        - Safras
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID numérico da safra.
+      responses:
+        '200':
+          description: Safra reativada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Safra reativada com sucesso
+        '400':
+          description: ID da safra inválido.
+        '403':
+          description: Acesso negado 
+        '404':
+          description: Safra ou propriedade não encontrada.
+        '422':
+          description: Propriedade possui duas safras ativas.
+        '500':
+          description: Erro interno inesperado ao reativar safra.
 
   /api/v1/safras/propriedade/{idPropriedade}:
     get:
@@ -420,7 +457,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/SafraResponse'
-        '401':
+        '403':
           description: Acesso negado; usuário não pode consultar esta propriedade.
         '404':
           description: Propriedade não encontrada.

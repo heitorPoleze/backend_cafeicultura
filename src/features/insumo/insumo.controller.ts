@@ -72,8 +72,8 @@ export class InsumoController {
                 if (error.message === 'SEM_INSUMOS') {
                     return res.status(404).json({ error: "Nenhum insumo cadastrado" });
                 }
-                if (error.message === 'ACESSO_NEGADO') {
-                    return res.status(403).json({ error: 'Estoque não pôde ser acessado' });
+                if (error.message === 'ESTOQUE_NAO_ENCONTRADO') {
+                    return res.status(403).json({ error: 'Insumo ou estoques de insumos não encontrados para propriedade' });
                 }
                 return res.status(400).json({ error: error.message });
             };

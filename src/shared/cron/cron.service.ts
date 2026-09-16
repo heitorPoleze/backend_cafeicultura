@@ -4,6 +4,7 @@ import { GerenciadorWebSocket } from '../websocket/websocket.manager';
 import { TipoEvento, TipoNotificacao } from '../../features/notificacao/notificacao.dto';
 import NotificacaoRepository, { EventoCronPayload } from '../../features/notificacao/notificacao.repository';
 import Notificacao from '../../features/notificacao/notificacao.entity';
+import Formatador from '../utils/Formatador';
 
 const notificacaoRepo = new NotificacaoRepository(prisma);
 
@@ -49,8 +50,7 @@ function determinarTipoEvento(evento: EventoCronPayload): TipoEvento {
 async function processarLimpezaNotificacoes(): Promise<void> {
     console.log('[CRON] Iniciando verificação de limpeza de notificações lidas...');
 
-    const agora = new Date().toLocaleDateString('en-US', { timeZone: 'America/Sao_Paulo' });
-    const hoje = new Date(agora);
+    const hoje = new Date(Formatador.obterDataAtual());
     const limiteData = new Date(hoje);
     
     limiteData.setDate(hoje.getDate() - 7);
@@ -73,8 +73,7 @@ async function processarLimpezaNotificacoes(): Promise<void> {
 async function processarNotificacaoAlvo(diasAlvo: number, tipoNotificacao: TipoNotificacao): Promise<void> {
     console.log(`[CRON] Buscando eventos para notificação: ${tipoNotificacao} (${diasAlvo} dias)`);
 
-    const agora = new Date().toLocaleDateString('en-US', { timeZone: 'America/Sao_Paulo' });
-    const hoje = new Date(agora);
+    const hoje = new Date(Formatador.obterDataAtual());
     const dataAlvo = new Date(hoje);
     dataAlvo.setDate(hoje.getDate() + diasAlvo);
 

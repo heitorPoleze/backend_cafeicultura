@@ -65,7 +65,7 @@ paths:
           description: Despesa cadastrada com sucesso.
         '400':
           description: Erro de validação nos dados enviados.
-        '401':
+        '403':
           description: Acesso negado. Usuário não é o proprietário.
         '404':
           description: Propriedade ou Beneficiado não encontrado.
@@ -101,7 +101,7 @@ paths:
       responses:
         '200':
           description: Despesa retornada com sucesso.
-        '401':
+        '403':
           description: Acesso negado.
         '404':
           description: Despesa ou Propriedade não encontrada.
@@ -123,10 +123,14 @@ paths:
       responses:
         '200':
           description: Despesa excluída com sucesso.
-        '401':
+        '403':
           description: Acesso negado.
         '404':
           description: Despesa não encontrada.
+        '422':
+          description: Não é possível excluir a despesa pois o estoque do insumo fica negativo.
+        '500':
+          description: Erro interno ao excluir despesa.
 
   /api/v1/despesas/propriedades/{idPropriedade}:
     get:
@@ -146,7 +150,7 @@ paths:
       responses:
         '200':
           description: Lista de despesas retornada com sucesso.
-        '401':
+        '403':
           description: Acesso negado.
         '404':
           description: Propriedade não encontrada ou não possui despesas.

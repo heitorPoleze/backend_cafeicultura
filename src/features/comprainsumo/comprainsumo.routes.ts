@@ -29,7 +29,7 @@ const insumoRepo = new InsumoRepository(prisma);
 const estoqueRepo = new EstoqueInsumoRepository();
 
 const insumoService = new InsumoService(prisma, insumoRepo, estoqueRepo);
-const despesaService = new DespesaService(prisma, despesaRepo, propriedadeRepo, pessoaRepo);
+const despesaService = new DespesaService(prisma, despesaRepo, propriedadeRepo, pessoaRepo, compraRepo, estoqueRepo);
 
 const compraInsumoService = new CompraInsumoService(
   prisma, 
