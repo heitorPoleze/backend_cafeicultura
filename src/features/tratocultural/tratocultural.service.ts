@@ -32,7 +32,6 @@ import Safra from "../safra/safra.entity";
 import Talhao from "../talhao/talhao.entity";
 import { Prisma, PrismaClient } from "@prisma/client";
 import EstoqueInsumoRepository from "../../shared/domain/insumo/estoqueinsumo/estoqueinsumo.repository";
-import EstoqueInsumo from "../../shared/domain/insumo/estoqueinsumo/estoqueinsumo.entity";
 
 class TratoCulturalService {
   constructor(
@@ -374,10 +373,7 @@ class TratoCulturalService {
       const trato = await this.buscarEValidarTrato(dto.idTrato, idUsuarioSessao, tx);
       const safras = await this.safraRepo.buscarSafrasPorPropriedade(trato.safra.idPropriedade, tx);
       if (trato.safra.dataFim !== null) {
-        throw new Error("SAFRA_FECHADA");
-      };
-      if (safras.some((safra) => trato.safra.dataInicio < safra.dataInicio)) {
-        throw new Error("TRATO_OUTRA_SAFRA");
+        throw new Error("SAFRA_ENCERRADA");
       };
       const insumosTrato = await this.tratoCulturalRepo.buscarInsumosDoTrato(dto.idTrato, tx);
       if (insumosTrato && insumosTrato.length > 0) {

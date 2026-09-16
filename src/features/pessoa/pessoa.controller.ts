@@ -228,7 +228,7 @@ class PessoaController {
     
     try {
       if (!idSessao) {
-        return res.status(401).json({ error: "Usuário não autenticado" });
+        return res.status(403).json({ error: "Usuário não autenticado" });
       }
       const prestadores = await this.service.buscarPrestadoresDeServicoPorIdAdministrador(
         idSessao

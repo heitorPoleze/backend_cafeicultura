@@ -13,7 +13,11 @@ class EstoqueInsumoRepository {
         return criado.idEstInsumo_PK;
     };
 
-    public async cadastrarLoteZerado(idInsumo: number, idsPropriedades: number[], tx: Prisma.TransactionClient): Promise<void> {
+    public async cadastrarLoteZeradoPropriedades(
+        idInsumo: number, 
+        idsPropriedades: number[], 
+        tx: Prisma.TransactionClient
+    ): Promise<void> {
         if (idsPropriedades.length === 0) return;
 
         const dados = idsPropriedades.map((id) => ({
@@ -24,6 +28,34 @@ class EstoqueInsumoRepository {
 
         await tx.estoqueinsumos.createMany({ data: dados });
     };
+
+    public async cadastrarLoteZeradoNovaPropriedade(
+        idPropriedade: number,
+        idsInsumos: number[],
+        tx: Prisma.TransactionClient
+    ): Promise<void> {
+        if (idsInsumos.length === 0) return;
+
+        const dados = idsInsumos.map((idInsumo) => ({
+            idInsumo_FK: idInsumo,
+            idPropriedade_FK: idPropriedade,
+            quantidade: 0
+        }));
+
+        await tx.estoqueinsumos.createMany({ data: dados });
+    }
+
+    public async buscarInsumosUnicosDoProprietario(idProprietario: number, tx: Prisma.TransactionClient): Promise<number[]> {
+        const insumosUnicos = await tx.estoqueinsumos.findMany({
+            where: {
+                propriedades: { idProprietario_FK: idProprietario }
+            },
+            select: { idInsumo_FK: true },
+            distinct: ['idInsumo_FK']
+        });
+
+        return insumosUnicos.map(i => i.idInsumo_FK);
+    }
 
     async buscarEstoque(idInsumo: number, idPropriedade: number, idProprietario: number, tx: Prisma.TransactionClient): Promise<EstoqueInsumo | null> {
         const estoqueInsumoDB = await tx.estoqueinsumos.findFirst({

@@ -13,9 +13,15 @@ import Tamanho from "../../shared/domain/tamanho/tamanho.entity";
 import Endereco from "../../shared/domain/endereco/endereco.vo";
 import { Prisma, PrismaClient } from "@prisma/client";
 import TalhaoRepository from "../talhao/talhao.repository";
+import EstoqueInsumoRepository from "../../shared/domain/insumo/estoqueinsumo/estoqueinsumo.repository";
 
 class PropriedadeService {
-  constructor(private prisma: PrismaClient, private repo: PropriedadeRepository, private talhaoRepo: TalhaoRepository) {}
+  constructor(
+    private prisma: PrismaClient,
+    private repo: PropriedadeRepository,
+    private talhaoRepo: TalhaoRepository,
+    private estoqueRepo: EstoqueInsumoRepository
+  ) { };
 
   public async cadastrar(
     dto: CreatePropriedadeDTO,
@@ -38,11 +44,24 @@ class PropriedadeService {
       tamanho,
       endereco,
     );
+
     return await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       if (await this.repo.verificarNome(propriedade, tx)) {
         throw new Error("NOME_DUPLICADO");
       };
-      return await this.repo.salvar(propriedade, tx);
+
+      const idPropriedade = await this.repo.salvar(propriedade, tx);
+      const idsInsumosDoDono = await this.estoqueRepo.buscarInsumosUnicosDoProprietario(idUsuarioSessao, tx);
+
+      if (idsInsumosDoDono.length > 0) {
+        await this.estoqueRepo.cadastrarLoteZeradoNovaPropriedade(
+          idPropriedade,
+          idsInsumosDoDono,
+          tx
+        );
+      }
+
+      return idPropriedade;
     })
   };
 
@@ -84,7 +103,7 @@ class PropriedadeService {
 
     const novoTamanho = new Tamanho(dto.tamanho.valor, dto.tamanho.medida, propriedade.tamanho.id);
     const areaNovaPropriedadeM2 = this.calcularAreaEmM2(novoTamanho);
-    
+
     let areaUtilizadaM2 = 0;
     for (const t of talhoesExistentes) {
       areaUtilizadaM2 += this.calcularAreaEmM2(t.tamanho);

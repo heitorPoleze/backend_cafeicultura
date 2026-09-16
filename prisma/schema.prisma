@@ -496,7 +496,7 @@ model usuarios {
 
 model variedades {
   idVariedade_PK    Int                 @unique(map: "idVariedade_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
-  descricao         String              @unique(map: "descricao_UNIQUE") @db.VarChar(10)
+  descricao         String              @unique(map: "descricao_UNIQUE") @db.VarChar(20)
   especie           Int                 @db.TinyInt
   variedadestalhoes variedadestalhoes[]
 

@@ -10,6 +10,8 @@ import PessoaRepository from '../../shared/domain/pessoa/pessoa.repository';
 import TransacaoFinanceiraRepository from '../../shared/domain/transacaofinanceira/transacaofinanceira.repository';
 import { prisma } from "../../shared/config/database"; 
 import { FormaPagamento, TipoOperacao } from '../../shared/domain/transacaofinanceira/transacaofinanceira.entity';
+import CompraInsumoRepository from '../comprainsumo/comprainsumo.repository';
+import EstoqueInsumoRepository from '../../shared/domain/insumo/estoqueinsumo/estoqueinsumo.repository';
 
 const router = Router();
 
@@ -17,8 +19,9 @@ const transacaoRepo = new TransacaoFinanceiraRepository(prisma);
 const pessoaRepo = new PessoaRepository(prisma);
 const propriedadeRepo = new PropriedadeRepository(prisma);
 const despesaRepo = new DespesaRepository(prisma, transacaoRepo, pessoaRepo);
-
-const despesaService = new DespesaService(prisma, despesaRepo, propriedadeRepo, pessoaRepo);
+const compraInsumo = new CompraInsumoRepository(prisma, despesaRepo);
+const estoqueInsumo = new EstoqueInsumoRepository();
+const despesaService = new DespesaService(prisma, despesaRepo, propriedadeRepo, pessoaRepo, compraInsumo, estoqueInsumo);
 const despesaController = new DespesaController(despesaService);
 
 router.post(

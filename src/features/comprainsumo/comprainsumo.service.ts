@@ -70,7 +70,7 @@ class CompraInsumoService {
           .filter((id) => id !== dto.idPropriedade);
 
         if (outrasPropriedadesIds && outrasPropriedadesIds.length > 0) {
-          await this.estoqueRepo.cadastrarLoteZerado(insumoDomain.id, outrasPropriedadesIds, tx);
+          await this.estoqueRepo.cadastrarLoteZeradoPropriedades(insumoDomain.id, outrasPropriedadesIds, tx);
         }
       }
 

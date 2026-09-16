@@ -88,7 +88,7 @@ paths:
           description: Compra de insumo registrada e Despesa financeira gerada com sucesso.
         '400':
           description: Erro de validação nos dados enviados (ex. valores negativos, ou envio de idInsumo e novoInsumo simultaneamente).
-        '401':
+        '403':
           description: Acesso negado. O usuário não é o proprietário da propriedade informada.
         '404':
           description: Propriedade, Insumo ou Fornecedor (Beneficiado) não encontrado.
@@ -124,7 +124,7 @@ paths:
       responses:
         '200':
           description: Registro de compra retornado com sucesso.
-        '401':
+        '403':
           description: Acesso negado. O usuário não tem permissão para visualizar esta compra.
         '404':
           description: Compra não encontrada no banco de dados.
@@ -147,7 +147,7 @@ paths:
       responses:
         '200':
           description: Lista de compras retornada com sucesso.
-        '401':
+        '403':
           description: Acesso negado.
         '404':
           description: Nenhuma compra encontrada para esta propriedade, ou a propriedade em si não foi encontrada.
