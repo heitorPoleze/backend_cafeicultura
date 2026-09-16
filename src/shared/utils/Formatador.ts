@@ -4,6 +4,10 @@ class Formatador {
     currency: "BRL",
   });
 
+  public static obterDataAtual(): string {
+    return new Date().toLocaleDateString('en-US', { timeZone: 'America/Sao_Paulo' });
+  }
+
   static dataFormatada(data: Date, incluirHora: boolean = false): string {
     if (incluirHora) {
       return data

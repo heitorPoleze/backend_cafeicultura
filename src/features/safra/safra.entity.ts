@@ -1,30 +1,32 @@
+import Formatador from "../../shared/utils/Formatador";
+
 class Safra {
   private _id: number | undefined;
   private _idPropriedade: number;
   private _dataInicio: Date;
   private _dataFim?: Date | null;
 
-  constructor(props: {
-    id: number | undefined;
-    idPropriedade: number;
-    dataInicio: Date | string;
-    dataFim?: Date | string | null;
-  }) {
-    this._id = props.id;
-    this._idPropriedade = props.idPropriedade;
+  constructor(
+    id: number | undefined,
+    idPropriedade: number,
+    dataInicio: Date,
+    dataFim?: Date | null,
+  ) {
+    this._id = id;
+    this._idPropriedade = idPropriedade;
 
-    if (props.dataInicio > new Date()) {
+    if (dataInicio > new Date(Formatador.obterDataAtual())) {
       throw new Error("DATA_INICIO_FUTURA");
     };
-    this._dataInicio = new Date(props.dataInicio);
+    this._dataInicio = new Date(dataInicio);
 
-    if (props.dataFim && props.dataFim < this._dataInicio) {
+    if (dataFim && dataFim < this._dataInicio) {
       throw new Error("DATA_FIM_ANTERIOR");
     };
-    if (props.dataFim && props.dataFim > new Date()) {
+    if (dataFim && dataFim > new Date(Formatador.obterDataAtual())) {
       throw new Error("DATA_FIM_SUPERIOR");
     };
-    this._dataFim = props.dataFim ? new Date(props.dataFim) : null;
+    this._dataFim = dataFim ? new Date(dataFim) : null;
   };
 
   get id() {
@@ -44,17 +46,15 @@ class Safra {
     return !this._dataFim 
   };
 
-  public finalizar(dataFim: Date | string): void {
-    const dataEncerramento = new Date(dataFim);
-    const hoje = new Date();
-    if (dataEncerramento > hoje) {
+  public finalizar(dataFim: Date): void {
+    if (dataFim > new Date(Formatador.obterDataAtual())) {
       throw new Error("DATA_FIM_SUPERIOR");
     };
-    if (dataEncerramento < this._dataInicio) {
+    if (dataFim < this._dataInicio) {
       throw new Error("DATA_FIM_ANTERIOR");
     };
 
-    this._dataFim = dataEncerramento;
+    this._dataFim = dataFim;
   };
   
   public toJSON() {

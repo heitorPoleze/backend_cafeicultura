@@ -33,7 +33,7 @@ class TransacaoFinanceiraController {
           return res.status(404).json({ error: 'Propriedade não encontrada' });
         }
         if (error.message === 'ACESSO_NEGADO') {
-          return res.status(401).json({ error: 'Acesso negado' });
+          return res.status(403).json({ error: 'Acesso negado' });
         }
         return res.status(400).json({ error: error.message });
       }

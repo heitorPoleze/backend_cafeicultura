@@ -4,9 +4,9 @@ import SafraService from './safra.service';
 import { BuscarRelatorioFinanceiroSafraDTO, BuscarTodosEventosDTO, BuscarTodosEventosTalhaoDTO, ObterCustoSafraDTO } from './safra.dto';
 
 class SafraController {
-    constructor(private readonly safraService: SafraService) {};
+  constructor(private readonly safraService: SafraService) { };
 
-    public async cadastrar(req: Request, res: Response): Promise<Response | void> {
+  public async cadastrar(req: Request, res: Response): Promise<Response | void> {
     const erros = validationResult(req);
     if (!erros.isEmpty()) {
       return res.status(400).json({ erros: erros.array() });
@@ -23,7 +23,7 @@ class SafraController {
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === 'ACESSO_NEGADO') {
-          return res.status(401).json({ error: 'Acesso negado! Não foi possível cadastrar safra' });
+          return res.status(403).json({ error: 'Acesso negado! Não foi possível cadastrar safra' });
         } else if (error.message === 'NAO_ENCONTRADA') {
           return res.status(404).json({ error: 'Propriedade da safra não encontrada' });
         } else if (error.message === 'DUAS_ATIVAS') {
@@ -52,7 +52,7 @@ class SafraController {
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === 'ACESSO_NEGADO') {
-          return res.status(401).json({ error: 'Acesso negado! Não foi possível buscar safras' });
+          return res.status(403).json({ error: 'Acesso negado! Não foi possível buscar safras' });
         } else if (error.message === 'NAO_ENCONTRADA') {
           return res.status(404).json({ error: 'Propriedade não encontrada' });
         }
@@ -94,7 +94,7 @@ class SafraController {
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === 'ACESSO_NEGADO') {
-          return res.status(401).json({ error: 'Acesso negado! Não foi possível buscar safra' });
+          return res.status(403).json({ error: 'Acesso negado! Não foi possível buscar safra' });
         } else if (error.message === 'NAO_ENCONTRADA') {
           return res.status(404).json({ error: 'Safra nao encontrada' });
         } else if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
@@ -104,6 +104,29 @@ class SafraController {
       };
     };
   };
+
+  public async reativarSafra(req: Request, res: Response) {
+    const erros = validationResult(req);
+    if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
+
+    try {
+      const id = Number(req.params.id);
+      const safraReativada = await this.safraService.reativarSafra(id);
+      return res.status(200).json(safraReativada);
+
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        if (error.message === 'ACESSO_NEGADO') {
+          return res.status(403).json({ error: 'Acesso negado! Não foi possível reativar safra' });
+        } else if (error.message === 'NAO_ENCONTRADA') {
+          return res.status(404).json({ error: 'Safra não encontrada' });
+        } else if (error.message === 'DUAS_ATIVAS') {
+          return res.status(422).json({ error: 'Propriedade possui duas safras ativas' });
+        }
+      }
+      return res.status(500).json({ error: 'Erro interno inesperado ao reativar safra' });
+    }
+  }
 
   public async finalizar(req: Request, res: Response) {
     const erros = validationResult(req);
@@ -116,11 +139,11 @@ class SafraController {
       const dto = { id, dataFim };
       const idUsuario = req.session.idUsuario!;
       await this.safraService.finalizar(dto, idUsuario);
-      res.status(200).json({mensagem: 'Safra finalizada com sucesso'});
+      res.status(200).json({ mensagem: 'Safra finalizada com sucesso' });
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === 'ACESSO_NEGADO') {
-          return res.status(401).json({ error: 'Acesso negado! Não foi possível finalizar safra' });
+          return res.status(403).json({ error: 'Acesso negado! Não foi possível finalizar safra' });
         } else if (error.message === 'NAO_ENCONTRADA') {
           return res.status(404).json({ error: 'Safra não encontrada' });
         } else if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
@@ -143,12 +166,12 @@ class SafraController {
     try {
       const id = Number(req.params.id);
       const idUsuario = req.session.idUsuario!;
-      await this.safraService.excluir({id}, idUsuario);
-      res.status(200).json({mensagem: 'Safra excluida com sucesso!'});
+      await this.safraService.excluir({ id }, idUsuario);
+      res.status(200).json({ mensagem: 'Safra excluida com sucesso!' });
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === 'ACESSO_NEGADO') {
-          return res.status(401).json({ error: 'Acesso negado! Não foi possível excluir safra' });
+          return res.status(403).json({ error: 'Acesso negado! Não foi possível excluir safra' });
         } else if (error.message === 'NAO_ENCONTRADA') {
           return res.status(404).json({ error: 'Safra não encontrada' });
         } else if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
@@ -173,9 +196,9 @@ class SafraController {
         idPropriedade: Number(req.params.id),
         idSafra: Number(req.params.idSafra)
       };
-      
+
       const resultado = await this.safraService.obterCustoSafra(dto, req.session.idUsuario!);
-      
+
       res.status(200).json(resultado);
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -206,9 +229,9 @@ class SafraController {
         idPropriedade: Number(req.params.id),
         idSafra: Number(req.params.idSafra)
       };
-      
+
       const relatorio = await this.safraService.gerarRelatorioFinanceiro(dto, req.session.idUsuario!);
-      
+
       res.status(200).json(relatorio);
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -232,7 +255,7 @@ class SafraController {
       return res.status(500).json({ error: 'Erro interno ao gerar o relatório financeiro' });
     }
   }
-  
+
   public async relatorioEventosSafra(req: Request, res: Response) {
     const erros = validationResult(req);
     if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
@@ -243,7 +266,7 @@ class SafraController {
         idSafra: Number(req.params.idSafra)
       };
       const eventos = await this.safraService.listarTodosEventos(dto, req.session.idUsuario!);
-      
+
       res.status(200).json(eventos);
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -264,28 +287,7 @@ class SafraController {
       return res.status(500).json({ error: 'Erro interno ao gerar relatório de eventos' });
     }
   }
-public async reativarSafra(req: Request, res: Response) {
-  const erros = validationResult(req);
-  if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
 
-  try {
-    const id = Number(req.params.id);
-    const safraReativada = await this.safraService.reativarSafra(id); 
-    return res.status(200).json(safraReativada);
-    
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      if (error.message === 'ACESSO_NEGADO') {
-        return res.status(403).json({ error: 'Acesso negado! Não foi possível reativar safra' });
-      } else if (error.message === 'NAO_ENCONTRADA') {
-        return res.status(404).json({ error: 'Safra não encontrada' });
-      } else if (error.message === 'NAO_REATIVADA') {
-        return res.status(422).json({ error: 'Não foi possível concluir a reativação da safra' });
-      }
-    }
-    return res.status(500).json({ error: 'Erro interno inesperado ao reativar safra' });
-  }
-}
   public async relatorioEventosTalhao(req: Request, res: Response) {
     const erros = validationResult(req);
     if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
@@ -296,9 +298,9 @@ public async reativarSafra(req: Request, res: Response) {
         idSafra: Number(req.params.idSafra),
         idTalhao: Number(req.params.idTalhao)
       };
-      
+
       const eventos = await this.safraService.listarTodosEventosTalhao(dto, req.session.idUsuario!);
-      
+
       res.status(200).json(eventos);
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -308,7 +310,7 @@ public async reativarSafra(req: Request, res: Response) {
         if (error.message === 'NAO_ENCONTRADA') {
           return res.status(404).json({ error: 'Safra não encontrada' });
         }
-        if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') { 
+        if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
           return res.status(404).json({ error: 'Propriedade não encontrada' });
         }
         if (error.message === 'ACESSO_NEGADO') {

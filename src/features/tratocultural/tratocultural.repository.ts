@@ -491,12 +491,12 @@ class TratoCulturalRepository {
   ): Promise<TratoCultural> {
     const eventoBase = tratoDB.eventosagricolas.eventos;
 
-    const safra = new Safra({
-      id: eventoBase.safras.idSafra_PK,
-      idPropriedade: eventoBase.safras.idPropriedade_FK,
-      dataInicio: eventoBase.safras.dataInicio,
-      dataFim: eventoBase.safras.dataFim,
-    });
+    const safra = new Safra(
+      eventoBase.safras.idSafra_PK, 
+      eventoBase.safras.idPropriedade_FK,
+      eventoBase.safras.dataInicio,
+      eventoBase.safras.dataFim,
+    );
 
     const transacoes: Despesa[] = [];
 

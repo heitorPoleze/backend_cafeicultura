@@ -135,7 +135,7 @@ paths:
                         example: 10
         '400':
           description: Erro de validação ou regra de negócio.
-        '401':
+        '403':
           description: Acesso negado ao cadastrar talhão nesta propriedade.
         '404':
           description: Propriedade não encontrada.
@@ -204,12 +204,10 @@ paths:
                     example: Talhão encerrado com sucesso
         '400':
           description: Erro de validação da data ou erro de regra de negócio.
-        '401':
-          description: Acesso negado; usuário não pode encerrar o talhão.
         '403':
-          description: Propriedade do talhão não encontrada.
+          description: Acesso negado; usuário não pode encerrar o talhão.
         '404':
-          description: Talhão não encontrado.
+          description: Talhão ou Propriedade não encontrada.
         '500':
           description: Erro interno ao encerrar talhão.
 
@@ -240,9 +238,9 @@ paths:
                     example: Talhão excluído com sucesso
         '400':
           description: Erro de validação ou restrição de negócio.
-        '401':
-          description: Acesso negado; usuário não pode excluir o talhão.
         '403':
+          description: Acesso negado; usuário não pode excluir o talhão.
+        '422':
           description: Talhão não pode ser excluído pois possui eventos associados.
         '404':
           description: Talhão ou propriedade não encontrados.

@@ -1,5 +1,6 @@
 import Despesa from "../../../features/despesa/despesa.entity";
 import Safra from "../../../features/safra/safra.entity";
+import Formatador from "../../utils/Formatador";
 import Pessoa from "../pessoa/pessoabase.entity";
 
 abstract class Evento {
@@ -90,14 +91,13 @@ abstract class Evento {
     };
 
     public finalizar(dataInicio: Date, dataFim: Date): void {
-        const agora = new Date().toLocaleDateString('en-US', { timeZone: 'America/Sao_Paulo' });
         if (dataInicio < this._safra.dataInicio)
             throw new Error("DATA_INICIO_ANTERIOR");
         if (dataInicio > dataFim)
             throw new Error("DATA_INICIO_SUPERIOR");
         if (dataFim < dataInicio)
             throw new Error("DATA_FIM_ANTERIOR");
-        if (dataFim > new Date(agora))
+        if (dataFim > new Date(Formatador.obterDataAtual()))
             throw new Error("DATA_FIM_SUPERIOR");
         this._dataInicio = dataInicio;
         this._dataFim = dataFim;

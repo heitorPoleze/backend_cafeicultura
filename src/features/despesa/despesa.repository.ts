@@ -6,6 +6,7 @@ import {
   FormaPagamento,
   TipoOperacao,
 } from "../../shared/domain/transacaofinanceira/transacaofinanceira.entity";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 
 const despesaInclude = {
   transacoesfinanceiras: {
@@ -249,10 +250,17 @@ class DespesaRepository {
     const executarOperacoes = async (
       clientePrisma: Prisma.TransactionClient,
     ) => {
-      await clientePrisma.despesas.delete({
+      try {
+        await clientePrisma.despesas.delete({
         where: { idTransacaoFinanceira_PFK: id },
       });
       await this.transacaoRepo.excluir(id, clientePrisma);
+      } catch (error) {
+        if (error instanceof PrismaClientKnownRequestError && error.code === 'P2003') {
+          throw new Error("DESPESA_POSSUI_ASSOCIACOES");
+        }
+        throw error;
+      }
     };
 
     if (tx) {
