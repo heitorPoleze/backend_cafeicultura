@@ -116,7 +116,7 @@ export class DespesaController {
         if (error.message === 'DESPESA_NAO_ENCONTRADA') return res.status(404).json({ error: "Despesa não encontrada" });
         if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') return res.status(404).json({ error: "Propriedade vinculada não encontrada" });
         if (error.message === 'ACESSO_NEGADO') return res.status(403).json({ error: 'Acesso negado ao excluir despesa' });
-        if (error.message === 'DESPESA_POSSUI_ASSOCIACOES') return res.status(400).json({ error: 'Despesa não pode ser excluída pois faz parte de uma compra de insumo' });
+        if (error.message === 'EXCLUSAO_NEGADA_ESTOQUE_NEGATIVO') return res.status(422).json({ error: 'Não é possível excluir a despesa pois o estoque do insumo fica negativo' });
         return res.status(400).json({ error: error.message });
       }
       return res.status(500).json({ error: 'Erro interno ao excluir despesa' });

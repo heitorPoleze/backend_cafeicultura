@@ -127,6 +127,10 @@ paths:
           description: Acesso negado.
         '404':
           description: Despesa não encontrada.
+        '422':
+          description: Não é possível excluir a despesa pois o estoque do insumo fica negativo.
+        '500':
+          description: Erro interno ao excluir despesa.
 
   /api/v1/despesas/propriedades/{idPropriedade}:
     get:
