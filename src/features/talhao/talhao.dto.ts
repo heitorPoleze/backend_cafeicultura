@@ -10,7 +10,7 @@ export type CadastrarTalhaoDTO = {
   idPropriedade: number;
   qtdPeCafe: number;
   especie: Especie;
-  variedadesIds: number[];
+  variedadesIds: number[] | null;
   dataInicio: Date;
 };
 export type BuscarTalhoesDTO = {

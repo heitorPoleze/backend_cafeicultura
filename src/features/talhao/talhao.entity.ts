@@ -17,7 +17,7 @@ class Talhao {
   private _idPropriedade: number;
   private _qtdPeCafe: number;
   private _especie: Especie;
-  private _variedadesCafe: Variedade[];
+  private _variedadesCafe: Variedade[] | null;
   private _geolocalizacao: Geolocalizacao = null;
   private _dataInicio: Date;
   private _dataFim: Date | null;
@@ -28,7 +28,7 @@ class Talhao {
     idPropriedade: number,
     qtdPeCafe: number,
     especie: Especie,
-    variedadesCafe: Variedade[],
+    variedadesCafe: Variedade[] | null,
     geolocalizacao: Geolocalizacao = null,
     dataInicio: Date,
     dataFim: Date | null = null,
@@ -86,7 +86,7 @@ class Talhao {
   public get especie(): Especie {
     return this._especie;
   };
-  public get variedadesCafe(): Variedade[] {
+  public get variedadesCafe(): Variedade[] | null {
     return this._variedadesCafe;
   };
   public get geolocalizacao(): Geolocalizacao {
