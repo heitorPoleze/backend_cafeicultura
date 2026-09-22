@@ -57,7 +57,7 @@ class TratoCulturalRepository {
     private pessoaBaseRepo: PessoaBaseRepository,
     private despesaRepo: DespesaRepository,
     private notificacaoRepo: NotificacaoRepository
-  ) {};
+  ) { };
 
   public async cadastrar(
     trato: TratoCultural,
@@ -425,10 +425,17 @@ class TratoCulturalRepository {
   };
 
   public async buscarInsumosDoTrato(idTrato: number, tx: Prisma.TransactionClient): Promise<Array<{ idInsumo_PFK: number, qtdUsada: number }>> {
-    return await tx.tratosinsumos.findMany({
+    const tratoInsumos = await tx.tratosinsumos.findMany({
       where: { idTrato_PFK: idTrato },
       select: { idInsumo_PFK: true, qtdUsada: true },
     });
+    return tratoInsumos.map(
+      tratoInsumo => ({
+        idInsumo_PFK: tratoInsumo.idInsumo_PFK,
+        qtdUsada: Number(tratoInsumo.qtdUsada)
+      }
+      )
+    );
   };
 
   public async atualizarQtdInsumoTrato(idTrato: number, idInsumo: number, novaQtdTotal: number, tx: Prisma.TransactionClient): Promise<void> {
@@ -479,7 +486,7 @@ class TratoCulturalRepository {
 
   public async excluir(trato: TratoCultural, tx: Prisma.TransactionClient = this.prisma): Promise<void> {
     await this.notificacaoRepo.excluirPorEvento(trato, tx);
-    await tx.tratosinsumos.deleteMany({where: { idTrato_PFK: trato.id }});
+    await tx.tratosinsumos.deleteMany({ where: { idTrato_PFK: trato.id } });
     await tx.tratosculturais.delete({ where: { idEventoAgricola_PFK: trato.id } });
     await this.eventoAgricolaRepo.excluir(trato, tx);
     await this.eventoRepo.excluir(trato, tx);
@@ -492,7 +499,7 @@ class TratoCulturalRepository {
     const eventoBase = tratoDB.eventosagricolas.eventos;
 
     const safra = new Safra(
-      eventoBase.safras.idSafra_PK, 
+      eventoBase.safras.idSafra_PK,
       eventoBase.safras.idPropriedade_FK,
       eventoBase.safras.dataInicio,
       eventoBase.safras.dataFim,
@@ -548,7 +555,7 @@ class TratoCulturalRepository {
           ti.insumos.medida as MedidaInsumo,
         );
 
-        const tratoInsumo = new TratoInsumo(insumo, ti.qtdUsada);
+        const tratoInsumo = new TratoInsumo(insumo, Number(ti.qtdUsada));
 
         tratoCultural.insumosUtilizados
           ? tratoCultural.insumosUtilizados.push(tratoInsumo)
