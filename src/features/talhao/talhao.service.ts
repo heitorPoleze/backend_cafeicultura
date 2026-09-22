@@ -63,13 +63,10 @@ class TalhaoService {
         dto.idPropriedade,
         dto.qtdPeCafe,
         dto.especie,
-        [], // variedades serão associadas posteriormente no repository
-        null, // Geolocalização nula por especificação
-        new Date(dto.dataInicio),
-        null, // dataFim nula no cadastro
+        new Date(dto.dataInicio)
       );
 
-      return await this.repository.cadastrar(novoTalhao, dto.variedadesIds ?? [], tx);
+      return await this.repository.cadastrar(novoTalhao, dto.variedadesIds, tx);
     });
   };
  

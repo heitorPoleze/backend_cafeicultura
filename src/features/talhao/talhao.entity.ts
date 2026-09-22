@@ -2,9 +2,9 @@ import Tamanho from "../../shared/domain/tamanho/tamanho.entity";
 import Variedade from "../../shared/domain/variedade/variedade.entity";
 
 export enum Especie {
-  Conilon = "Conilon",
-  Arabica = "Arábica",
-  Mista = "Mista"
+  CONILON = "Conilon",
+  ARABICA = "Arábica",
+  MISTA = "Mista"
 }
 
 // Tipo simplificado e ignorado por enquanto
@@ -17,10 +17,11 @@ class Talhao {
   private _idPropriedade: number;
   private _qtdPeCafe: number;
   private _especie: Especie;
-  private _variedadesCafe: Variedade[] | null;
-  private _geolocalizacao: Geolocalizacao = null;
   private _dataInicio: Date;
+  private _variedadesCafe: Variedade[] | null;
+  private _geolocalizacao: Geolocalizacao | null;
   private _dataFim: Date | null;
+
   constructor(
     id: number | undefined,
     nome: string,
@@ -28,9 +29,9 @@ class Talhao {
     idPropriedade: number,
     qtdPeCafe: number,
     especie: Especie,
-    variedadesCafe: Variedade[] | null,
-    geolocalizacao: Geolocalizacao = null,
     dataInicio: Date,
+    variedadesCafe: Variedade[] | null = null,
+    geolocalizacao: Geolocalizacao | null = null,
     dataFim: Date | null = null,
   ) {
     if (!nome || nome.trim() === "") {
@@ -38,9 +39,6 @@ class Talhao {
     };
     if (qtdPeCafe < 0) {
       throw new Error("A quantidade de pés de café não pode ser negativa.");
-    };
-    if (!variedadesCafe) {
-      throw new Error("A variedade de café é obrigatória.");
     };
     if (!dataInicio) {
       throw new Error("A data de início do talhão é obrigatória.");
@@ -62,9 +60,9 @@ class Talhao {
     this._idPropriedade = idPropriedade;
     this._qtdPeCafe = qtdPeCafe;
     this._especie = especie;
+    this._dataInicio = dataInicio;
     this._variedadesCafe = variedadesCafe;
     this._geolocalizacao = geolocalizacao;
-    this._dataInicio = dataInicio;
     this._dataFim = dataFim;
   };
 
@@ -89,7 +87,7 @@ class Talhao {
   public get variedadesCafe(): Variedade[] | null {
     return this._variedadesCafe;
   };
-  public get geolocalizacao(): Geolocalizacao {
+  public get geolocalizacao(): Geolocalizacao | null {
     return this._geolocalizacao;
   };
   public get dataInicio(): Date {
