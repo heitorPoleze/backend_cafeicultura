@@ -33,7 +33,16 @@ import Talhao from "../talhao/talhao.entity";
 import { Prisma, PrismaClient } from "@prisma/client";
 import EstoqueInsumoRepository from "../../shared/domain/insumo/estoqueinsumo/estoqueinsumo.repository";
 
+type ResultadoProcessamento =
+  | { acao: 'INSERIR'; dados: { idTrato_PFK: number; idInsumo_PFK: number; qtdUsada: number } }
+  | { acao: 'ATUALIZAR'; dados: { idInsumo_PFK: number; novaQtdTotal: number } }
+  | { acao: 'NENHUMA_MUDANCA' };
+
+type DadosInsercao = { idTrato_PFK: number; idInsumo_PFK: number; qtdUsada: number };
+type DadosAtualizacao = { idInsumo_PFK: number; novaQtdTotal: number };
+
 class TratoCulturalService {
+
   constructor(
     private prisma: PrismaClient,
     private tratoCulturalRepo: TratoCulturalRepository,
@@ -43,7 +52,81 @@ class TratoCulturalService {
     private talhaoRepo: TalhaoRepository,
     private pessoaRepo: PessoaRepository,
     private estoqueRepo: EstoqueInsumoRepository
-  ) { }
+  ) { };
+
+  private async processarItemInsumo(
+    item: { idInsumo: number; qtdUsada: number },
+    idTrato: number,
+    idPropriedade: number,
+    idUsuarioSessao: number,
+    mapaExistentes: Map<number, number>,
+    tx: Prisma.TransactionClient
+  ): Promise<ResultadoProcessamento> {
+    const insumoDomain = await this.insumoRepo.buscarPorId(item.idInsumo, idUsuarioSessao, tx);
+    if (!insumoDomain) throw new Error(`INSUMO_NAO_ENCONTRADO`);
+
+    const idInsumo = insumoDomain.id!;
+    const novaQtdTotal = item.qtdUsada;
+
+    let diferencaEstoque = 0;
+    let resultadoFinal: ResultadoProcessamento;
+
+    if (mapaExistentes.has(idInsumo)) {
+      const qtdAnterior = mapaExistentes.get(idInsumo)!;
+      diferencaEstoque = novaQtdTotal - qtdAnterior;
+
+      if (diferencaEstoque !== 0) {
+        resultadoFinal = { acao: 'ATUALIZAR', dados: { idInsumo_PFK: idInsumo, novaQtdTotal } };
+      } else {
+        resultadoFinal = { acao: 'NENHUMA_MUDANCA' };
+      }
+    } else {
+      diferencaEstoque = novaQtdTotal;
+
+      resultadoFinal = {
+        acao: 'INSERIR',
+        dados: { idTrato_PFK: idTrato, idInsumo_PFK: idInsumo, qtdUsada: novaQtdTotal }
+      };
+    }
+
+    if (diferencaEstoque !== 0) {
+      const estoque = await this.estoqueRepo.buscarEstoque(idInsumo, idPropriedade, idUsuarioSessao, tx);
+      if (estoque) {
+        if (diferencaEstoque > 0) {
+          estoque.remover(diferencaEstoque);
+        } else if (diferencaEstoque < 0) {
+          estoque.adicionar(Math.abs(diferencaEstoque));
+        }
+        await this.estoqueRepo.atualizar(estoque, tx);
+      }
+    }
+
+    return resultadoFinal;
+  }
+
+  private async salvarAlteracoesNoBanco(
+    idTrato: number,
+    novosInsumosParaInserir: DadosInsercao[],
+    insumosParaAtualizar: DadosAtualizacao[],
+    tx: Prisma.TransactionClient
+  ): Promise<void> {
+
+    if (insumosParaAtualizar.length > 0) {
+      const promessasDeAtualizacao = insumosParaAtualizar.map(atualizacao =>
+        this.tratoCulturalRepo.atualizarQtdInsumoTrato(
+          idTrato,
+          atualizacao.idInsumo_PFK,
+          atualizacao.novaQtdTotal,
+          tx
+        )
+      );
+      await Promise.all(promessasDeAtualizacao);
+    }
+
+    if (novosInsumosParaInserir.length > 0) {
+      await this.tratoCulturalRepo.inserirInsumos(novosInsumosParaInserir, tx);
+    }
+  };
 
   private async validarAcessoPropriedade(idPropriedade: number, idUsuarioSessao: number, tx: Prisma.TransactionClient): Promise<void> {
     const propriedade = await this.propriedadeRepo.buscarPorId(idPropriedade, tx);
@@ -100,7 +183,7 @@ class TratoCulturalService {
       const safra = await this.buscarEValidarSafra(dto.idSafra, tx);
       await this.validarAcessoPropriedade(safra.idPropriedade, idUsuarioSessao, tx);
       const talhao = await this.buscarEValidarTalhao(dto.idTalhao, tx);
-    
+
       if (talhao.idPropriedade !== safra.idPropriedade) throw new Error("ACESSO_NEGADO");
 
       if (!Object.values(TipoTrato).includes(dto.tipoTrato)) throw new Error("TIPO_TRATO_INVALIDO");
@@ -205,57 +288,26 @@ class TratoCulturalService {
 
       const insumosTrato = await this.tratoCulturalRepo.buscarInsumosDoTrato(idTrato, tx);
 
-      const mapaExistentes = new Map<number, number>();
-      for (const item of insumosTrato) {
-        mapaExistentes.set(item.idInsumo_PFK, Number(item.qtdUsada));
-      };
+      const mapaExistentes = new Map<number, number>(
+        insumosTrato.map(item => [item.idInsumo_PFK, Number(item.qtdUsada)])
+      );
 
-      const novosInsumosParaInserir: { idTrato_PFK: number; idInsumo_PFK: number; qtdUsada: number }[] = [];
-      const insumosParaAtualizar: { idInsumo_PFK: number; novaQtdTotal: number }[] = [];
+      const novosInsumosParaInserir: DadosInsercao[] = [];
+      const insumosParaAtualizar: DadosAtualizacao[] = [];
 
       for (const item of dto.insumos) {
-        const insumoDomain = await this.insumoRepo.buscarPorId(item.idInsumo, idUsuarioSessao, tx);
-        if (!insumoDomain) throw new Error(`INSUMO_NAO_ENCONTRADO`);
-
-        const idInsumo = insumoDomain.id!;
-        const qtdSendoAdicionada = item.qtdUsada;
-
-        if (mapaExistentes.has(idInsumo)) {
-          const qtdAnterior = mapaExistentes.get(idInsumo)!;
-          const qtdTotalAtualizada = qtdAnterior + qtdSendoAdicionada;
-
-          insumosParaAtualizar.push({
-            idInsumo_PFK: idInsumo,
-            novaQtdTotal: qtdTotalAtualizada,
-          });
-        } else {
-          novosInsumosParaInserir.push({
-            idTrato_PFK: idTrato,
-            idInsumo_PFK: idInsumo,
-            qtdUsada: qtdSendoAdicionada,
-          });
-        }
-
-        let estoque = await this.estoqueRepo.buscarEstoque(idInsumo, trato.safra.idPropriedade, idUsuarioSessao, tx);
-
-        if (estoque) {
-          estoque.remover(qtdSendoAdicionada);
-          await this.estoqueRepo.atualizar(estoque, tx);
-        };
-      };
-
-      for (const atualizacao of insumosParaAtualizar) {
-        await this.tratoCulturalRepo.atualizarQtdInsumoTrato(
-          idTrato,
-          atualizacao.idInsumo_PFK,
-          atualizacao.novaQtdTotal,
-          tx
+        const resultado = await this.processarItemInsumo(
+          item, idTrato, trato.safra.idPropriedade, idUsuarioSessao, mapaExistentes, tx
         );
-      };
 
-      if (novosInsumosParaInserir.length > 0) {
-        await this.tratoCulturalRepo.inserirInsumos(novosInsumosParaInserir, tx);
-      };
+        if (resultado.acao === 'INSERIR') {
+          novosInsumosParaInserir.push(resultado.dados);
+        } else if (resultado.acao === 'ATUALIZAR') {
+          insumosParaAtualizar.push(resultado.dados);
+        }
+      }
+
+      await this.salvarAlteracoesNoBanco(idTrato, novosInsumosParaInserir, insumosParaAtualizar, tx);
     });
   }
 

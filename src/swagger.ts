@@ -6,9 +6,9 @@ const options: swaggerJsdoc.Options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'API Cafeicultura',
-      version: '1.0.0',
-      description: 'Documentação dos endpoints do sistema de gestão de cafeicultura.',
+      title: 'API Sysgrano',
+      version: '1.0.3',
+      description: 'Documentação dos endpoints do sistema Sysgrano.',
     },
     components: {
       securitySchemes: {

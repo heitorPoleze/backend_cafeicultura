@@ -5,6 +5,26 @@ Todas as alterações notáveis neste projeto serão documentadas neste arquivo.
 O formato baseia-se em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [1.0.3] - 2026-09-22
+
+### Modificado
+
+- Atualizadas as dependências do Prisma para a versão `7.10.0`, mantendo alinhadas as versões de `prisma`, `@prisma/client` e `@prisma/adapter-mariadb`.
+- Atualizado o `@quixo3/prisma-session-store` para a versão `3.1.21`.
+- Atualizado o `cpf-cnpj-validator` para a versão `2.1.2`.
+- Atualizado o `typescript-eslint` para a versão `8.70.0`.
+- Atualizado o hiperlink para comparação entre as tags das versões.
+- Atualizado o hiperlink para os perfis do GitHub dos colaboradores.
+
+### Corrigido
+
+- Corrigidas vulnerabilidades de segurança relacionadas ao `mysql2`, com sua atualização para a versão `3.24.4`.
+- Corrigidas vulnerabilidades de segurança relacionadas ao `mariadb`, com a utilização da versão `3.4.7` por meio de `overrides`.
+
+### Removido
+
+- Removida a dependência `@types/node-cron`, pois o `node-cron` já fornece suas próprias definições de tipos.
+
 ## [1.0.2] - 2026-09-16
 
 ### Adicionado
@@ -44,9 +64,11 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 - Primeira versão da API do sistema Sysgrano.
 
-[1.0.2]: https://github.com/heitorPoleze/backend_cafeicultura/compare/v1.0.1...v1.0.2
-[1.0.1]: https://github.com/heitorPoleze/backend_cafeicultura/compare/v1.0.0...v1.0.1
-[1.0.0]: https://github.com/heitorPoleze/backend_cafeicultura/releases/tag/v1.0.0
-[@karllos-goehringer]: https://github.com/karllos-goehringer
-[@heitorPoleze]: https://github.com/heitorPoleze
-[@PedroLoriato]: https://github.com/PedroLoriato
+[1.0.3]: [https://github.com/heitorPoleze/backend_cafeicultura/compare/v1.0.2...v1.0.3](https://github.com/heitorPoleze/backend_cafeicultura/compare/v1.0.2...v1.0.3)
+[1.0.2]: [https://github.com/heitorPoleze/backend_cafeicultura/compare/v1.0.1...v1.0.2](https://github.com/heitorPoleze/backend_cafeicultura/compare/v1.0.1...v1.0.2)
+[1.0.1]: [https://github.com/heitorPoleze/backend_cafeicultura/compare/v1.0.0...v1.0.1](https://github.com/heitorPoleze/backend_cafeicultura/compare/v1.0.0...v1.0.1)
+[1.0.0]: [https://github.com/heitorPoleze/backend_cafeicultura/releases/tag/v1.0.0](https://github.com/heitorPoleze/backend_cafeicultura/releases/tag/v1.0.0)
+
+[@karllos-goehringer]: [https://github.com/karllos-goehringer](https://github.com/karllos-goehringer)
+[@heitorPoleze]: [https://github.com/heitorPoleze](https://github.com/heitorPoleze)
+[@PedroLoriato]: [https://github.com/PedroLoriato](https://github.com/PedroLoriato)

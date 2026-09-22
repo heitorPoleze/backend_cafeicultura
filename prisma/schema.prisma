@@ -47,7 +47,7 @@ model comprasinsumos {
   idCompra_PK  Int      @id @unique(map: "idCompra_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
   idInsumo_FK  Int      @db.UnsignedInt
   idDespesa_FK Int      @db.UnsignedInt
-  qtdComprada  Float
+  qtdComprada  Decimal  @db.Decimal(10, 3)
   despesas     despesas @relation(fields: [idDespesa_FK], references: [idTransacaoFinanceira_PFK], onDelete: NoAction, onUpdate: NoAction, map: "compra_despesa")
   insumos      insumos  @relation(fields: [idInsumo_FK], references: [idInsumo_PK], onDelete: NoAction, onUpdate: NoAction, map: "compra_insumo")
 
@@ -474,7 +474,7 @@ model tratosculturais {
 model tratosinsumos {
   idTrato_PFK     Int             @db.UnsignedInt
   idInsumo_PFK    Int             @db.UnsignedInt
-  qtdUsada        Float           @db.Float
+  qtdUsada        Decimal         @db.Decimal(10, 3)
   insumos         insumos         @relation(fields: [idInsumo_PFK], references: [idInsumo_PK], onDelete: NoAction, onUpdate: NoAction, map: "insumo_insumo")
   tratosculturais tratosculturais @relation(fields: [idTrato_PFK], references: [idEventoAgricola_PFK], onDelete: NoAction, onUpdate: NoAction, map: "tratocultural_tratocultural")
 
@@ -496,11 +496,12 @@ model usuarios {
 
 model variedades {
   idVariedade_PK    Int                 @unique(map: "idVariedade_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
-  descricao         String              @unique(map: "descricao_UNIQUE") @db.VarChar(20)
+  descricao         String              @db.VarChar(32)
   especie           Int                 @db.TinyInt
   variedadestalhoes variedadestalhoes[]
 
   @@id([idVariedade_PK, descricao])
+  @@index([descricao], map: "descricao_idx")
 }
 
 model variedadestalhoes {
@@ -577,7 +578,7 @@ model estoqueinsumos {
   idEstInsumo_PK   Int          @id @unique(map: "idEstInsumo_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
   idInsumo_FK      Int          @db.UnsignedInt
   idPropriedade_FK Int          @db.UnsignedInt
-  quantidade       Float
+  quantidade       Decimal      @db.Decimal(10, 3)
   insumos          insumos      @relation(fields: [idInsumo_FK], references: [idInsumo_PK], onDelete: NoAction, onUpdate: NoAction, map: "estoque_insumo")
   propriedades     propriedades @relation(fields: [idPropriedade_FK], references: [idPropriedade_PK], onDelete: NoAction, onUpdate: NoAction, map: "estoque_propriedade")
 

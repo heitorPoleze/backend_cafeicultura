@@ -73,7 +73,7 @@ class EstoqueInsumoRepository {
             },
         });
         if (!estoqueInsumoDB) return null;
-        return new EstoqueInsumo(estoqueInsumoDB.idEstInsumo_PK, estoqueInsumoDB.idInsumo_FK, estoqueInsumoDB.idPropriedade_FK, estoqueInsumoDB.quantidade);
+        return new EstoqueInsumo(estoqueInsumoDB.idEstInsumo_PK, estoqueInsumoDB.idInsumo_FK, estoqueInsumoDB.idPropriedade_FK, Number(estoqueInsumoDB.quantidade));
     };
 
     async atualizar(estoqueInsumo: EstoqueInsumo, tx: Prisma.TransactionClient): Promise<void> {
