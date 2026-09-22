@@ -16,7 +16,10 @@ type TalhaoCompleto = Prisma.talhoesGetPayload<{
 class TalhaoRepository {
   constructor(private prisma: PrismaClient) { };
 
-  async cadastrar(talhao: Talhao, variedadesIds: number[], tx: Prisma.TransactionClient = this.prisma): Promise<number> {
+  async cadastrar(talhao: Talhao, variedadesIds: number[] | null, tx: Prisma.TransactionClient = this.prisma): Promise<number> {
+    if(variedadesIds === null || variedadesIds.length === 0) {
+      variedadesIds = [0]; 
+    }
     const talhaoDb = await tx.talhoes.create({
       data: {
         nome: talhao.nome,

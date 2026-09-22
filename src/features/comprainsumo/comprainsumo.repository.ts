@@ -128,7 +128,7 @@ class CompraInsumoRepository {
       compraDB.idCompra_PK,
       insumo,
       despesa,
-      compraDB.qtdComprada
+      Number(compraDB.qtdComprada)
     );
   }
 }

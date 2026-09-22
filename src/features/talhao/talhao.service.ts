@@ -69,7 +69,7 @@ class TalhaoService {
         null, // dataFim nula no cadastro
       );
 
-      return await this.repository.cadastrar(novoTalhao, dto.variedadesIds, tx);
+      return await this.repository.cadastrar(novoTalhao, dto.variedadesIds ?? [], tx);
     });
   };
  
