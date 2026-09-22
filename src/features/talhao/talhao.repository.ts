@@ -13,13 +13,22 @@ type TalhaoCompleto = Prisma.talhoesGetPayload<{
   };
 }>;
 
+const mapaEspecies: Record<string, Especie> = {
+  "Arábica": Especie.ARABICA,
+  "Conilon": Especie.CONILON,
+  "Mista": Especie.MISTA
+};
+
+const mapaEspeciesPorId: Record<number, Especie> = {
+  0: Especie.ARABICA,
+  1: Especie.CONILON,
+  2: Especie.MISTA
+};
+
 class TalhaoRepository {
   constructor(private prisma: PrismaClient) { };
 
   async cadastrar(talhao: Talhao, variedadesIds: number[] | null, tx: Prisma.TransactionClient = this.prisma): Promise<number> {
-    if(variedadesIds === null || variedadesIds.length === 0) {
-      variedadesIds = [0]; 
-    }
     const talhaoDb = await tx.talhoes.create({
       data: {
         nome: talhao.nome,
@@ -37,11 +46,13 @@ class TalhaoRepository {
             medida: talhao.tamanho.medida,
           },
         },
-        variedadestalhoes: {
-          create: variedadesIds.map((id) => ({
-            idVariedade_PFK: id,
-          })),
-        },
+        ...(variedadesIds ? {
+          variedadestalhoes: {
+            create: variedadesIds.map((id) => ({
+              idVariedade_PFK: id,
+            })),
+          },
+        } : {}),
       },
       include: {
         tamanhos: true,
@@ -74,26 +85,26 @@ class TalhaoRepository {
       },
     });
 
-    return talhoesDb.map((db) => this.mapToDomain(db));
+    return talhoesDb.map((db) => this.mapToEntity(db));
   }
-public async buscarEventosPosterioresEncerramento(
-  talhaoId: number,
-  dataFechamento: Date,
-) {
-  const eventosPosteriores = await this.prisma.eventosagricolas.findMany({
-    where: {
-      idTalhao_FK: talhaoId,
-      eventos: {
-        dataInicio: { gt: dataFechamento },
+  public async buscarEventosPosterioresEncerramento(
+    talhaoId: number,
+    dataFechamento: Date,
+  ) {
+    const eventosPosteriores = await this.prisma.eventosagricolas.findMany({
+      where: {
+        idTalhao_FK: talhaoId,
+        eventos: {
+          dataInicio: { gt: dataFechamento },
+        },
       },
-    },
-    include: {
-      eventos: true,
-    },
-  });
+      include: {
+        eventos: true,
+      },
+    });
 
-  return eventosPosteriores;
-}
+    return eventosPosteriores;
+  }
 
   public async buscarFinalizadosPorPropriedade(
     idPropriedade: number, pagina: number, limite: number
@@ -119,7 +130,7 @@ public async buscarEventosPosterioresEncerramento(
     return {
       pagina,
       limite,
-      dados: talhoesDb.map((db) => this.mapToDomain(db))
+      dados: talhoesDb.map((db) => this.mapToEntity(db))
     };
   }
 
@@ -147,7 +158,7 @@ public async buscarEventosPosterioresEncerramento(
     return {
       pagina,
       limite,
-      dados: talhoesDb.map((db) => this.mapToDomain(db))
+      dados: talhoesDb.map((db) => this.mapToEntity(db))
     };
   }
   async buscarPorId(id: number, tx: Prisma.TransactionClient = this.prisma): Promise<Talhao | null> {
@@ -164,7 +175,7 @@ public async buscarEventosPosterioresEncerramento(
     });
 
     if (!talhaoDb) return null;
-    return this.mapToDomain(talhaoDb);
+    return this.mapToEntity(talhaoDb);
   }
 
   async encerrar(talhao: Talhao): Promise<void> {
@@ -207,20 +218,23 @@ public async buscarEventosPosterioresEncerramento(
     return variedades.map((variedade) => ({
       id: variedade.idVariedade_PK,
       descricao: variedade.descricao,
-      especie: variedade.especie === 0 ? Especie.Arabica : variedade.especie === 1 ? Especie.Conilon : Especie.Mista
+      especie: mapaEspeciesPorId[variedade.especie],
     }));
   }
 
-  private mapToDomain(db: TalhaoCompleto): Talhao {
+  private mapToEntity(db: TalhaoCompleto): Talhao {
     const tamanhoDomain = new Tamanho(
       Number(db.tamanhos.valor),
       db.tamanhos.medida as "m2" | "hectare",
       db.tamanhos.idTamanho_PK,
     );
 
-    const descricoesVariedades = db.variedadestalhoes.map(
-      (vt) => new Variedade(vt.variedades.idVariedade_PK, vt.variedades.descricao, vt.variedades.especie === 0 ? Especie.Arabica : vt.variedades.especie === 1 ? Especie.Conilon : Especie.Mista)
-    );
+    const descricoesVariedades = db.variedadestalhoes ?
+      db.variedadestalhoes.map((vt) => new Variedade(
+        vt.variedades.idVariedade_PK,
+        vt.variedades.descricao,
+        mapaEspeciesPorId[vt.variedades.especie],
+      )) : null;
 
     return new Talhao(
       db.idTalhao_PK,
@@ -228,11 +242,11 @@ public async buscarEventosPosterioresEncerramento(
       tamanhoDomain,
       db.idPropriedade_FK,
       db.qtdPeCafe,
-      db.especie as Especie,
+      mapaEspecies[db.especie],
+      db.dataInicio,
       descricoesVariedades,
       null,
-      db.dataInicio,
-      db.dataFim,
+      db.dataFim
     );
   }
 }

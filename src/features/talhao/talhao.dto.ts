@@ -1,6 +1,5 @@
 import Talhao, { Especie } from './talhao.entity';
 
-
 export type CadastrarTalhaoDTO = {
   nome: string;
   tamanho: {
@@ -10,9 +9,10 @@ export type CadastrarTalhaoDTO = {
   idPropriedade: number;
   qtdPeCafe: number;
   especie: Especie;
-  variedadesIds: number[] | null;
   dataInicio: Date;
+  variedadesIds: number[] | null;
 };
+
 export type BuscarTalhoesDTO = {
   idPropriedade: number;
   pagina: number;

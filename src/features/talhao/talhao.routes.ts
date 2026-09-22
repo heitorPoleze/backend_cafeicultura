@@ -25,6 +25,10 @@ router.post(
     body('tamanho.valor').isFloat({ gt: 0 }).withMessage('O valor do tamanho deve ser um número maior que zero.'),
     body('tamanho.medida').isIn(['m2', 'hectare']).withMessage('A medida do tamanho deve ser estritamente "m2" ou "hectare".'),
     body('especie').isIn(['Conilon', 'Arábica']).withMessage('A espécie deve ser estritamente Conilon ou Arábica.'),
+    body('variedadesIds').optional({ values: 'null' }).isArray().withMessage('As variedades devem ser enviadas em formato de lista.'),
+    body('variedadesIds.*')
+      .isNumeric({ no_symbols: true }).withMessage('ID da variedade inválido.')
+      .isInt({ gt: 0 }).withMessage('ID deve ser um número inteiro maior que zero.')
   ],
   talhaoController.cadastrar.bind(talhaoController)
 );
