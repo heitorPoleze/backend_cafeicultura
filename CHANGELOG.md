@@ -15,15 +15,21 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - Atualizado o `typescript-eslint` para a versão `8.70.0`.
 - Atualizado o hiperlink para comparação entre as tags das versões.
 - Atualizado o hiperlink para os perfis do GitHub dos colaboradores.
+- Refatorado o cálculo do estoque de insumos, aprimorando a forma como as movimentações de entrada, saída e estorno são processadas.
+- Alterados os atributos `qtdUsada` de `tratosinsumos`, `qtdCompra` de `comprasinsumos` e `quantidade` de `estoqueinsumos` de `DOUBLE` para `DECIMAL(10,3)`, garantindo maior precisão no armazenamento e nos cálculos das quantidades de insumos.
 
 ### Corrigido
 
-- Corrigidas vulnerabilidades de segurança relacionadas ao `mysql2`, com sua atualização para a versão `3.24.4`.
-- Corrigidas vulnerabilidades de segurança relacionadas ao `mariadb`, com a utilização da versão `3.4.7` por meio de `overrides`.
+- Corrigido o cálculo do estoque de insumos, que apresentava inconsistências na atualização das quantidades durante determinadas operações de movimentação e estorno.
 
 ### Removido
 
 - Removida a dependência `@types/node-cron`, pois o `node-cron` já fornece suas próprias definições de tipos.
+
+### Segurança
+
+- Corrigidas vulnerabilidades de segurança relacionadas ao `mysql2`, com sua atualização para a versão `3.24.4`.
+- Corrigidas vulnerabilidades de segurança relacionadas ao `mariadb`, com a utilização da versão `3.4.7` por meio de `overrides`.
 
 ## [1.0.2] - 2026-09-16
 
