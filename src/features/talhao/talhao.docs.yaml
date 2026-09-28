@@ -368,3 +368,49 @@ paths:
           description: ID de propriedade inválido.
         '500':
           description: Erro interno ao buscar talhões finalizados.
+  /api/v1/talhoes/{id}/editar-data-inicio/
+    patch:
+      summary: Edita a data de início de um talhão
+      tags:
+        - Talhões
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID do talhão.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - dataInicio
+              properties:
+                dataInicio:
+                  type: string
+                  format: date-time
+                  example: 2026-01-20T00:00:00.000Z
+      responses:
+        '200':
+          description: Data de início do talhão atualizada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Data de início do talhão atualizada com sucesso
+        '400':
+          description: Erro de validação da data ou erro de regra de negócio.
+        '403':
+          description: Acesso negado; usuário não pode editar o talhão.
+        '404':
+          description: Talhão ou Propriedade não encontrada.
+        '500':
+          description: Erro interno ao atualizar a data de início do talhão.
