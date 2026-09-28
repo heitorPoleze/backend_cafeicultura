@@ -149,6 +149,13 @@ class TalhaoService {
       talhoes: resultado.dados
     };
   }
+  public async editarDataInicio(idTalhao: number, novaDataInicio: Date): Promise<void> {
+    const talhao = await this.repository.buscarPorId(idTalhao);
+    if (!talhao) {
+      throw new Error('NAO_ENCONTRADO');
+    }
+    await this.repository.editarDataInicio(talhao, novaDataInicio);
 };
+}
 
 export default TalhaoService;

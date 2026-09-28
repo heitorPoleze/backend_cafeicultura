@@ -84,5 +84,14 @@ router.get(
   ],
   talhaoController.finalizadosPorPropriedade.bind(talhaoController)
 );
+router.patch(
+  '/:id/editar-data-inicio',
+  exigeLogin(),
+  [
+    param('id').isInt().withMessage('O ID do talhão deve ser um número inteiro.'),
+    body('dataInicio').isISO8601().withMessage('A data de início é obrigatória para editar o início do talhão.'),
+  ],
+  talhaoController.editarDataInicio.bind(talhaoController)
+);
 
 export default router;

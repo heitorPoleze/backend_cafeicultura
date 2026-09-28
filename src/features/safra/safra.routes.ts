@@ -117,6 +117,15 @@ router.patch(
   ],
   safraController.reativarSafra.bind(safraController)
 );
+router.patch(
+  '/:id/editar-data-inicio',
+  exigeLogin(),
+  [
+    param('id').isInt().withMessage('O ID da safra deve ser um número inteiro.'),
+    body('dataInicio').isISO8601().withMessage('A data de início é obrigatória para editar o início da safra.'),
+  ],
+  safraController.editarDataInicio.bind(safraController)
+);
 router.delete(
   '/:id',
   exigeLogin(),

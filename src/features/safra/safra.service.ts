@@ -158,8 +158,26 @@ export class SafraService {
       await this.safraRepository.excluir(safra, tx);
     });
   };
+  public async editarDataInicio(idSafra: number, novaDataInicio: Date, idUsuarioSessao: number): Promise<SafraRespostaDTO> {
+    return await this.prisma.$transaction(async (tx) => {
+      const safra = await this.safraRepository.buscarPorId(idSafra, tx);
+      if (!safra) {
+        throw new Error("NAO_ENCONTRADA");
+      }
+      const propriedade = await this.propriedadeRepo.buscarPorId(safra.idPropriedade, tx);
+      if (!propriedade) {
+        throw new Error('NAO_ENCONTRADA');
+      }
+      if (propriedade.idProprietario !== idUsuarioSessao) {
+        throw new Error('ACESSO_NEGADO');
+      }
+      
+      //buscar eventos da safra e ver se algum evento ficaria de fora do range da data de inicio da safra
 
-  // ---- Relatórios -----
+      await this.safraRepository.editarDataInicio(safra,novaDataInicio, tx);
+      return safra.toJSON();
+    });
+  }
 
   public async gerarRelatorioFinanceiro(dto: BuscarRelatorioFinanceiroSafraDTO, idUsuarioSessao: number): Promise<RelatorioFinanceiroSafraDTO> {
     const propriedade = await this.propriedadeRepo.buscarPorId(dto.idPropriedade);

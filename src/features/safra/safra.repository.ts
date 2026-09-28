@@ -64,7 +64,7 @@ export class SafraRepository {
 
     return new Safra(data.idSafra_PK, data.idPropriedade_FK, data.dataInicio, data.dataFim);
   }
-  
+
   public async finalizar(safra: Safra, tx: Prisma.TransactionClient = this.prisma): Promise<void> {
     if (!safra.id) throw new Error("ID_OBRIGATORIO");
 
@@ -87,6 +87,31 @@ export class SafraRepository {
       }
       throw error;
     }
+  }
+  public async editarDataInicio(safra: Safra, novaDataInicio: Date, tx: Prisma.TransactionClient = this.prisma) {
+    const eventoConflitante = await tx.eventos.findFirst({
+      where: {
+        idSafra_FK: safra.id,
+        dataInicio: {
+          lt: novaDataInicio 
+        }
+      },
+      select: {
+        idEvento_PK: true,
+        dataInicio: true
+      }
+    });
+    if (eventoConflitante) {
+      throw new Error(
+        `ERRO_DATA_CONFLITANTE`
+      );
+    }
+    const safraAtualizada = await tx.safras.update({
+      where: { idSafra_PK: safra.id },
+      data: { dataInicio: novaDataInicio }
+    });
+
+    return safraAtualizada;
   }
 }
 
