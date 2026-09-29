@@ -463,3 +463,52 @@ paths:
           description: Propriedade não encontrada.
         '500':
           description: Erro interno inesperado ao buscar safras.
+    /api/v1/safras/:id/editar-data-inicio:
+      patch:
+        summary: Edita a data de início de uma safra
+        description: Permite alterar a data de início de uma safra ativa, desde que não haja eventos vinculados.
+        tags:
+          - Safras
+        security:
+          - cookieAuth: []
+        parameters:
+          - in: path
+            name: id
+            required: true
+            schema:
+              type: integer
+            description: ID numérico da safra.
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - dataInicio
+                properties:
+                  dataInicio:
+                    type: string
+                    format: date-time
+                    example: 2026-06-23T00:00:00.000Z
+        responses:
+          '200':
+            description: Data de início da safra atualizada com sucesso.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    mensagem:
+                      type: string
+                      example: Data de início da safra atualizada com sucesso
+          '400':
+            description: Erro de validação da data.
+          '403':
+            description: Acesso negado ou não é possível editar a data de início com eventos vinculados.
+          '404':
+            description: Safra ou propriedade não encontrada.
+          '422':
+            description: Erro de processamento (data início futura ou inválida).
+          '500':
+            description: Erro interno inesperado ao atualizar a data de início da safra.

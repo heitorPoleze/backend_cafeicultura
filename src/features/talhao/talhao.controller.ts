@@ -158,7 +158,31 @@ export class TalhaoController {
       }
     }
   }
+    public async editarDataInicio(req: Request, res: Response) {
+      const erros = validationResult(req);
+      if (!erros.isEmpty()) {
+        return res.status(400).json({ erros: erros.array() });
+      }
+      try {
+        const idTalhao = Number(req.params.id);
+        const novaDataInicio = new Date(req.body.dataInicio);
 
+        await this.talhaoService.editarDataInicio(idTalhao, novaDataInicio);
+        res.status(200).json({ message: 'Data de início do talhão atualizada com sucesso' });
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          if (error.message === 'ACESSO_NEGADO') {
+            return res.status(403).json({ error: 'Acesso negado! Não foi possível editar a data de início do talhão' });
+          } else if (error.message === 'NAO_ENCONTRADO') {
+            return res.status(404).json({ error: 'Talhão não encontrado' });
+          }
+            else if (error.message === 'ERRO_DATA_CONFLITANTE') {
+              return res.status(409).json({ error: 'Não é possível atualizar a data de início do talhão, pois existem eventos com data de início anterior à nova data informada.' });
+            }
+          return res.status(400).json({ error: error.message });
+        }
+    }
+  }
 }
 
 export default TalhaoController;

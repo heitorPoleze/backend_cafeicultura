@@ -249,6 +249,37 @@ class TalhaoRepository {
       db.dataFim
     );
   }
+  public async editarDataInicio(talhao: Talhao, novaDataInicio: Date, tx: Prisma.TransactionClient = this.prisma): Promise<void> {
+    if (!talhao.id) throw new Error("ID do talhão é obrigatório.");
+
+    const eventoConflitante = await tx.eventosagricolas.findFirst({
+      where: {
+        idTalhao_FK: talhao.id,
+        eventos: {
+          dataInicio: {
+            lt: novaDataInicio
+          }
+        }
+      },
+      select: {
+        idEvento_PFK: true,
+        eventos: {
+          select: {
+            dataInicio: true
+          }
+        }
+      }
+    });
+    if (eventoConflitante) {
+      throw new Error("ERRO_DATA_CONFLITANTE");
+    }
+
+    await tx.talhoes.update({
+      where: { idTalhao_PK: talhao.id },
+      data: {
+        dataInicio: novaDataInicio,}
+    });
+  }
 }
 
 export default TalhaoRepository;
