@@ -10,7 +10,8 @@ paths:
       tags:
         - Notificações
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       responses:
         "200":
           description: Lista de notificações retornada com sucesso.
@@ -30,7 +31,8 @@ paths:
       tags:
         - Notificações
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       responses:
         "200":
           description: Lista de notificações não lidas retornada com sucesso.
@@ -50,7 +52,8 @@ paths:
       tags:
         - Notificações
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -80,7 +83,8 @@ paths:
       tags:
         - Notificações
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -110,7 +114,8 @@ paths:
       tags:
         - Notificações
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       requestBody:
         required: true
         content:

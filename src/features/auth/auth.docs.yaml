@@ -9,7 +9,6 @@ paths:
       description: Autentica um usuário usando email, cpf ou cnpj e retorna o cookie de sessão. Rota PÚBLICA (não requer autenticação prévia).
       tags: 
         - Autenticação
-      security: [] # Array vazio indica que a rota não precisa do cookie global
       requestBody:
         required: true
         content:
@@ -70,7 +69,8 @@ paths:
       tags: 
         - Autenticação
       security:
-        - cookieAuth: [] # Indica que precisa do cookie configurado no swagger.ts
+        - ApiKeyAuth: []
+          cookieAuth: []
       responses:
         '200':
           description: Logout realizado com sucesso. O cookie será limpo.

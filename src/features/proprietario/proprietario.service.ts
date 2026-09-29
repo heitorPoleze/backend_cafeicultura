@@ -149,7 +149,7 @@ export default class ProprietarioService {
     await this.prisma.$transaction(async (tx) => {
       await this.validarProprietario(pessoaId, idUsuario, tx);
       if (await this.usuarioRepo.verificarEmailExistente(email, tx)) {
-        throw new Error(`O e-mail ${email} já está em uso.`);
+        throw new Error(`EMAIL_EXISTENTE`);
       }
       await this.repo.updateEmailProprietario(email, pessoaId, tx);
     });
@@ -159,7 +159,7 @@ export default class ProprietarioService {
     await this.prisma.$transaction(async (tx) => {
       await this.validarProprietario(pessoaId, idUsuario, tx);
       if (await this.usuarioRepo.verificarTelefoneExistente(telefone, tx)) {
-        throw new Error(`O telefone ${telefone} já está em uso.`);
+        throw new Error(`TELEFONE_EXISTENTE`);
       }
       await this.repo.updateTelefoneProprietario(telefone, pessoaId, tx);
     });

@@ -15,7 +15,7 @@ export type CadastrarCompraInsumoDTO = {
   idEvento: number | null;
   beneficiado: number;
   valor: number;
-  descricao: string;
+  descricao: string | undefined;
   formaPagamento: FormaPagamento;
   tipoOperacao: TipoOperacao; 
 }

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { body, param, query } from 'express-validator';
-import exigeLogin from "../../shared/middlewares/exigeLogin"; 
+import exigeLogin from "../../shared/middlewares/exigeLogin";
 import CompraInsumoController from './comprainsumo.controller';
 import CompraInsumoService from './comprainsumo.service';
 
@@ -11,7 +11,7 @@ import PessoaRepository from '../../shared/domain/pessoa/pessoa.repository';
 import FornecedorRepository from '../../shared/domain/pessoa/fornecedor/fornecedor.repository';
 import InsumoRepository from '../../shared/domain/insumo/insumo.repository';
 import TransacaoFinanceiraRepository from '../../shared/domain/transacaofinanceira/transacaofinanceira.repository';
-import { prisma } from "../../shared/config/database"; 
+import { prisma } from "../../shared/config/database";
 import { FormaPagamento, TipoOperacao } from '../../shared/domain/transacaofinanceira/transacaofinanceira.entity';
 import EstoqueInsumoRepository from '../../shared/domain/insumo/estoqueinsumo/estoqueinsumo.repository';
 import InsumoService from '../insumo/insumo.service';
@@ -32,12 +32,12 @@ const insumoService = new InsumoService(prisma, insumoRepo, estoqueRepo);
 const despesaService = new DespesaService(prisma, despesaRepo, propriedadeRepo, pessoaRepo, compraRepo, estoqueRepo);
 
 const compraInsumoService = new CompraInsumoService(
-  prisma, 
+  prisma,
   insumoService,
   despesaService,
-  compraRepo, 
-  propriedadeRepo, 
-  fornecedorRepo, 
+  compraRepo,
+  propriedadeRepo,
+  fornecedorRepo,
   insumoRepo,
   estoqueRepo
 );
@@ -85,7 +85,8 @@ router.post(
     body('idEvento').optional({ nullable: true }).isInt({ gt: 0 }).withMessage('O ID do evento deve ser numérico, se fornecido.'),
     body('beneficiado').isInt({ gt: 0 }).withMessage('ID do fornecedor (beneficiado) inválido.'),
     body('valor').isFloat({ gt: 0 }).withMessage('O valor da despesa deve ser maior que zero.'),
-    body('descricao').notEmpty().withMessage('A descrição da compra é obrigatória.').isLength({ min: 3 }),
+    body('descricao').optional().isString().withMessage('A descrição da compra deve ser um texto')
+      .isLength({ min: 3, max: 255 }).withMessage("Descrição deve conter entre 3 a 255 caracteres"),
     body('formaPagamento').isIn(Object.values(FormaPagamento)).withMessage('Forma de pagamento inválida.'),
     body('tipoOperacao').isIn(Object.values(TipoOperacao)).withMessage('Tipo de operação inválido.')
   ],

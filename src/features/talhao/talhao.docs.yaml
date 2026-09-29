@@ -109,7 +109,8 @@ paths:
       tags:
         - Talhões
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       requestBody:
         required: true
         content:
@@ -150,7 +151,8 @@ paths:
       tags:
         - Talhões
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       responses:
         '200':
           description: Lista de variedades retornada com sucesso.
@@ -170,7 +172,8 @@ paths:
       tags:
         - Talhões
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -217,7 +220,8 @@ paths:
       tags:
         - Talhões
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -253,7 +257,8 @@ paths:
       tags:
         - Talhões
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: idPropriedade
@@ -287,7 +292,8 @@ paths:
       tags:
         - Talhões
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: idPropriedade
@@ -331,7 +337,8 @@ paths:
       tags:
         - Talhões
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: idPropriedade
