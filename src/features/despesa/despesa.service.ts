@@ -36,7 +36,7 @@ class DespesaService {
     const cadastrarDespesa = async (tx: Prisma.TransactionClient, compraInsumo: boolean = false) => {
       const pessoa = await this.pessoaRepo.buscarPorId(dto.beneficiado, tx);
       if (!pessoa) throw new Error("PESSOA_NAO_ENCONTRADA");
-      const despesa = new Despesa(undefined, dto.idEvento, dto.idPropriedade, new Date(), dto.valor, dto.formaPagamento, dto.tipoOperacao, pessoa, dto.descricao);
+      const despesa = new Despesa(undefined, dto.idEvento, dto.idPropriedade, new Date(), dto.valor, dto.formaPagamento, dto.tipoOperacao, pessoa, dto.descricao || "");
       return await this.repo.cadastrar(despesa, tx, compraInsumo);
     };
 

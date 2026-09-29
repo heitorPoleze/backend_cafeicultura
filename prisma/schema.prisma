@@ -70,7 +70,7 @@ model consultorestecnicos {
 
 model despesas {
   idTransacaoFinanceira_PFK Int                   @id @unique(map: "idTransacaoFinanceira_PFK_UNIQUE") @db.UnsignedInt
-  descricao                 String                @db.VarChar(50)
+  descricao                 String                @db.VarChar(255)
   comprasinsumos            comprasinsumos[]
   transacoesfinanceiras     transacoesfinanceiras @relation(fields: [idTransacaoFinanceira_PFK], references: [idTransacaoFinanceira_PK], onDelete: NoAction, onUpdate: NoAction, map: "despesa_transacao")
 }
@@ -130,7 +130,7 @@ model eventos {
   dataCadastro          DateTime                @db.DateTime(0)
   dataInicio            DateTime                @db.DateTime(0)
   dataFim               DateTime?               @db.DateTime(0)
-  descricao             String                  @db.VarChar(50)
+  descricao             String                  @db.VarChar(255)
   safras                safras                  @relation(fields: [idSafra_FK], references: [idSafra_PK], onDelete: NoAction, onUpdate: NoAction, map: "evento_safra")
   eventosagricolas      eventosagricolas?
   notificacoes          notificacoes[]

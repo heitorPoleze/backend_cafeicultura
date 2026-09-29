@@ -198,7 +198,7 @@ class TratoCulturalService {
           if (!pessoa) throw new Error("PESSOA_NAO_ENCONTRADA");
           return new Despesa(
             undefined, null, despesa.idPropriedade, new Date(), despesa.valor,
-            despesa.formaPagamento, despesa.tipoOperacao, pessoa, despesa.descricao,
+            despesa.formaPagamento, despesa.tipoOperacao, pessoa, despesa.descricao || "",
           )
         })) : [];
 

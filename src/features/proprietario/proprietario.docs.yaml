@@ -211,7 +211,6 @@ paths:
       description: Rota pública para registro inicial do usuário no sistema. Pode ser Pessoa Física ou Jurídica.
       tags: 
         - Proprietários
-      security: [] # Rota pública, não exige cookie
       requestBody:
         required: true
         content:
@@ -243,7 +242,8 @@ paths:
       tags: 
         - Proprietários
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -279,7 +279,8 @@ paths:
       tags: 
         - Proprietários
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -315,7 +316,8 @@ paths:
       tags: 
         - Proprietários
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -342,7 +344,8 @@ paths:
       tags:
         - Proprietários
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -369,7 +372,8 @@ paths:
       tags:
         - Proprietários
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -405,7 +409,8 @@ paths:
       tags:
         - Proprietários
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -441,7 +446,8 @@ paths:
       tags:
         - Proprietários
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -477,7 +483,8 @@ paths:
       tags:
         - Proprietários
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -513,7 +520,8 @@ paths:
       tags:
         - Proprietários
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -537,7 +545,8 @@ paths:
       tags:
         - Proprietários
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id

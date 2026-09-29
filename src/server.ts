@@ -4,7 +4,6 @@ import { Request, Response } from "express";
 import app from "./app";
 import { sessMiddleware } from "./shared/middlewares/sessao";
 import { testarConexao } from "./shared/config/database";
-import setupSwagger from './swagger';
 import { GerenciadorWebSocket, RequisicaoComSessao } from './shared/websocket/websocket.manager';
 import { iniciarCronJobs } from './shared/cron/cron.service';
 
@@ -12,8 +11,6 @@ const PORT = process.env.PORT || 3333;
 
 async function iniciarServidor(): Promise<void> {
   await testarConexao();
-  
-  setupSwagger(app);
 
   const server = http.createServer(app);
 

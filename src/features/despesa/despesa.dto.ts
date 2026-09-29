@@ -8,7 +8,7 @@ export type CriarDespesaDTO  = {
     formaPagamento: FormaPagamento;
     tipoOperacao: TipoOperacao;
     beneficiado: number;
-    descricao: string;
+    descricao?: string;
 };
 
 export type RespostaDespesaDTO = {
