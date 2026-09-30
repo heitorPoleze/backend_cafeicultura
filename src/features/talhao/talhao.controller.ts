@@ -177,7 +177,7 @@ export class TalhaoController {
             return res.status(404).json({ error: 'Talhão não encontrado' });
           }
             else if (error.message === 'ERRO_DATA_CONFLITANTE') {
-              return res.status(409).json({ error: 'Não é possível atualizar a data de início do talhão, pois existem eventos com data de início anterior à nova data informada.' });
+              return res.status(409).json({ error: 'Já existem atividades que ocorreram nesse talhão em datas anteriores' });
             }
           return res.status(400).json({ error: error.message });
         }

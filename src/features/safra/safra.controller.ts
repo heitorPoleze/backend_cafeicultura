@@ -200,7 +200,7 @@ class SafraController {
           return res.status(403).json({ error: 'Acesso negado! Não foi possível editar a data de início da safra' });
         }
         if (error.message === 'ERRO_DATA_CONFLITANTE'){
-          return res.status(422).json({ error: 'A nova data de início da safra não pode ser posterior à data de início de eventos já cadastrados para esta safra' });
+          return res.status(422).json({ error: 'Já existem atividades que ocorreram nessa safra em datas anteriores' });
         }
       }
     }
