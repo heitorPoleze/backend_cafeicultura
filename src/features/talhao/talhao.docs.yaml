@@ -109,7 +109,8 @@ paths:
       tags:
         - Talhões
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       requestBody:
         required: true
         content:
@@ -150,7 +151,8 @@ paths:
       tags:
         - Talhões
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       responses:
         '200':
           description: Lista de variedades retornada com sucesso.
@@ -170,7 +172,8 @@ paths:
       tags:
         - Talhões
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -210,165 +213,8 @@ paths:
           description: Talhão ou Propriedade não encontrada.
         '500':
           description: Erro interno ao encerrar talhão.
-
-  /api/v1/talhoes/{id}:
-    delete:
-      summary: Exclui logicamente um talhão
-      tags:
-        - Talhões
-      security:
-        - cookieAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-          description: ID do talhão.
-      responses:
-        '200':
-          description: Talhão excluído com sucesso.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: Talhão excluído com sucesso
-        '400':
-          description: Erro de validação ou restrição de negócio.
-        '403':
-          description: Acesso negado; usuário não pode excluir o talhão.
-        '422':
-          description: Talhão não pode ser excluído pois possui eventos associados.
-        '404':
-          description: Talhão ou propriedade não encontrados.
-        '500':
-          description: Erro interno ao excluir talhão.
-
-  /api/v1/talhoes/propriedade/abertos/{idPropriedade}:
-    get:
-      summary: Lista os talhões abertos de uma propriedade
-      tags:
-        - Talhões
-      security:
-        - cookieAuth: []
-      parameters:
-        - in: path
-          name: idPropriedade
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Talhões abertos retornados com sucesso.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  talhoes:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/TalhaoResumo'
-                  pagina:
-                    type: integer
-                  limite:
-                    type: integer
-        '400':
-          description: ID de propriedade inválido.
-        '500':
-          description: Erro interno ao buscar talhões ativos.
-
-  /api/v1/talhoes/propriedade/todos/{idPropriedade}:
-    get:
-      summary: Lista todos os talhões de uma propriedade
-      tags:
-        - Talhões
-      security:
-        - cookieAuth: []
-      parameters:
-        - in: path
-          name: idPropriedade
-          required: true
-          schema:
-            type: integer
-        - in: query
-          name: pagina
-          schema:
-            type: integer
-            default: 1
-        - in: query
-          name: limite
-          schema:
-            type: integer
-            default: 10
-      responses:
-        '200':
-          description: Talhões retornados com sucesso.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  talhoes:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/TalhaoResumo'
-                  pagina:
-                    type: integer
-                  limite:
-                    type: integer
-        '400':
-          description: ID de propriedade inválido.
-        '500':
-          description: Erro interno ao buscar talhões.
-
-  /api/v1/talhoes/propriedade/finalizados/{idPropriedade}:
-    get:
-      summary: Lista os talhões finalizados de uma propriedade
-      tags:
-        - Talhões
-      security:
-        - cookieAuth: []
-      parameters:
-        - in: path
-          name: idPropriedade
-          required: true
-          schema:
-            type: integer
-        - in: query
-          name: pagina
-          schema:
-            type: integer
-            default: 1
-        - in: query
-          name: limite
-          schema:
-            type: integer
-            default: 10
-      responses:
-        '200':
-          description: Talhões finalizados retornados com sucesso.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  talhoes:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/TalhaoResumo'
-                  pagina:
-                    type: integer
-                  limite:
-                    type: integer
-        '400':
-          description: ID de propriedade inválido.
-        '500':
-          description: Erro interno ao buscar talhões finalizados.
-  /api/v1/talhoes/{id}/editar-data-inicio/
+           
+  /api/v1/talhoes/{id}/data-inicio:
     patch:
       summary: Edita a data de início de um talhão
       tags:
@@ -414,3 +260,165 @@ paths:
           description: Talhão ou Propriedade não encontrada.
         '500':
           description: Erro interno ao atualizar a data de início do talhão.
+
+  /api/v1/talhoes/{id}:
+    delete:
+      summary: Exclui logicamente um talhão
+      tags:
+        - Talhões
+      security:
+        - ApiKeyAuth: []
+          cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID do talhão.
+      responses:
+        '200':
+          description: Talhão excluído com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Talhão excluído com sucesso
+        '400':
+          description: Erro de validação ou restrição de negócio.
+        '403':
+          description: Acesso negado; usuário não pode excluir o talhão.
+        '422':
+          description: Talhão não pode ser excluído pois possui eventos associados.
+        '404':
+          description: Talhão ou propriedade não encontrados.
+        '500':
+          description: Erro interno ao excluir talhão.
+
+  /api/v1/talhoes/propriedade/abertos/{idPropriedade}:
+    get:
+      summary: Lista os talhões abertos de uma propriedade
+      tags:
+        - Talhões
+      security:
+        - ApiKeyAuth: []
+          cookieAuth: []
+      parameters:
+        - in: path
+          name: idPropriedade
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Talhões abertos retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  talhoes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TalhaoResumo'
+                  pagina:
+                    type: integer
+                  limite:
+                    type: integer
+        '400':
+          description: ID de propriedade inválido.
+        '500':
+          description: Erro interno ao buscar talhões ativos.
+
+  /api/v1/talhoes/propriedade/todos/{idPropriedade}:
+    get:
+      summary: Lista todos os talhões de uma propriedade
+      tags:
+        - Talhões
+      security:
+        - ApiKeyAuth: []
+          cookieAuth: []
+      parameters:
+        - in: path
+          name: idPropriedade
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limite
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Talhões retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  talhoes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TalhaoResumo'
+                  pagina:
+                    type: integer
+                  limite:
+                    type: integer
+        '400':
+          description: ID de propriedade inválido.
+        '500':
+          description: Erro interno ao buscar talhões.
+
+  /api/v1/talhoes/propriedade/finalizados/{idPropriedade}:
+    get:
+      summary: Lista os talhões finalizados de uma propriedade
+      tags:
+        - Talhões
+      security:
+        - ApiKeyAuth: []
+          cookieAuth: []
+      parameters:
+        - in: path
+          name: idPropriedade
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limite
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Talhões finalizados retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  talhoes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TalhaoResumo'
+                  pagina:
+                    type: integer
+                  limite:
+                    type: integer
+        '400':
+          description: ID de propriedade inválido.
+        '500':
+          description: Erro interno ao buscar talhões finalizados.

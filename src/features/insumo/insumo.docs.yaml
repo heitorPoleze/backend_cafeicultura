@@ -10,7 +10,8 @@ paths:
       tags: 
         - Insumos
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: query
           name: idPropriedade
@@ -35,7 +36,8 @@ paths:
       tags: 
         - Insumos
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -66,7 +68,8 @@ paths:
       tags: 
         - Insumos
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: query
           name: descricao

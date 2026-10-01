@@ -57,15 +57,16 @@ paths:
       tags:
         - Safras
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CriarSafraInput'
+              $ref: "#/components/schemas/CriarSafraInput"
       responses:
-        '201':
+        "201":
           description: Safra cadastrada com sucesso.
           content:
             application/json:
@@ -81,26 +82,27 @@ paths:
                       id:
                         type: integer
                         example: 5
-        '400':
+        "400":
           description: Erro de validação nos campos.
-        '403':
+        "403":
           description: Acesso negado; usuário não pode cadastrar safra nesta propriedade.
-        '404':
+        "404":
           description: Propriedade da safra não encontrada.
-        '422':
+        "422":
           description: "Erro de processamento: duas safras ativas ou data inicial futura."
-        '500':
+        "500":
           description: Erro interno inesperado ao cadastrar safra.
-  
+
   /api/v1/safras/propriedade/{id}/safra/{idSafra}/custo:
     get:
       summary: Custo Atual da Safra (Widget do Dashboard)
       description: Retorna estritamente o valor consolidado do custo atual da safra, reutilizando a regra de negócios do relatório financeiro. Otimizado para consumo rápido por widgets de dashboard.
-      tags: 
+      tags:
         - Dashboard
         - Safras
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -115,7 +117,7 @@ paths:
             type: integer
           description: ID da Safra ativa no dashboard.
       responses:
-        '200':
+        "200":
           description: Custo calculado e retornado com sucesso.
           content:
             application/json:
@@ -127,23 +129,24 @@ paths:
                     format: float
                     description: Custo financeiro total da safra até o momento.
                     example: 15450.75
-        '400':
+        "400":
           description: Safra não pertence a propriedade.
-        '403':
+        "403":
           description: Acesso negado.
-        '404':
+        "404":
           description: Propriedade ou Safra não encontradas.
-        '500':
+        "500":
           description: Erro interno inesperado ao calcular custo.
 
   /api/v1/safras/propriedade/{id}/safra/{idSafra}/relatorio-financeiro:
     get:
       summary: Relatório Financeiro da Safra
       description: Retorna o custo total da safra, agregando as despesas vinculadas a eventos confirmados e as despesas gerais da fazenda ocorridas estritamente dentro do período de duração da safra (timestamp).
-      tags: 
+      tags:
         - Safras
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -158,7 +161,7 @@ paths:
             type: integer
           description: ID da Safra a ser analisada.
       responses:
-        '200':
+        "200":
           description: Relatório financeiro gerado com sucesso.
           content:
             application/json:
@@ -182,7 +185,7 @@ paths:
                         - origem
                         - dados
                       properties:
-                        origem: 
+                        origem:
                           type: string
                           description: Metadado do relatório indicando a fonte da despesa.
                           example: "EVENTO_CONFIRMADO"
@@ -197,16 +200,21 @@ paths:
                             idEvento: { type: integer, nullable: true }
                             idPropriedade: { type: integer, example: 1 }
                             dataHora: { type: string, format: date-time }
-                            valor: { type: number, format: float, example: 1200.50 }
+                            valor:
+                              { type: number, format: float, example: 1200.50 }
                             formaPagamento: { type: string, example: "PIX" }
                             tipoOperacao: { type: string, example: "DESPESA" }
-                            descricao: { type: string, example: "Compra de Fertilizante NPK" }
+                            descricao:
+                              {
+                                type: string,
+                                example: "Compra de Fertilizante NPK",
+                              }
                             beneficiado: { type: object }
-        '400':
+        "400":
           description: Erro de validação nos parâmetros.
-        '403':
+        "403":
           description: Acesso negado. O usuário logado não é o proprietário da fazenda.
-        '404':
+        "404":
           description: Propriedade, Safra ou Transações não encontradas.
 
   /api/v1/safras/propriedade/{id}/safra/{idSafra}/eventos:
@@ -216,7 +224,8 @@ paths:
       tags:
         - Safras
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -231,17 +240,17 @@ paths:
             type: integer
           description: ID da safra.
       responses:
-        '200':
+        "200":
           description: Linha do tempo gerada com sucesso.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/EventoSafraResponse'
-        '403':
+                  $ref: "#/components/schemas/EventoSafraResponse"
+        "403":
           description: Acesso negado à propriedade.
-        '404':
+        "404":
           description: Propriedade, safra não encontrada ou safra sem eventos.
 
   /api/v1/safras/propriedade/{id}/safra/{idSafra}/talhao/{idTalhao}/eventos:
@@ -251,7 +260,8 @@ paths:
       tags:
         - Safras
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -272,17 +282,17 @@ paths:
             type: integer
           description: ID do talhão.
       responses:
-        '200':
+        "200":
           description: Linha do tempo filtrada gerada com sucesso.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/EventoSafraResponse'
-        '403':
+                  $ref: "#/components/schemas/EventoSafraResponse"
+        "403":
           description: Acesso negado à propriedade.
-        '404':
+        "404":
           description: Propriedade, safra ou talhão não encontrado, ou sem eventos.
 
   /api/v1/safras/{id}:
@@ -291,7 +301,8 @@ paths:
       tags:
         - Safras
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -300,19 +311,19 @@ paths:
             type: integer
           description: ID numérico da safra.
       responses:
-        '200':
+        "200":
           description: Dados da safra retornados com sucesso.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SafraResponse'
-        '400':
+                $ref: "#/components/schemas/SafraResponse"
+        "400":
           description: ID da safra inválido.
-        '403':
+        "403":
           description: Acesso negado ou propriedade da safra não encontrada.
-        '404':
+        "404":
           description: Safra não encontrada.
-        '500':
+        "500":
           description: Erro interno inesperado ao buscar safra.
 
     delete:
@@ -320,7 +331,8 @@ paths:
       tags:
         - Safras
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -329,7 +341,7 @@ paths:
             type: integer
           description: ID numérico da safra.
       responses:
-        '200':
+        "200":
           description: Safra excluída com sucesso.
           content:
             application/json:
@@ -339,13 +351,13 @@ paths:
                   mensagem:
                     type: string
                     example: Safra excluida com sucesso!
-        '400':
+        "400":
           description: ID da safra inválido.
-        '403':
+        "403":
           description: Acesso negado ou não é possível excluir safra com atividades vinculadas.
-        '404':
+        "404":
           description: Safra ou propriedade não encontrados.
-        '500':
+        "500":
           description: Erro interno inesperado ao excluir safra.
 
   /api/v1/safras/{id}/finalizar:
@@ -355,7 +367,8 @@ paths:
       tags:
         - Safras
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -377,7 +390,7 @@ paths:
                   format: date-time
                   example: 2026-12-16T00:00:00.000Z
       responses:
-        '200':
+        "200":
           description: Safra finalizada com sucesso.
           content:
             application/json:
@@ -387,17 +400,17 @@ paths:
                   mensagem:
                     type: string
                     example: Safra finalizada com sucesso
-        '400':
+        "400":
           description: Erro de validação da data.
-        '403':
-          description: Acesso negado 
-        '404':
+        "403":
+          description: Acesso negado
+        "404":
           description: Safra ou propriedade não encontrada.
-        '422':
+        "422":
           description: Erro de processamento (data fim anterior à data de início ou superior ao dia atual).
-        '500':
+        "500":
           description: Erro interno inesperado ao finalizar safra.
-    
+
   /api/v1/safras/{id}/reativar:
     patch:
       summary: Reativa uma safra finalizada
@@ -405,7 +418,8 @@ paths:
       tags:
         - Safras
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -414,7 +428,7 @@ paths:
             type: integer
           description: ID numérico da safra.
       responses:
-        '200':
+        "200":
           description: Safra reativada com sucesso.
           content:
             application/json:
@@ -424,15 +438,15 @@ paths:
                   mensagem:
                     type: string
                     example: Safra reativada com sucesso
-        '400':
+        "400":
           description: ID da safra inválido.
-        '403':
-          description: Acesso negado 
-        '404':
+        "403":
+          description: Acesso negado
+        "404":
           description: Safra ou propriedade não encontrada.
-        '422':
+        "422":
           description: Propriedade possui duas safras ativas.
-        '500':
+        "500":
           description: Erro interno inesperado ao reativar safra.
 
   /api/v1/safras/propriedade/{idPropriedade}:
@@ -441,7 +455,8 @@ paths:
       tags:
         - Safras
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: idPropriedade
@@ -449,21 +464,22 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: Safras ativas retornadas com sucesso.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/SafraResponse'
-        '403':
+                  $ref: "#/components/schemas/SafraResponse"
+        "403":
           description: Acesso negado; usuário não pode consultar esta propriedade.
-        '404':
+        "404":
           description: Propriedade não encontrada.
-        '500':
+        "500":
           description: Erro interno inesperado ao buscar safras.
-    /api/v1/safras/:id/editar-data-inicio:
+          
+    /api/v1/safras/:id/data-inicio:
       patch:
         summary: Edita a data de início de uma safra
         description: Permite alterar a data de início de uma safra ativa, desde que não haja eventos vinculados.
@@ -492,7 +508,7 @@ paths:
                     format: date-time
                     example: 2026-06-23T00:00:00.000Z
         responses:
-          '200':
+          "200":
             description: Data de início da safra atualizada com sucesso.
             content:
               application/json:
@@ -502,13 +518,13 @@ paths:
                     mensagem:
                       type: string
                       example: Data de início da safra atualizada com sucesso
-          '400':
+          "400":
             description: Erro de validação da data.
-          '403':
+          "403":
             description: Acesso negado ou não é possível editar a data de início com eventos vinculados.
-          '404':
+          "404":
             description: Safra ou propriedade não encontrada.
-          '422':
+          "422":
             description: Erro de processamento (data início futura ou inválida).
-          '500':
+          "500":
             description: Erro interno inesperado ao atualizar a data de início da safra.

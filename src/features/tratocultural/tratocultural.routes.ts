@@ -49,32 +49,33 @@ const tratoCulturalService = new TratoCulturalService(
 const tratoCulturalController = new TratoCulturalController(tratoCulturalService);
 
 const validarCriacaoTratoCultural = [
-    body('idTalhao').isInt({ gt: 0 }).withMessage('O ID do talhão é obrigatório e deve ser um número inteiro válido.'),
-    body('idSafra').isInt({ gt: 0 }).withMessage('O ID da safra é obrigatório e deve ser um número inteiro válido.'),
-    body('dataInicio').notEmpty().withMessage('A data de início é obrigatória.').isISO8601().withMessage('A data de início deve estar em formato ISO8601.'),
-    body('dataFim').optional({ nullable: true }).isISO8601().withMessage('A data de fim deve estar em formato ISO8601.'),
-    body('descricao').custom((value, { req }) => {
-        if (req.body.tipoTrato === TipoTrato.OUTROS && (!value || value.trim() === '')) {
-            throw new Error('A descrição é obrigatória quando o tipo de trato é Outros');
-        }
-        return true;
-    }),
-    body('tipoTrato').notEmpty().withMessage('O tipo de trato é obrigatório.').isIn(Object.values(TipoTrato)).withMessage(`O tipo de trato deve ser um dos seguintes: ${Object.values(TipoTrato).join(', ')}.`),
+  body('idTalhao').isInt({ gt: 0 }).withMessage('O ID do talhão é obrigatório e deve ser um número inteiro válido.'),
+  body('idSafra').isInt({ gt: 0 }).withMessage('O ID da safra é obrigatório e deve ser um número inteiro válido.'),
+  body('dataInicio').notEmpty().withMessage('A data de início é obrigatória.').isISO8601().withMessage('A data de início deve estar em formato ISO8601.'),
+  body('dataFim').optional({ nullable: true }).isISO8601().withMessage('A data de fim deve estar em formato ISO8601.'),
+  body('descricao').custom((value, { req }) => {
+    if (req.body.tipoTrato === TipoTrato.OUTROS && (!value || value.trim() === '')) {
+      throw new Error('A descrição é obrigatória quando o tipo de trato é Outros');
+    }
+    return true;
+  }),
+  body('tipoTrato').notEmpty().withMessage('O tipo de trato é obrigatório.').isIn(Object.values(TipoTrato)).withMessage(`O tipo de trato deve ser um dos seguintes: ${Object.values(TipoTrato).join(', ')}.`),
 
-    body('insumosUtilizados').optional().isArray().withMessage('Os insumos utilizados devem ser uma lista (array).'),
-    body('insumosUtilizados.*.idInsumo').optional().isInt({ gt: 0 }).withMessage('ID do insumo inválido.'),
-    body('insumosUtilizados.*.qtdUsada').optional().isFloat({ gt: 0 }).withMessage('A quantidade deve ser maior que zero.'),
-    
-    body('responsaveisIds').optional().isArray().withMessage('Os responsáveis devem ser enviados em formato de lista.'),
-    body('responsaveisIds.*').optional().isInt({ gt: 0 }).withMessage('ID de responsável inválido.'),
+  body('insumosUtilizados').optional().isArray().withMessage('Os insumos utilizados devem ser uma lista (array).'),
+  body('insumosUtilizados.*.idInsumo').optional().isInt({ gt: 0 }).withMessage('ID do insumo inválido.'),
+  body('insumosUtilizados.*.qtdUsada').optional().isFloat({ gt: 0 }).withMessage('A quantidade deve ser maior que zero.'),
 
-    body('transacoesFinanceiras').optional().isArray().withMessage('As transações devem ser uma lista (array).'),
-    body('transacoesFinanceiras.*.idPropriedade').isInt({ gt: 0 }).withMessage('ID da propriedade inválido na transação.'),
-    body('transacoesFinanceiras.*.valor').isFloat({ gt: 0 }).withMessage('O valor da transação deve ser maior que zero.'),
-    body('transacoesFinanceiras.*.formaPagamento').isIn(Object.values(FormaPagamento)).withMessage('Forma de pagamento inválida.'),
-    body('transacoesFinanceiras.*.tipoOperacao').isIn(Object.values(TipoOperacao)).withMessage('Tipo de operação inválido.'),
-    body('transacoesFinanceiras.*.beneficiado').isInt({ gt: 0 }).withMessage('ID do beneficiado inválido na transação.'),
-    body('transacoesFinanceiras.*.descricao').optional().isString().withMessage('A descrição da transação deve ser um texto.')
+  body('responsaveisIds').optional().isArray().withMessage('Os responsáveis devem ser enviados em formato de lista.'),
+  body('responsaveisIds.*').optional().isInt({ gt: 0 }).withMessage('ID de responsável inválido.'),
+
+  body('transacoesFinanceiras').optional().isArray().withMessage('As transações devem ser uma lista (array).'),
+  body('transacoesFinanceiras.*.idPropriedade').isInt({ gt: 0 }).withMessage('ID da propriedade inválido na transação.'),
+  body('transacoesFinanceiras.*.valor').isFloat({ gt: 0 }).withMessage('O valor da transação deve ser maior que zero.'),
+  body('transacoesFinanceiras.*.formaPagamento').isIn(Object.values(FormaPagamento)).withMessage('Forma de pagamento inválida.'),
+  body('transacoesFinanceiras.*.tipoOperacao').isIn(Object.values(TipoOperacao)).withMessage('Tipo de operação inválido.'),
+  body('transacoesFinanceiras.*.beneficiado').isInt({ gt: 0 }).withMessage('ID do beneficiado inválido na transação.'),
+  body('transacoesFinanceiras.*.descricao').optional().isString().withMessage('A descrição da transação deve ser um texto.')
+    .isLength({ min: 3, max: 255 }).withMessage("Descrição deve conter entre 3 a 255 caracteres"),
 ];
 
 router.get(
@@ -160,7 +161,7 @@ router.patch(
     body('descricao')
       .optional({ values: 'falsy' })
       .isString().withMessage('A descrição deve ser um texto.')
-      .isLength({ min: 4}).withMessage('A descrição deve ter pelo menos 4 caracteres.')
+      .isLength({ min: 4 }).withMessage('A descrição deve ter pelo menos 4 caracteres.')
       .matches(/^(?![0-9.]+$)(?=(?:[^a-zA-Z]*[a-zA-Z]){4}).*$/)
       .withMessage('A descrição não pode conter apenas números, espaços ou sinais.')
   ],

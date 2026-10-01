@@ -1,6 +1,3 @@
-# Pasta de teste
-frontend/
-
 # Dependências
 node_modules/
 
@@ -27,3 +24,8 @@ Thumbs.db
 .idea/
 *.swp
 /src/generated/prisma
+Dockerfile
+docker-compose.yml
+/init-scripts
+.build.log
+rotina-deploy.md

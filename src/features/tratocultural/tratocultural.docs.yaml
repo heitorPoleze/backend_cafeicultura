@@ -133,7 +133,8 @@ paths:
       tags: 
         - Tratos Culturais
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       requestBody:
         required: true
         content:
@@ -159,7 +160,8 @@ paths:
       tags: 
         - Tratos Culturais
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       responses:
         '200':
           description: Lista retornada com sucesso.
@@ -173,7 +175,8 @@ paths:
       tags: 
         - Tratos Culturais
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -196,7 +199,8 @@ paths:
       tags:
         - Tratos Culturais
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -227,7 +231,8 @@ paths:
       tags: 
         - Tratos Culturais
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -254,7 +259,8 @@ paths:
       tags: 
         - Tratos Culturais
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -292,7 +298,8 @@ paths:
       tags: 
         - Tratos Culturais
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -331,7 +338,8 @@ paths:
       tags: 
         - Tratos Culturais
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -364,7 +372,8 @@ paths:
       tags: 
         - Tratos Culturais
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -400,7 +409,8 @@ paths:
       tags: 
         - Tratos Culturais
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -433,7 +443,8 @@ paths:
       tags: 
         - Tratos Culturais
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -467,7 +478,8 @@ paths:
       tags: 
         - Tratos Culturais
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -503,7 +515,8 @@ paths:
       tags: 
         - Tratos Culturais
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -558,7 +571,8 @@ paths:
       tags: 
         - Tratos Culturais
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -594,7 +608,8 @@ paths:
       tags: 
         - Tratos Culturais
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id

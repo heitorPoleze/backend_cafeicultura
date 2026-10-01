@@ -18,10 +18,10 @@ export const sessMiddleware = session({
   saveUninitialized: false,
   proxy: true,
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24 * 30, // TTL
+    maxAge: 1000 * 60 * 60 * 24 * 30,
     httpOnly: true, 
     secure: process.env.NODE_ENV === "production", 
-    sameSite: 'lax',
+    sameSite: 'strict',
     domain: process.env.NODE_ENV === "production" ? process.env.DOMAIN : undefined,
     priority: 'high'
   },

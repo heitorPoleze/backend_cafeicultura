@@ -6,7 +6,8 @@ paths:
       tags: 
         - Eventos Gerais
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id

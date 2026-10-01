@@ -122,7 +122,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       requestBody:
         required: true
         content:
@@ -152,7 +153,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       responses:
         '200':
           description: Clientes retornados com sucesso.
@@ -167,7 +169,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -193,7 +196,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -224,7 +228,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       requestBody:
         required: true
         content:
@@ -254,7 +259,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       responses:
         '200':
           description: Fornecedores retornados com sucesso.
@@ -271,7 +277,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -296,7 +303,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -327,7 +335,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       requestBody:
         required: true
         content:
@@ -357,7 +366,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       responses:
         '200':
           description: Lista de funcionários retornada com sucesso.
@@ -385,7 +395,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -411,7 +422,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -442,7 +454,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -487,7 +500,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       requestBody:
         required: true
         content:
@@ -517,7 +531,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       responses:
         '200':
           description: Lista de meeiros retornada com sucesso.
@@ -545,7 +560,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -571,7 +587,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -602,7 +619,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       requestBody:
         required: true
         content:
@@ -632,7 +650,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       responses:
         '200':
           description: Lista de prestadores retornada com sucesso.
@@ -660,7 +679,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -686,7 +706,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -717,7 +738,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: query
           name: pagina
@@ -758,7 +780,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -797,7 +820,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -836,7 +860,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -867,7 +892,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -909,7 +935,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -951,7 +978,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -993,7 +1021,8 @@ paths:
       tags:
         - Pessoas
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id

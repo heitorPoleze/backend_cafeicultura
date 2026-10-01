@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { body, param } from 'express-validator';
-import exigeLogin from "../../shared/middlewares/exigeLogin"; 
+import exigeLogin from "../../shared/middlewares/exigeLogin";
 import DespesaController from './despesa.controller';
 import DespesaService from './despesa.service';
 
@@ -8,7 +8,7 @@ import DespesaRepository from './despesa.repository';
 import PropriedadeRepository from '../propriedade/propriedade.repository';
 import PessoaRepository from '../../shared/domain/pessoa/pessoa.repository';
 import TransacaoFinanceiraRepository from '../../shared/domain/transacaofinanceira/transacaofinanceira.repository';
-import { prisma } from "../../shared/config/database"; 
+import { prisma } from "../../shared/config/database";
 import { FormaPagamento, TipoOperacao } from '../../shared/domain/transacaofinanceira/transacaofinanceira.entity';
 import CompraInsumoRepository from '../comprainsumo/comprainsumo.repository';
 import EstoqueInsumoRepository from '../../shared/domain/insumo/estoqueinsumo/estoqueinsumo.repository';
@@ -32,7 +32,8 @@ router.post(
     body('idEvento').optional({ nullable: true }).isInt({ gt: 0 }).withMessage('O ID do evento deve ser numérico, se fornecido.'),
     body('beneficiado').isInt({ gt: 0 }).withMessage('O ID do beneficiado (Pessoa) é obrigatório e deve ser um número inteiro.'),
     body('valor').isFloat({ gt: 0 }).withMessage('O valor da despesa deve ser maior que zero.'),
-    body('descricao').optional().isString().withMessage('A descrição deve ser um texto.'),
+    body('descricao').isString().withMessage('A descrição deve ser um texto.')
+      .isLength({ min: 3, max: 255 }).withMessage("Descrição deve conter entre 3 a 255 caracteres"),
     body('formaPagamento').isIn(Object.values(FormaPagamento)).withMessage('Forma de pagamento inválida.'),
     body('tipoOperacao').isIn(Object.values(TipoOperacao)).withMessage('Tipo de operação inválido.')
   ],

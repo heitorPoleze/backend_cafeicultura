@@ -76,7 +76,8 @@ paths:
       tags: 
         - Compras de Insumos
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       requestBody:
         required: true
         content:
@@ -99,7 +100,8 @@ paths:
       tags: 
         - Compras de Insumos
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       responses:
         '200':
           description: Lista geral de compras retornada com sucesso.
@@ -113,7 +115,8 @@ paths:
       tags: 
         - Compras de Insumos
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: id
@@ -136,7 +139,8 @@ paths:
       tags: 
         - Compras de Insumos
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: path
           name: idPropriedade
@@ -159,7 +163,8 @@ paths:
       tags: 
         - Compras de Insumos
       security:
-        - cookieAuth: []
+        - ApiKeyAuth: []
+          cookieAuth: []
       parameters:
         - in: query
           name: descricao
