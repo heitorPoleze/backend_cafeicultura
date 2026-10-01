@@ -63,10 +63,18 @@ app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 app.use(sessMiddleware);
 setupSwagger(app);
 
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10, 
+  message: { error: "Muitas tentativas de login. Por favor, tente novamente mais tarde." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 const apiLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000,
-  max: 50, 
-  message: { error: "Muitas requisições deste IP. Tente novamente em alguns minutos." },
+  windowMs: 15 * 60 * 1000, 
+  max: 300,
+  message: { error: "Identificamos um alto volume de acessos. Por favor, tente de novo mais tarde."},
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -75,20 +83,19 @@ app.use(exigeChaveApi);
 
 const API_VERSION = "/api/v1";
 
-app.use(`${API_VERSION}`, apiLimiter);
+app.use(`${API_VERSION}/auth`, authLimiter, authRotas);
 
-app.use(`${API_VERSION}`, pessoaRotas);
-app.use(`${API_VERSION}/auth`, authRotas);
-app.use(`${API_VERSION}/notificacoes`, notificacoesRotas);
-app.use(`${API_VERSION}/proprietarios`, proprietarioRotas);
-app.use(`${API_VERSION}/propriedades`, propriedadeRotas);
-app.use(`${API_VERSION}/talhoes`, talhoesRotas);
-app.use(`${API_VERSION}/safras`, safraRotas);
-app.use(`${API_VERSION}/tratosculturais`, tratosCulturaisRotas);
-app.use(`${API_VERSION}/insumos`, insumosRotas);
-app.use(`${API_VERSION}/despesas`, despesasRotas);
-app.use(`${API_VERSION}/comprasinsumos`, comprasinsumosRotas);
-app.use(`${API_VERSION}/eventos`, eventosRotas);
-app.use(`${API_VERSION}/extratos`, transacaoRotas);
+app.use(`${API_VERSION}`, apiLimiter, pessoaRotas);
+app.use(`${API_VERSION}/notificacoes`, apiLimiter, notificacoesRotas);
+app.use(`${API_VERSION}/proprietarios`, apiLimiter, proprietarioRotas);
+app.use(`${API_VERSION}/propriedades`, apiLimiter, propriedadeRotas);
+app.use(`${API_VERSION}/talhoes`, apiLimiter, talhoesRotas);
+app.use(`${API_VERSION}/safras`, apiLimiter, safraRotas);
+app.use(`${API_VERSION}/tratosculturais`, apiLimiter, tratosCulturaisRotas);
+app.use(`${API_VERSION}/insumos`, apiLimiter, insumosRotas);
+app.use(`${API_VERSION}/despesas`, apiLimiter, despesasRotas);
+app.use(`${API_VERSION}/comprasinsumos`, apiLimiter, comprasinsumosRotas);
+app.use(`${API_VERSION}/eventos`, apiLimiter, eventosRotas);
+app.use(`${API_VERSION}/extratos`, apiLimiter, transacaoRotas);
 
 export default app;

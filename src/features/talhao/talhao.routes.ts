@@ -1,4 +1,4 @@
-import { Router} from 'express';
+import { Router } from 'express';
 import { body, param } from 'express-validator';
 import exigeLogin from "../../shared/middlewares/exigeLogin";
 import TalhaoController from './talhao.controller';
@@ -84,8 +84,9 @@ router.get(
   ],
   talhaoController.finalizadosPorPropriedade.bind(talhaoController)
 );
+
 router.patch(
-  '/:id/editar-data-inicio',
+  '/:id/data-inicio',
   exigeLogin(),
   [
     param('id').isInt().withMessage('O ID do talhão deve ser um número inteiro.'),
