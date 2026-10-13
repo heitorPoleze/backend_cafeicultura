@@ -72,10 +72,6 @@ class ProprietarioRepository {
     return new Proprietario(perfil, u.email, u.telefone, u.senha);
   }
 
-  public async updateSenhaProprietario(novaSenha: string, id: number, tx?: Prisma.TransactionClient) {
-    await this.usuarioRepo.updateSenhaUser(novaSenha, id, tx);
-  }
-
   public async updateEmailProprietario(email: string, id: number, tx?: Prisma.TransactionClient) {
     await this.usuarioRepo.updateEmail(email, id, tx);
   }

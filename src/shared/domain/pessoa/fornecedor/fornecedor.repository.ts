@@ -86,7 +86,6 @@ class FornecedorRepository {
       inscEstadual: p.pessoasjuridicas?.inscEstadual,
     };
 
-    // 4. Delega a criação para a Factory
     const pessoa = PessoaFactory.criarPessoa(tipoPessoa, dados);
 
     return new Fornecedor(pessoa);

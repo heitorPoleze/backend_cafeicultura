@@ -5,6 +5,7 @@ import Endereco from "../../endereco/endereco.vo";
 import PessoaFactory from "../pessoafactory.entity";
 import PessoaJuridica from "../pessoajuridica.entity";
 import PessoaFisica from "../pessoafisica.entity";
+import PessoaDTO from "../pessoa.dto";
 
 class ClienteRepository {
     constructor(
@@ -13,15 +14,9 @@ class ClienteRepository {
     ) {};
 
     public async salvarComTransacao(c: Cliente): Promise<number> {
-    
-    // Inicia a transação (Unit of Work)
     return await this.prisma.$transaction(async (tx) => {
-      
-      // 1. Delega a criação da Pessoa (Física/Jurídica) passando o 'tx'
       const id = await this.pessoaRepo.salvar(c.pessoa, tx);
-      
-      // 2. O próprio repositório salva sua entidade principal
-      await tx.clientes.create({ 
+        await tx.clientes.create({ 
         data: { idCliente_PFK: id } 
       });
 
@@ -75,21 +70,23 @@ class ClienteRepository {
       ? new Endereco(e.cidade, e.bairro, e.cep, e.uf, e.pais, e.logradouro, e.idEndereco_PK)
       : null;
 
-    const tipoPessoa = p.pessoasfisicas ? 'fisica' : 'juridica';
+    const isPF = !!p.pessoasfisicas;
 
-    const dados = {
-      id: c.idCliente_PFK, 
+    const dados: PessoaDTO = {
+      id: p.idPessoa_PK,
       idAdministrador: p.idAdministrador_FK,
       dataCadastro: p.dataCadastro,
       endereco: endereco,
-      nome: p.pessoasfisicas?.nome,
-      cpf: p.pessoasfisicas?.cpf,
-      razaoSocial: p.pessoasjuridicas?.razaoSocial,
-      cnpj: p.pessoasjuridicas?.cnpj,
-      inscEstadual: p.pessoasjuridicas?.inscEstadual
+
+      nome: isPF ? p.pessoasfisicas!.nome : undefined,
+      cpf: isPF ? (p.pessoasfisicas!.cpf ?? null) : null,
+
+      razaoSocial: !isPF ? p.pessoasjuridicas!.razaoSocial : undefined,
+      cnpj: !isPF ? (p.pessoasjuridicas!.cnpj ?? null) : null,
+      inscrEstadual: !isPF ? (p.pessoasjuridicas!.inscEstadual ?? null) : null,
     };
 
-    const pessoa = PessoaFactory.criarPessoa(tipoPessoa, dados);
+    const pessoa = PessoaFactory.criarPessoa(isPF ? "fisica" : "juridica", dados);
 
     return new Cliente(pessoa);
   };

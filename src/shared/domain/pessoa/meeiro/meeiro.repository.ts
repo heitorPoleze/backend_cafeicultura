@@ -8,7 +8,7 @@ class MeeiroRepository {
   constructor(
     private prisma: PrismaClient,
     private pessoaRepo: PessoaRepository,
-  ) {}
+  ) { }
 
   public async salvarComTransacao(m: Meeiro): Promise<number> {
     return await this.prisma.$transaction(async (tx) => {
@@ -42,7 +42,7 @@ class MeeiroRepository {
     return { dados: meeiros };
   }
   public async buscarPorId(id: number): Promise<Meeiro | null> {
-    if(!id || id <= 0 || !Number.isInteger(id)) {
+    if (!id || id <= 0 || !Number.isInteger(id)) {
       throw new Error("ID_INVALIDO");
     }
     const m = await this.prisma.meeiros.findUnique({

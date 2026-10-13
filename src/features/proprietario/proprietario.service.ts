@@ -126,25 +126,6 @@ export default class ProprietarioService {
     });
   }
 
-  public async atualizarSenha(senha: string, pessoaId: number, idUsuario: number) {
-    return await this.prisma.$transaction(async (tx) => {
-      if (typeof senha !== "string" || senha.trim() === "") {
-        throw new Error("A senha é obrigatória.");
-      }
-      if (senha.length < 8) {
-        throw new Error("A senha deve conter pelo menos 8 caracteres.");
-      }
-      if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).+$/.test(senha)) {
-        throw new Error("A senha deve conter maiúscula, minúscula, número e símbolo.");
-      }
-
-      const salt = await bcrypt.genSalt(12);
-      const novaSenhaCriptografada = await bcrypt.hash(senha, salt);
-      await this.validarProprietario(pessoaId, idUsuario, tx);
-      await this.repo.updateSenhaProprietario(novaSenhaCriptografada, pessoaId, tx);
-    })
-  }
-
   public async atualizarEmail(email: string, pessoaId: number, idUsuario: number) {
     await this.prisma.$transaction(async (tx) => {
       await this.validarProprietario(pessoaId, idUsuario, tx);
@@ -171,19 +152,11 @@ export default class ProprietarioService {
       const perfil = proprietario.perfil;
 
       if (perfil instanceof PessoaFisica) {
-        const novoNome = dados.nome as string;
-        if (!novoNome || novoNome.trim() === "") throw new Error("Nome é obrigatório.");
-        if (novoNome.length < 3) throw new Error("Nome deve ter no mínimo 3 caracteres.");
-        if (novoNome.length > 100) throw new Error("Nome deve ter no máximo 100 caracteres.");
-
-        await this.pessoaRepo.atualizarNomePessoaFisica(perfil.cpf, novoNome, idUsuario, tx);
+        const nome = dados.nome as string;
+        await this.pessoaRepo.atualizarNomePessoaFisica(perfil.id!, nome, idUsuario, tx);
       } else if (perfil instanceof PessoaJuridica) {
-        const novaRazaoSocial = dados.razaoSocial as string;
-        if (!novaRazaoSocial || novaRazaoSocial.trim() === "") throw new Error("Razão Social é obrigatória.");
-        if (novaRazaoSocial.length < 3) throw new Error("Razão Social deve ter no mínimo 3 caracteres.");
-        if (novaRazaoSocial.length > 100) throw new Error("Razão Social deve ter no máximo 100 caracteres.");
-
-        await this.pessoaRepo.atualizarRazaoSocial(perfil.cnpj, novaRazaoSocial, idUsuario, tx);
+        const razaoSocial = dados.razaoSocial as string;
+        await this.pessoaRepo.atualizarRazaoSocial(perfil.id!, razaoSocial, idUsuario, tx);
       } else {
         throw new Error("Tipo de pessoa inválido.");
       }

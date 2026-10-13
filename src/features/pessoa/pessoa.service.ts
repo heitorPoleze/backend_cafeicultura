@@ -51,16 +51,20 @@ class PessoaService {
     }
 
     if (dados.tipoPessoa === "fisica") {
-      const cpfExistente = await this.pessoaRepo.verificarCpfExistente(dados.cpf!, dados.idAdministrador);
-      if (cpfExistente) {
-        throw new Error(`CPF_EXISTENTE`);
+      if (dados.cpf) {
+        const cpfExistente = await this.pessoaRepo.verificarCpfExistente(dados.cpf, dados.idAdministrador);
+        if (cpfExistente) {
+          throw new Error(`CPF_EXISTENTE`);
+        }
       }
     } else if (dados.tipoPessoa === "juridica") {
-      const cnpjExistente = await this.pessoaRepo.verificarCnpjExistente(dados.cnpj!, dados.idAdministrador);
-      if (cnpjExistente) {
-        throw new Error(`CNPJ_EXISTENTE`);
+      if (dados.cnpj) {
+        const cnpjExistente = await this.pessoaRepo.verificarCnpjExistente(dados.cnpj, dados.idAdministrador);
+        if (cnpjExistente) {
+          throw new Error(`CNPJ_EXISTENTE`);
+        }
       }
-      if (dados.inscrEstadual != null) {
+      if (dados.inscrEstadual) {
         const inscricaoExistente = await this.pessoaRepo.verificarInscricaoEstadualExistente(
           dados.inscrEstadual!,
           dados.idAdministrador
@@ -209,7 +213,7 @@ class PessoaService {
     }
 
     const funcionariosDTO: FuncionarioResponseDTO[] = [];
-    
+
     for (const item of funcionarios.dados) {
       if (item instanceof Funcionario && item.pessoa instanceof PessoaFisica) {
         funcionariosDTO.push({
@@ -228,7 +232,7 @@ class PessoaService {
     }
 
     return { dados: funcionariosDTO };
-}
+  }
 
   public async buscarClientesPorIdAdministrador(idAdministrador: number): Promise<{ dados: ClienteResponseDTO[] }> {
     const clientes = await this.clienteRepo.buscarClientesPorAdministrador(idAdministrador);
@@ -381,14 +385,14 @@ class PessoaService {
       if (novoNome.length < 3) throw new Error("Nome deve ter no mínimo 3 caracteres.");
       if (novoNome.length > 100) throw new Error("Nome deve ter no máximo 100 caracteres.");
 
-      await this.pessoaRepo.atualizarNomePessoaFisica(pessoa.cpf, novoNome, idAdministrador);
+      await this.pessoaRepo.atualizarNomePessoaFisica(pessoa.id!, novoNome, idAdministrador);
     } else if (pessoa instanceof PessoaJuridica) {
       const novaRazaoSocial = dados.razaoSocial as string;
       if (!novaRazaoSocial || novaRazaoSocial.trim() === "") throw new Error("Razão Social é obrigatória.");
       if (novaRazaoSocial.length < 3) throw new Error("Razão Social deve ter no mínimo 3 caracteres.");
       if (novaRazaoSocial.length > 100) throw new Error("Razão Social deve ter no máximo 100 caracteres.");
 
-      await this.pessoaRepo.atualizarRazaoSocial(pessoa.cnpj, novaRazaoSocial, idAdministrador);
+      await this.pessoaRepo.atualizarRazaoSocial(pessoa.id!, novaRazaoSocial, idAdministrador);
     } else {
       throw new Error("Tipo de pessoa inválido.");
     }
@@ -396,12 +400,19 @@ class PessoaService {
 
   public async atualizarCpf(novoCpf: string, pessoaId: number, idAdministrador: number) {
     const pessoa = await this.pessoaRepo.buscarPorId(pessoaId);
-    if (!pessoa || pessoa.idAdministrador !== idAdministrador) throw new Error("ACESSO_NEGADO");
+
+    if (!pessoa || pessoa.idAdministrador !== idAdministrador) {
+      throw new Error("ACESSO_NEGADO");
+    }
+
+    if (!(pessoa instanceof PessoaFisica)) {
+      throw new Error("OPERACAO_INVALIDA");
+    }
 
     const cpfExistente = await this.pessoaRepo.verificarCpfExistente(novoCpf, idAdministrador);
     if (cpfExistente) throw new Error(`CPF_EXISTENTE`);
 
-    return await this.pessoaRepo.atualizarCpfPessoa(novoCpf, pessoaId);
+    return await this.pessoaRepo.atualizarCpfPessoa(pessoa.id!, novoCpf);
   }
 
   public async atualizarCNPJ(novoCnpj: string, pessoaId: number, idAdministrador: number) {

@@ -443,21 +443,29 @@ class PessoaController {
     try {
       const pessoaId = Number(req.params.id);
       const cpf = req.body.cpf;
-      let resposta = await this.service.atualizarCpf(cpf, pessoaId, req.session.idUsuario!);
-      res.status(200).json({ mensagem: "CPF Atualizado com sucesso.", resposta });
+      const resposta = await this.service.atualizarCpf(cpf, pessoaId, req.session.idUsuario!);
+      res.status(200).json({ 
+        mensagem: "CPF Atualizado com sucesso.",
+        resposta: resposta?.toJSON()
+      });
     } catch (error: unknown) {
       if (error instanceof Error) {
-        if (error.message === "CPF_EXISTENTE") {
-          return res.status(409).json({ error: "CPF já cadastrado no sistema." });
-        } else if (error.message === "ACESSO_NEGADO") {
-          return res.status(403).json({ error: "Acesso negado." });
+        switch (error.message) {
+          case "CPF_EXISTENTE":
+            return res.status(409).json({ error: "CPF já cadastrado no sistema" });
+          case "OPERACAO_INVALIDA":
+            return res.status(422).json({ error: "Operação inválida" });
+          case "ACESSO_NEGADO":
+            return res.status(403).json({ error: "Acesso negado" });
+          default:
+            return res.status(400).json({ error: "Dados inválidos" });
         }
       }
-      res.status(500).json({ error: "Erro ao atualizar CPF." });
+      res.status(500).json({ error: "Erro ao atualizar CPF" });
     }
   }
 
-  public async atualizarCpnj(req: Request, res: Response) {
+  public async atualizarCnpj(req: Request, res: Response) {
     const erros = validationResult(req);
     if (!erros.isEmpty()) {
       return res.status(400).json({ erros: erros.array() })
@@ -465,7 +473,7 @@ class PessoaController {
     try {
       const pessoaId = Number(req.params.id);
       const cnpj = req.body.cnpj;
-      let resposta = await this.service.atualizarCNPJ(cnpj, pessoaId, req.session.idUsuario!);
+      const resposta = await this.service.atualizarCNPJ(cnpj, pessoaId, req.session.idUsuario!);
       return res.status(200).json({ mensagem: "CNPJ atualizado com sucesso.", resposta });
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -489,7 +497,7 @@ class PessoaController {
     try {
       const pessoaId = Number(req.params.id);
       const novaIE = req.body.inscricaoEstadual;
-      let resposta = await this.service.atualizarInscricaoEstadual(novaIE, pessoaId, req.session.idUsuario!);
+      const resposta = await this.service.atualizarInscricaoEstadual(novaIE, pessoaId, req.session.idUsuario!);
       return res.status(200).json({ mensagem: "Inscrição Estadual atualizada com sucesso.", resposta });
     } catch (error: unknown) {
       if (error instanceof Error) {

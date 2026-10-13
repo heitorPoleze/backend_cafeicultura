@@ -4,12 +4,13 @@ type PessoaDTO = {
   id?: number;
   idAdministrador: number | null;
   nome?: string;
-  cpf?: string;
+  cpf?: string | null;
   razaoSocial?: string;
-  cnpj?: string;
+  cnpj?: string | null;
   inscrEstadual?: string | null;
   endereco: Endereco | null;
   dataCadastro: Date;
+  papel?: string | null
 };
 
-export default PessoaDTO;
+export default PessoaDTO; 

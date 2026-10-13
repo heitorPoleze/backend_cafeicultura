@@ -61,15 +61,14 @@ class PessoaRepository {
       id: p.idPessoa_PK,
       idAdministrador: p.idAdministrador_FK,
       nome: isPF ? p.pessoasfisicas!.nome : undefined,
-      cpf: isPF ? p.pessoasfisicas!.cpf : undefined,
+      cpf: isPF ? p.pessoasfisicas!.cpf : null,
       razaoSocial: !isPF ? p.pessoasjuridicas?.razaoSocial : undefined,
-      cnpj: !isPF ? p.pessoasjuridicas?.cnpj : undefined,
-      inscrEstadual: !isPF ? p.pessoasjuridicas?.inscEstadual : null,
+      cnpj: !isPF ? (p.pessoasjuridicas?.cnpj ?? null) : null,
+      inscrEstadual: !isPF ? (p.pessoasjuridicas?.inscEstadual ?? null) : null,
       endereco: endereco,
       dataCadastro: p.dataCadastro,
     };
   }
-
   public async buscarPessoaPorId(pessoaId: number, tx?: Prisma.TransactionClient): Promise<PessoaDTO | null> {
     if (!pessoaId || pessoaId <= 0 || !Number.isInteger(pessoaId)) {
       throw new Error("ID_INVALIDO");
@@ -120,7 +119,7 @@ class PessoaRepository {
     return !!pessoa;
   }
 
-  public async salvar(perfil: PessoaFisica | PessoaJuridica, tx: Prisma.TransactionClient): Promise<number> {
+  public async salvar(perfil: PessoaBase, tx: Prisma.TransactionClient): Promise<number> {
     const pessoa = await tx.pessoas.create({
       data: {
         dataCadastro: perfil.dataCadastro,
@@ -150,46 +149,46 @@ class PessoaRepository {
     return id;
   }
 
-  public async atualizarNomePessoaFisica(cpf: string, nome: string, idAdministrador: number, tx?: Prisma.TransactionClient): Promise<PessoaDTO | null> {
+  public async atualizarNomePessoaFisica(id: number, nome: string, idAdministrador: number, tx?: Prisma.TransactionClient): Promise<PessoaDTO | null> {
     const db = tx ?? this.prisma;
     const atualizacao = await db.pessoasfisicas.updateMany({
       where: {
-        cpf: cpf,
+        idPeFisica_PFK: id,
         pessoas: { idAdministrador_FK: idAdministrador },
       },
       data: { nome: nome }
     });
 
     if (atualizacao.count === 0) return null;
-    return await this.buscarPessoaPorCpf(cpf, idAdministrador, db);
+    return await this.buscarPorId(id, db);
   }
 
-  public async atualizarRazaoSocial(cnpj: string, razaoSocial: string, idAdministrador: number, tx?: Prisma.TransactionClient): Promise<PessoaDTO | null> {
+  public async atualizarRazaoSocial(id: number, razaoSocial: string, idAdministrador: number, tx?: Prisma.TransactionClient): Promise<PessoaDTO | null> {
     const db = tx ?? this.prisma;
     const atualizacao = await db.pessoasjuridicas.updateMany({
       where: {
-        cnpj: cnpj,
+        idPeJuridica_PFK: id,
         pessoas: { idAdministrador_FK: idAdministrador }
       },
       data: { razaoSocial: razaoSocial }
     });
 
     if (atualizacao.count === 0) return null;
-    return await this.buscarPessoaPorCnpj(cnpj, idAdministrador, db);
+    return await this.buscarPorId(id, db);
   }
 
-  public async atualizarInscricaoEstadual(cnpj: string, inscrEstadual: string, idAdministrador: number, tx?: Prisma.TransactionClient): Promise<PessoaDTO | null> {
+  public async atualizarInscricaoEstadual(id: number, inscrEstadual: string, idAdministrador: number, tx?: Prisma.TransactionClient): Promise<PessoaDTO | null> {
     const db = tx ?? this.prisma;
     const atualizacao = await db.pessoasjuridicas.updateMany({
       where: {
-        cnpj: cnpj,
+        idPeJuridica_PFK: id,
         pessoas: { idAdministrador_FK: idAdministrador }
       },
       data: { inscEstadual: inscrEstadual }
     });
 
-    if (atualizacao.count === 0) throw new Error("Pessoa jurídica não encontrada para o CNPJ informado.");
-    return await this.buscarPessoaPorCnpj(cnpj, idAdministrador, db);
+    if (atualizacao.count === 0) throw new Error("Pessoa jurídica não encontrada para o ID informado.");
+    return await this.buscarPorId(id, db);
   }
 
   public async atualizarInscricaoEstadualPorPessoaId(pessoaId: number, inscrEstadual: string, tx?: Prisma.TransactionClient): Promise<PessoaDTO | null> {
@@ -211,18 +210,15 @@ class PessoaRepository {
     return await this.buscarPessoaPorId(pessoaId, db);
   }
 
-  public async atualizarCpfPessoa(cpf: string, pessoaId: number, tx?: Prisma.TransactionClient): Promise<PessoaDTO | null> {
+  public async atualizarCpfPessoa(pessoaId: number, novoCpf: string, tx?: Prisma.TransactionClient): Promise<PessoaBase | null> {
     const db = tx ?? this.prisma;
-    const pessoa = await this.buscarPessoaPorId(pessoaId, db);
-    if (!pessoa) return null;
-    if (pessoa.cnpj !== undefined) throw new Error("Esta pessoa não é uma pessoa física.");
 
     await db.pessoasfisicas.update({
       where: { idPeFisica_PFK: pessoaId },
-      data: { cpf: cpf }
+      data: { cpf: novoCpf }
     });
 
-    return await this.buscarPessoaPorId(pessoaId, db);
+    return await this.buscarPorId(pessoaId, db);
   }
 
   public async atualizarCnpj(novoCnpj: string, pessoaId: number, tx?: Prisma.TransactionClient): Promise<void> {
@@ -389,10 +385,10 @@ class PessoaRepository {
       endereco: endereco,
       papel: papel,
       nome: isPF ? p.pessoasfisicas!.nome : undefined,
-      cpf: isPF ? p.pessoasfisicas!.cpf : undefined,
+      cpf: isPF ? p.pessoasfisicas!.cpf : null,
       razaoSocial: !isPF ? p.pessoasjuridicas!.razaoSocial : undefined,
-      cnpj: !isPF ? p.pessoasjuridicas!.cnpj : undefined,
-      inscEstadual: !isPF ? p.pessoasjuridicas!.inscEstadual : undefined,
+      cnpj: !isPF ? (p.pessoasjuridicas!.cnpj ?? null) : null,
+      inscEstadual: !isPF ? (p.pessoasjuridicas!.inscEstadual ?? null) : null,
     };
 
     return PessoaFactory.criarPessoa(isPF ? 'fisica' : 'juridica', dados);

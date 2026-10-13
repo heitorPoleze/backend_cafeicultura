@@ -1,5 +1,5 @@
-interface Pessoa {
+interface IPessoa {
   toJSON(filhos?: object): object;
-};
+}
 
-export default Pessoa;
+export default IPessoa;
