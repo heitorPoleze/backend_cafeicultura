@@ -107,5 +107,31 @@ class Formatador {
       .replace(/\s+/g, '') // Remove todos os espaços em branco
       .replace(/\d+/g, (match) => parseInt(match, 10).toString()); // Remove zeros à esquerda dos números restantes
   }
+
+/**
+   * Exclusivo para Pessoas/Terceiros: remove acentos, espaços, símbolos e números,
+   * descartando também sufixos ou trechos corrompidos por caracteres não alfabéticos.
+   *
+   * @param nome - Nome da pessoa ou terceiro a ser normalizado.
+   * @returns Nome normalizado contendo apenas letras minúsculas (`a-z`), sem espaços ou acentos.
+   *
+   * @example
+   * "Tikin"                   -> "tikin"
+   * "tikin"                   -> "tikin"
+   * "Tikin 2"                 -> "tikin"
+   * "TIKIN 01"                -> "tikin"
+   * "Tikin - 3"               -> "tikin"
+   * "tikin@1!s@E12d.2e121ds1" -> "tikin"
+   */
+  public static normalizarNomePessoa(nome: string): string {
+    return nome
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[a-zA-Z]*[^a-zA-Z\s-]\S*/g, (match) =>
+        match.match(/^[a-zA-Z]+/)?.[0] ?? ""
+      )
+      .toLowerCase()
+      .replace(/[^a-z]/g, "");
+  }
 }
 export default Formatador;
