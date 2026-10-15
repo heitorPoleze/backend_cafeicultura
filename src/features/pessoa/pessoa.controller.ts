@@ -2,17 +2,33 @@ import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import PessoaService from "./pessoa.service";
 import Endereco from "../../shared/domain/endereco/endereco.vo";
-import { CreateClienteDTO, CreateFornecedorDTO, CreateFuncionarioDTO, CreateMeeiroDTO, CreatePrestadorDTO, ExcluirPessoaDTO } from "./pessoa.dto";
+import {
+  CreateClienteDTO,
+  CreateFornecedorDTO,
+  CreateFuncionarioDTO,
+  CreateMeeiroDTO,
+  CreatePrestadorDTO,
+  ExcluirPessoaDTO,
+} from "./pessoa.dto";
+import { TipoPapel } from "../../shared/domain/pessoa/pessoa.dto";
+import Formatador from "../../shared/utils/Formatador";
 
 class PessoaController {
-  private static readonly ERROS_CONFLITO_CADASTRO: Record<string, string> = {
+  private static readonly ERROS_CONFLITO_DOCUMENTO: Record<string, string> = {
     CPF_EXISTENTE: "CPF já cadastrado",
     CNPJ_EXISTENTE: "CNPJ já cadastrado",
-    NOME_DUPLICADO: "Nome já cadastrado",
     INSCRICAO_ESTADUAL_EXISTENTE: "Inscrição estadual já cadastrada",
   };
 
-  constructor(private service: PessoaService) { }
+  private static readonly MAPA_TITULO_PAPEL: Record<TipoPapel, string> = {
+    cliente: "Cliente",
+    fornecedor: "Fornecedor",
+    funcionario: "Funcionário",
+    meeiro: "Meeiro",
+    prestadordeservico: "Prestador de Serviço",
+  };
+
+  constructor(private service: PessoaService) {}
 
   private obterErroValidacao(req: Request, res: Response): Response | null {
     const erros = validationResult(req);
@@ -34,11 +50,17 @@ class PessoaController {
     );
   }
 
+  private formatarMensagemNomeDuplicado(entidadeTitulo: string, req: Request): string {
+    const isJuridica = req.body.tipoPessoa === "juridica" || Boolean(req.body.razaoSocial);
+    const campo = isJuridica ? "esta razão social" : "este nome";
+    return `Já existe ${entidadeTitulo} com ${campo}`;
+  }
+
   private async executarCadastro<T>(
     req: Request,
     res: Response,
     acao: (dados: T) => Promise<unknown>,
-    mensagemSucesso: string,
+    entidadeTitulo: string,
   ) {
     const erroValidacao = this.obterErroValidacao(req, res);
     if (erroValidacao) return erroValidacao;
@@ -46,13 +68,20 @@ class PessoaController {
     try {
       req.body.idAdministrador = req.session.idUsuario!;
       await acao(req.body);
-      return res.status(201).json({ mensagem: mensagemSucesso });
+      return res.status(201).json({ mensagem: `${Formatador.capitalizar(entidadeTitulo)} cadastrado com sucesso` });
     } catch (error: unknown) {
       if (error instanceof Error) {
-        const mensagemConflito = PessoaController.ERROS_CONFLITO_CADASTRO[error.message];
-        if (mensagemConflito) {
-          return res.status(409).json({ error: mensagemConflito });
+        if (error.message.startsWith("NOME_DUPLICADO")) {
+          return res.status(409).json({
+            error: this.formatarMensagemNomeDuplicado(entidadeTitulo, req),
+          });
         }
+
+        const mensagemConflitoDoc = PessoaController.ERROS_CONFLITO_DOCUMENTO[error.message];
+        if (mensagemConflitoDoc) {
+          return res.status(409).json({ error: mensagemConflitoDoc });
+        }
+
         return res.status(500).json({ error: error.message });
       }
       return res.status(500).json({ error: "Erro interno ao realizar cadastro" });
@@ -124,7 +153,7 @@ class PessoaController {
       req,
       res,
       (dados: CreateClienteDTO) => this.service.cadastrarCliente(dados),
-      "Cliente cadastrado com sucesso",
+      "cliente",
     );
   }
 
@@ -133,7 +162,7 @@ class PessoaController {
       req,
       res,
       (dados: CreateFornecedorDTO) => this.service.cadastrarFornecedor(dados),
-      "Fornecedor cadastrado com sucesso",
+      "fornecedor",
     );
   }
 
@@ -142,7 +171,7 @@ class PessoaController {
       req,
       res,
       (dados: CreateFuncionarioDTO) => this.service.cadastrarFuncionario(dados),
-      "Funcionário cadastrado com sucesso",
+      "funcionário",
     );
   }
 
@@ -151,7 +180,7 @@ class PessoaController {
       req,
       res,
       (dados: CreateMeeiroDTO) => this.service.cadastrarMeeiro(dados),
-      "Meeiro cadastrado com sucesso",
+      "meeiro",
     );
   }
 
@@ -160,7 +189,7 @@ class PessoaController {
       req,
       res,
       (dados: CreatePrestadorDTO) => this.service.cadastrarPrestador(dados),
-      "Prestador de Serviço cadastrado com sucesso",
+      "prestador de serviço",
     );
   }
 
@@ -298,7 +327,7 @@ class PessoaController {
           case "SEM_REGISTROS":
             return res
               .status(200)
-              .json({ error: "Nenhuma pessoa cadastrada a esse ID ou Página Vazia.", data: [] });
+              .json({ error: "Nenhuma pessoa cadastrada a esse ID ou Página Vazia", data: [] });
           default:
             return res.status(400).json({ error: error.message });
         }
@@ -388,16 +417,24 @@ class PessoaController {
       return res.status(204).send();
     } catch (error: unknown) {
       if (error instanceof Error) {
+        if (error.message.startsWith("NOME_DUPLICADO")) {
+          const [, papelExtraido] = error.message.split(":") as [string, TipoPapel | undefined];
+          const entidadeTitulo =
+            (papelExtraido && PessoaController.MAPA_TITULO_PAPEL[papelExtraido]) || "Pessoa";
+          return res.status(409).json({
+            error: this.formatarMensagemNomeDuplicado(entidadeTitulo, req),
+          });
+        }
+
         switch (error.message) {
-          case "NOME_DUPLICADO":
-            return res.status(409).json({ error: "Nome já cadastrado" });
           case "TIPO_DE_PESSOA_INVALIDO":
+          case "OPERACAO_INVALIDA":
             return res.status(422).json({ error: "Tipo de pessoa inválido" });
           case "ACESSO_NEGADO":
             return res.status(403).json({ error: "Acesso negado" });
         }
       }
-      return res.status(500).json({ mensagem: "Erro interno inesperado ao tentar atualizar." });
+      return res.status(500).json({ mensagem: "Erro interno inesperado ao tentar atualizar" });
     }
   }
 
@@ -410,15 +447,16 @@ class PessoaController {
       const cpf = req.body.cpf;
       const resposta = await this.service.atualizarCpf(cpf, pessoaId, req.session.idUsuario!);
       return res.status(200).json({
-        mensagem: "CPF Atualizado com sucesso.",
+        mensagem: "CPF Atualizado com sucesso",
         resposta: resposta?.toJSON(),
       });
     } catch (error: unknown) {
       if (error instanceof Error) {
         switch (error.message) {
           case "CPF_EXISTENTE":
-            return res.status(409).json({ error: "CPF já cadastrado no sistema" });
+            return res.status(409).json({ error: "CPF já cadastrado" });
           case "TIPO_DE_PESSOA_INVALIDO":
+          case "OPERACAO_INVALIDA":
             return res.status(422).json({ error: "Tipo de pessoa inválido" });
           case "ACESSO_NEGADO":
             return res.status(403).json({ error: "Acesso negado" });
@@ -438,19 +476,19 @@ class PessoaController {
       const pessoaId = Number(req.params.id);
       const cnpj = req.body.cnpj;
       const resposta = await this.service.atualizarCNPJ(cnpj, pessoaId, req.session.idUsuario!);
-      return res.status(200).json({ mensagem: "CNPJ atualizado com sucesso.", resposta });
+      return res.status(200).json({ mensagem: "CNPJ atualizado com sucesso", resposta });
     } catch (error: unknown) {
       if (error instanceof Error) {
         switch (error.message) {
           case "CNPJ_EXISTENTE":
-            return res.status(409).json({ error: "CNPJ já cadastrado no sistema." });
+            return res.status(409).json({ error: "CNPJ já cadastrado" });
           case "CNPJ_INVALIDO":
-            return res.status(404).json({ error: "CNPJ em formato inválido." });
+            return res.status(404).json({ error: "CNPJ em formato inválido" });
           case "ACESSO_NEGADO":
-            return res.status(403).json({ error: "Acesso negado." });
+            return res.status(403).json({ error: "Acesso negado" });
         }
       }
-      return res.status(500).json({ error: "Erro ao atualizar CNPJ." });
+      return res.status(500).json({ error: "Erro ao atualizar CNPJ" });
     }
   }
 
@@ -466,19 +504,20 @@ class PessoaController {
         pessoaId,
         req.session.idUsuario!,
       );
-      return res.status(200).json({ mensagem: "Inscrição Estadual atualizada com sucesso.", resposta });
+      return res.status(200).json({ mensagem: "Inscrição Estadual atualizada com sucesso", resposta });
     } catch (error: unknown) {
       if (error instanceof Error) {
         switch (error.message) {
           case "INSCRICAO_INVALIDA":
-            return res.status(400).json({ error: "Inscrição estadual inválida." });
+            return res.status(400).json({ error: "Inscrição estadual inválida" });
           case "INSCRICAO_EM_USO":
-            return res.status(409).json({ error: "Inscrição estadual já em uso." });
+          case "INSCRICAO_ESTADUAL_EXISTENTE":
+            return res.status(409).json({ error: "Inscrição estadual já em uso" });
           case "ACESSO_NEGADO":
-            return res.status(403).json({ error: "Acesso negado." });
+            return res.status(403).json({ error: "Acesso negado" });
         }
       }
-      return res.status(500).json({ error: "Erro ao atualizar Inscrição Estadual." });
+      return res.status(500).json({ error: "Erro ao atualizar Inscrição Estadual" });
     }
   }
 

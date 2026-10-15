@@ -64,7 +64,7 @@ class PessoaService {
     );
 
     if (nomeDuplicado) {
-      throw new Error("NOME_DUPLICADO");
+      throw new Error(`NOME_DUPLICADO:${papel}`);
     }
   }
 
@@ -73,13 +73,12 @@ class PessoaService {
       throw new Error("ID_ADMINISTRADOR_OBRIGATORIO");
     }
 
-    if (dados.tipoPessoa === "fisica" && dados.cpf) {
-      const cpfExistente = await this.pessoaRepo.verificarCpfExistente(dados.cpf, dados.idAdministrador);
-      if (cpfExistente) throw new Error("CPF_EXISTENTE");
-      return;
-    }
-
-    if (dados.tipoPessoa === "juridica") {
+    if (dados.tipoPessoa === "fisica") {
+      if (dados.cpf) {
+        const cpfExistente = await this.pessoaRepo.verificarCpfExistente(dados.cpf, dados.idAdministrador);
+        if (cpfExistente) throw new Error("CPF_EXISTENTE");
+      }
+    } else if (dados.tipoPessoa === "juridica") {
       if (dados.cnpj) {
         const cnpjExistente = await this.pessoaRepo.verificarCnpjExistente(dados.cnpj, dados.idAdministrador);
         if (cnpjExistente) throw new Error("CNPJ_EXISTENTE");

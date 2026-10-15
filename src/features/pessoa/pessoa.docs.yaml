@@ -144,7 +144,7 @@ paths:
         '400':
           description: Erro de validação nos campos.
         '409':
-          description: CPF ou CNPJ já cadastrado no sistema.
+          description: CPF ou CNPJ já cadastrado.
         '500':
           description: Erro interno do servidor.
     
@@ -958,7 +958,7 @@ paths:
         '400':
           description: CPF inválido.
         '404':
-          description: CPF já cadastrado no sistema.
+          description: CPF já cadastrado.
         '500':
           description: Erro ao atualizar CPF.
 
@@ -1001,7 +1001,7 @@ paths:
         '400':
           description: CNPJ inválido.
         '404':
-          description: CNPJ já cadastrado no sistema.
+          description: CNPJ já cadastrado.
         '500':
           description: Erro ao atualizar CNPJ.
 
