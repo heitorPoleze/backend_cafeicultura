@@ -8,26 +8,21 @@ class Credencial {
     private _idUsuario?: number
   ) {
     this.validarEntrada(_entrada);
-    // A senha pode vir já em hash do banco, então só validamos se não estiver "hasheada"
     if (!_senha.startsWith("$2a$") && !_senha.startsWith("$2b$")) {
       this.validarSenhaForte(_senha);
     };
   };
 
-  // --- Getters ---
   public get entrada(): string { return this._entrada; }
   public get senha(): string { return this._senha; }
   public get idUsuario(): number | undefined { return this._idUsuario; }
 
-  // --- Comportamentos ---
   public async compararSenha(senhaRecebida: string): Promise<boolean> {
     return await bcrypt.compare(senhaRecebida, this._senha);
   };
 
-  // --- Validações (Blindagem do Modelo) ---
   private validarEntrada(entrada: string) {
     if (!entrada || entrada.trim() === "") throw new Error("Entrada não pode ser vazio");
-    // Verificar qual tipo de entrada é
     switch (this._tipoEntrada) {
       case "email":
         if (!/^[a-zA-Záéíóúãõàèùâêô0-9._%+-]+@[a-zA-Z0-9.-]+(\.[a-zA-Z]{2,})?$/.test(entrada)) {

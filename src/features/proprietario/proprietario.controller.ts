@@ -81,20 +81,6 @@ class ProprietarioController {
       return this.tratarErroComum(error, res, "Erro ao remover endereço");
     }
   }
-  
-  public async atualizarSenha(req: Request, res: Response) {
-    const erros = validationResult(req);
-    if (!erros.isEmpty()) return res.status(400).json({ erros: erros.array() });
-
-    try {
-      const pessoaId = Number(req.params.id);
-      const { senha } = req.body; 
-      await this.service.atualizarSenha(senha, pessoaId, req.session.idUsuario!);
-      return res.status(200).json({ mensagem: "Senha atualizada com sucesso" });
-    } catch (error: unknown) {
-      return this.tratarErroComum(error, res, "Erro ao atualizar senha");
-    }
-  }
 
   public async atualizarEmail(req: Request, res: Response) {
     const erros = validationResult(req);

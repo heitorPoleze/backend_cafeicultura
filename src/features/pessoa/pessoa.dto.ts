@@ -36,13 +36,13 @@ export type PessoaResponseDTO = {
 
 export type PessoaFisicaResponseDTO = PessoaResponseDTO & {
     nome: string;
-    cpf: string;
+    cpf: string | null;
     papel?: string | null;
 };
 
 export type PessoaJuridicaResponseDTO = PessoaResponseDTO & {
     razaoSocial: string;
-    cnpj: string;
+    cnpj: string | null;
     inscrEstadual: string | null;
     papel?: string | null;
 };

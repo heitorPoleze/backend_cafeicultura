@@ -1,15 +1,14 @@
 import IPessoa from '../pessoa.interface';
-import PessoaFisica from '../pessoafisica.entity';
-import PessoaJuridica from '../pessoajuridica.entity';
+import PessoaBase from '../pessoabase.entity';
 
 class Cliente implements IPessoa {
-    private _pessoa: PessoaFisica | PessoaJuridica; 
+    private _pessoa: PessoaBase; 
 
-    constructor(pessoa: PessoaFisica | PessoaJuridica) {
+    constructor(pessoa: PessoaBase) {
         this._pessoa = pessoa;
     };
 
-    get pessoa(): PessoaFisica | PessoaJuridica {
+    get pessoa(): PessoaBase {
         return this._pessoa;
     };
 

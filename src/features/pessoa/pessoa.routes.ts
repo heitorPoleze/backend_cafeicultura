@@ -29,281 +29,348 @@ const pessoaService = new PessoaService(
   funcionarioRepo,
   meeiroRepo,
   prestadorRepo,
-  pessoaRepo
+  pessoaRepo,
 );
 
 const pessoaController = new PessoaController(pessoaService);
 
+const validarCampoIdentificacao = (
+  campo: "nome" | "razaoSocial",
+  label: string,
+) =>
+  body(campo)
+    .optional({ checkFalsy: true })
+    .isString()
+    .withMessage(`${label} deve ser um texto válido.`)
+    .bail()
+    .trim()
+    .isLength({ min: 4, max: 100 })
+    .withMessage(`${label} deve conter entre 4 e 100 caracteres.`)
+    .bail()
+    .matches(/^[\p{L}\s]+$/u)
+    .withMessage(
+      `${label} deve conter apenas letras (com ou sem acentuação), sem números ou símbolos.`,
+    )
+    .bail()
+    .custom((value: string) => {
+      const totalLetras = (value.match(/\p{L}/gu) || []).length;
+      if (totalLetras < 4) {
+        throw new Error(`${label} deve conter pelo menos 4 letras válidas.`);
+      }
+      return true;
+    });
+
 const validarCriacaoPessoaMista = [
-  body("tipoPessoa").isIn(['fisica', 'juridica']).withMessage("O tipoPessoa deve ser 'fisica' ou 'juridica'"),
-  
-  // Condicionais Física
-  body("nome").if(body("tipoPessoa").equals("fisica")).notEmpty().withMessage("O nome é obrigatório para Pessoa Física"),
-  body("cpf").if(body("tipoPessoa").equals("fisica")).custom((value) => validarCPF.isValid(value, true)).withMessage("O CPF informado é inválido"),
-  
-  // Condicionais Jurídica
-  body("razaoSocial").if(body("tipoPessoa").equals("juridica")).notEmpty().withMessage("A Razão Social é obrigatória para Pessoa Jurídica"),
-  body("cnpj").if(body("tipoPessoa").equals("juridica")).custom((value) => validarCNPJ.isValid(value, true)).withMessage("O CNPJ informado é inválido"),
-  body("inscrEstadual").optional()
+  body("tipoPessoa")
+    .isIn(["fisica", "juridica"])
+    .withMessage("O tipoPessoa deve ser 'fisica' ou 'juridica'"),
+
+  body("nome")
+    .if(body("tipoPessoa").equals("fisica"))
+    .trim()
+    .notEmpty()
+    .withMessage("O nome é obrigatório para Pessoa Física")
+    .bail(),
+  validarCampoIdentificacao("nome", "O nome"),
+
+  body("cpf")
+    .if(body("tipoPessoa").equals("fisica"))
+    .optional({ checkFalsy: true })
+    .custom((value) => validarCPF.isValid(value, true))
+    .withMessage("O CPF informado é inválido"),
+
+  body("razaoSocial")
+    .if(body("tipoPessoa").equals("juridica"))
+    .trim()
+    .notEmpty()
+    .withMessage("A Razão Social é obrigatória para Pessoa Jurídica")
+    .bail(),
+  validarCampoIdentificacao("razaoSocial", "A Razão Social"),
+
+  body("cnpj")
+    .if(body("tipoPessoa").equals("juridica"))
+    .optional({ checkFalsy: true })
+    .custom((value) => validarCNPJ.isValid(value, true))
+    .withMessage("O CNPJ informado é inválido"),
+
+  body("inscrEstadual")
+    .optional({ checkFalsy: true })
+    .isString()
+    .withMessage("A Inscrição Estadual deve ser um texto"),
 ];
 
-// Validação estrita para Funcionario, Meeiro e Prestador (Apenas Física)
 const validarCriacaoPessoaFisica = [
-  body("tipoPessoa").equals("fisica").withMessage("Este cadastro aceita apenas Pessoa Física ('fisica')"),
-  body("nome").notEmpty().withMessage("O nome é obrigatório"),
-  body("cpf").custom((value) => validarCPF.isValid(value, true)).withMessage("O CPF informado é inválido")
+  body("tipoPessoa")
+    .equals("fisica")
+    .withMessage("Este cadastro aceita apenas Pessoa Física ('fisica')"),
+  body("nome").trim().notEmpty().withMessage("O nome é obrigatório").bail(),
+  validarCampoIdentificacao("nome", "O nome"),
+  body("cpf")
+    .optional({ checkFalsy: true })
+    .custom((value) => validarCPF.isValid(value, true))
+    .withMessage("O CPF informado é inválido"),
+];
+
+const validarCriacaoFuncionario = [
+  ...validarCriacaoPessoaFisica,
+  body("ctps")
+    .optional({ checkFalsy: true })
+    .isString()
+    .withMessage("A CTPS deve ser um texto válido"),
+  body("salario")
+    .optional({ checkFalsy: true })
+    .isFloat({ gt: 0 })
+    .withMessage("O salário deve ser um valor numérico maior que zero"),
+];
+
+const validarAtualizacaoPessoa = [
+  param("id")
+    .isInt({ gt: 0 })
+    .withMessage("O ID deve ser um número inteiro válido."),
+  body().custom((_, { req }) => {
+    const temNome = Boolean(req.body?.nome && String(req.body.nome).trim());
+    const temRazaoSocial = Boolean(
+      req.body?.razaoSocial && String(req.body.razaoSocial).trim(),
+    );
+
+    if (!temNome && !temRazaoSocial) {
+      throw new Error(
+        "Informe o 'nome' ou a 'razaoSocial' para atualizar o cadastro.",
+      );
+    }
+    if (temNome && temRazaoSocial) {
+      throw new Error(
+        "Informe apenas 'nome' ou 'razaoSocial', nunca os dois ao mesmo tempo.",
+      );
+    }
+    return true;
+  }),
+  validarCampoIdentificacao("nome", "O nome"),
+  validarCampoIdentificacao("razaoSocial", "A Razão Social"),
+];
+
+const validarEndereco = [
+  param("id").isInt().withMessage("O ID deve ser um número inteiro"),
+  body("cidade").isString().notEmpty().withMessage("A cidade é obrigatória"),
+  body("cep")
+    .isString()
+    .matches(/^\d{5}-\d{3}$/)
+    .withMessage("CEP inválido. Formato esperado: XXXXX-XXX"),
+  body("uf")
+    .isString()
+    .isLength({ min: 2, max: 2 })
+    .withMessage("UF deve ter exatos 2 caracteres"),
+  body("logradouro")
+    .isString()
+    .notEmpty()
+    .withMessage("O logradouro é obrigatório"),
 ];
 
 router.get(
   "/funcionarios",
   exigeLogin(),
-  pessoaController.buscarFuncionarioPorIdAdministrador.bind(pessoaController)
-)
+  pessoaController.buscarFuncionarioPorIdAdministrador.bind(pessoaController),
+);
 router.get(
   "/meeiros",
   exigeLogin(),
-  pessoaController.buscarMeeirosPorIdAdministrador.bind(pessoaController)
-)
+  pessoaController.buscarMeeirosPorIdAdministrador.bind(pessoaController),
+);
 router.get(
   "/prestadores",
   exigeLogin(),
-  pessoaController.buscarPrestadoresDeServicoPorIdAdministrador.bind(pessoaController)
-)
+  pessoaController.buscarPrestadoresDeServicoPorIdAdministrador.bind(
+    pessoaController,
+  ),
+);
 router.get(
   "/fornecedores",
   exigeLogin(),
-  pessoaController.buscarFornecedoresPorIdAdministrador.bind(pessoaController)
-)
+  pessoaController.buscarFornecedoresPorIdAdministrador.bind(pessoaController),
+);
 router.get(
   "/clientes",
   exigeLogin(),
-  pessoaController.buscarClientesPorIdAdministrador.bind(pessoaController)
-)
+  pessoaController.buscarClientesPorIdAdministrador.bind(pessoaController),
+);
+router.get(
+  "/pessoas",
+  exigeLogin(),
+  pessoaController.listarPessoas.bind(pessoaController),
+);
 
 router.post(
   "/pessoa/cadastrar-endereco/:id",
   exigeLogin(),
-  [
-    param("id").isInt().withMessage("O ID deve ser um número inteiro"),
-    body(["cidade", "Cidade"]).custom((value, { req }) => {
-          const cidade = value ?? req.body.cidade ?? req.body.Cidade;
-          return typeof cidade === "string" && cidade.trim() !== "";
-        }).withMessage("Cidade é obrigatória"),
-        body(["CEP", "cep", "Cep"]).custom((value, { req }) => {
-          const cep = value ?? req.body.CEP ?? req.body.cep ?? req.body.Cep;
-          return typeof cep === "string" && /^\d{5}-\d{3}$/.test(cep);
-        }).withMessage("CEP inválido"),
-        body(["UF", "uf", "Uf"]).custom((value, { req }) => {
-          const uf = value ?? req.body.UF ?? req.body.uf ?? req.body.Uf;
-          return typeof uf === "string" && uf.length === 2;
-        }).withMessage("UF deve ter 2 caracteres"),
-        body(["logradouro", "Logradouro"]).custom((value, { req }) => {
-          const logradouro = value ?? req.body.logradouro ?? req.body.Logradouro;
-          return typeof logradouro === "string" && logradouro.trim() !== "";
-        }).withMessage("Logradouro é obrigatório")
-  ],
-  pessoaController.cadastrarEnderecoPessoaGenerica.bind(pessoaController)
-)
+  validarEndereco,
+  pessoaController.cadastrarEnderecoPessoaGenerica.bind(pessoaController),
+);
+
 router.put(
   "/pessoa/atualizar-endereco/:id",
   exigeLogin(),
-  [
-    param("id").isInt().withMessage("O ID deve ser um número inteiro"),
-    body(["cidade", "Cidade"]).custom((value, { req }) => {
-          const cidade = value ?? req.body.cidade ?? req.body.Cidade;
-          return typeof cidade === "string" && cidade.trim() !== "";
-        }).withMessage("Cidade é obrigatória"),
-        body(["CEP", "cep", "Cep"]).custom((value, { req }) => {
-          const cep = value ?? req.body.CEP ?? req.body.cep ?? req.body.Cep;
-          return typeof cep === "string" && /^\d{5}-\d{3}$/.test(cep);
-        }).withMessage("CEP inválido"),
-        body(["UF", "uf", "Uf"]).custom((value, { req }) => {
-          const uf = value ?? req.body.UF ?? req.body.uf ?? req.body.Uf;
-          return typeof uf === "string" && uf.length === 2;
-        }).withMessage("UF deve ter 2 caracteres"),
-        body(["logradouro", "Logradouro"]).custom((value, { req }) => {
-          const logradouro = value ?? req.body.logradouro ?? req.body.Logradouro;
-          return typeof logradouro === "string" && logradouro.trim() !== "";
-        }).withMessage("Logradouro é obrigatório")
-  ],
-  pessoaController.atualizarEnderecoPessoaGenerica.bind(pessoaController)
-)
+  validarEndereco,
+  pessoaController.atualizarEnderecoPessoaGenerica.bind(pessoaController),
+);
+
 router.delete(
   "/pessoa/deletar-endereco/:id",
   exigeLogin(),
   [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
-  pessoaController.RemoverEnderecoPessoaGenerica.bind(pessoaController)
-)
+  pessoaController.removerEnderecoPessoaGenerica.bind(pessoaController),
+);
 
 router.post(
   "/clientes",
   exigeLogin(),
   validarCriacaoPessoaMista,
-  pessoaController.cadastrarCliente.bind(pessoaController)
+  pessoaController.cadastrarCliente.bind(pessoaController),
 );
-
 router.get(
   "/clientes/:id",
   exigeLogin(),
   [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
-  pessoaController.buscarClientePorId.bind(pessoaController)
+  pessoaController.buscarClientePorId.bind(pessoaController),
 );
-
 router.delete(
   "/clientes/:id",
   exigeLogin(),
   [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
-  pessoaController.excluirCliente.bind(pessoaController)
+  pessoaController.excluirCliente.bind(pessoaController),
 );
 
 router.post(
   "/fornecedores",
   exigeLogin(),
   validarCriacaoPessoaMista,
-  pessoaController.cadastrarFornecedor.bind(pessoaController)
+  pessoaController.cadastrarFornecedor.bind(pessoaController),
 );
-
 router.get(
   "/fornecedores/:id",
   exigeLogin(),
   [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
-  pessoaController.buscarFornecedorPorId.bind(pessoaController)
+  pessoaController.buscarFornecedorPorId.bind(pessoaController),
 );
-
 router.delete(
   "/fornecedores/:id",
   exigeLogin(),
   [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
-  pessoaController.excluirFornecedor.bind(pessoaController)
+  pessoaController.excluirFornecedor.bind(pessoaController),
 );
-
 
 router.post(
   "/funcionarios",
   exigeLogin(),
-  [
-    ...validarCriacaoPessoaFisica
-    //body("ctps").notEmpty().withMessage("A CTPS é obrigatória para funcionários"),
-    //body("salario").isFloat({ gt: 0 }).withMessage("O salário deve ser um valor numérico maior que zero")
-  ],
-  pessoaController.cadastrarFuncionario.bind(pessoaController)
+  validarCriacaoFuncionario,
+  pessoaController.cadastrarFuncionario.bind(pessoaController),
 );
-
 router.get(
   "/funcionarios/:id",
   exigeLogin(),
   [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
-  pessoaController.buscarFuncionarioPorId.bind(pessoaController)
+  pessoaController.buscarFuncionarioPorId.bind(pessoaController),
 );
-
 router.put(
   "/funcionarios/:id/salario",
   exigeLogin(),
   [
     param("id").isInt().withMessage("O ID deve ser um número inteiro"),
-    body("salario").isFloat({ gt: 0 }).withMessage("O salário deve ser um valor numérico maior que zero")
+    body("salario")
+      .isFloat({ gt: 0 })
+      .withMessage("O salário deve ser um valor numérico maior que zero"),
   ],
-  pessoaController.atualizarFuncionarioSalario.bind(pessoaController)
+  pessoaController.atualizarFuncionarioSalario.bind(pessoaController),
 );
-
 router.delete(
   "/funcionarios/:id",
   exigeLogin(),
   [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
-  pessoaController.excluirFuncionario.bind(pessoaController)
+  pessoaController.excluirFuncionario.bind(pessoaController),
 );
 
 router.post(
   "/meeiros",
   exigeLogin(),
   validarCriacaoPessoaFisica,
-  pessoaController.cadastrarMeeiro.bind(pessoaController)
+  pessoaController.cadastrarMeeiro.bind(pessoaController),
 );
-
 router.get(
   "/meeiros/:id",
   exigeLogin(),
   [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
-  pessoaController.buscarMeeiroPorId.bind(pessoaController)
+  pessoaController.buscarMeeiroPorId.bind(pessoaController),
 );
-
 router.delete(
   "/meeiros/:id",
   exigeLogin(),
   [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
-  pessoaController.excluirMeeiro.bind(pessoaController)
+  pessoaController.excluirMeeiro.bind(pessoaController),
 );
 
 router.post(
   "/prestadores",
   exigeLogin(),
   validarCriacaoPessoaMista,
-  pessoaController.cadastrarPrestador.bind(pessoaController)
+  pessoaController.cadastrarPrestador.bind(pessoaController),
 );
-
 router.get(
   "/prestadores/:id",
   exigeLogin(),
   [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
-  pessoaController.buscarPrestadorPorId.bind(pessoaController)
+  pessoaController.buscarPrestadorPorId.bind(pessoaController),
 );
-
 router.delete(
   "/prestadores/:id",
   exigeLogin(),
   [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
-  pessoaController.excluirPrestador.bind(pessoaController)
-);
-
-router.get(
-  "/pessoas",
-  exigeLogin(),
-  pessoaController.listarPessoas.bind(pessoaController)
+  pessoaController.excluirPrestador.bind(pessoaController),
 );
 
 router.patch(
   "/pessoas/identificacao/:id",
   exigeLogin(),
-  pessoaController.AtualizarNomeOuRazaoSocial.bind(pessoaController),
-  [
-    body("nome")
-      .optional()
-      .isString().withMessage("Nome deve ser uma string"),
-    body("razaoSocial")
-      .optional()
-      .isString().withMessage("Razão Social deve ser uma string"),
-  ],
+  validarAtualizacaoPessoa,
+  pessoaController.atualizarNomeOuRazaoSocial.bind(pessoaController),
 );
 
-router.patch("/pessoas-fisicas/cpf/:id",
+router.patch(
+  "/pessoas-fisicas/cpf/:id",
   exigeLogin(),
   [
-    body("cpf").custom((value) => validarCPF.isValid(value, true)).withMessage("O CPF informado é inválido"),
+    param("id").isInt().withMessage("O ID deve ser um número inteiro"),
+    body("cpf")
+      .optional({ checkFalsy: true })
+      .custom((value) => validarCPF.isValid(value, true))
+      .withMessage("O CPF informado é inválido"),
   ],
-  pessoaController.atualizarCpf.bind(pessoaController)
-)
+  pessoaController.atualizarCpf.bind(pessoaController),
+);
 
-
-router.patch("/pessoa-juridica/atualizar-cnpj/:id",
+router.patch(
+  "/pessoa-juridica/atualizar-cnpj/:id",
   exigeLogin(),
   [
-    body("cnpj").custom((value) => validarCNPJ.isValid(value, true)).withMessage("O CNPJ informado é inválido"),
+    param("id").isInt().withMessage("O ID deve ser um número inteiro"),
+    body("cnpj")
+      .optional({ checkFalsy: true })
+      .custom((value) => validarCNPJ.isValid(value, true))
+      .withMessage("O CNPJ informado é inválido"),
   ],
-  pessoaController.atualizarCpnj.bind(pessoaController)
-)
+  pessoaController.atualizarCnpj.bind(pessoaController),
+);
 
-router.patch("/pessoa-juridica/atualizar-inscricaoEstadual/:id",
+router.patch(
+  "/pessoa-juridica/atualizar-inscricaoEstadual/:id",
   exigeLogin(),
-   [
-      body("inscricaoEstadual")
-        .custom((value) => {
-          if (!value || typeof value !== "string" || value.trim() === "") {
-            throw new Error("A Inscrição Estadual deve ser informada");
-          }
-          return true;
-        })
-    ],
-)
-
+  [
+    param("id").isInt().withMessage("O ID deve ser um número inteiro"),
+    body("inscricaoEstadual")
+      .optional({ checkFalsy: true })
+      .isString()
+      .notEmpty()
+      .withMessage("A Inscrição Estadual deve ser informada caso enviada"),
+  ],
+  pessoaController.atualizarInscricaoEstadual.bind(pessoaController),
+);
 
 export default router;

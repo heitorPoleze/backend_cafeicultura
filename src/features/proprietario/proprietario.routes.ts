@@ -16,13 +16,9 @@ const proprietarioRepo = new ProprietarioRepository(prisma, pessoaRepo, usuarioR
 const proprietarioService = new ProprietarioService(prisma, proprietarioRepo, pessoaRepo, usuarioRepo);
 const proprietarioController = new ProprietarioController(proprietarioService);
 
-
-// --- DEFINIÇÃO DAS ROTAS ---
-
 router.post(
   "/",
   [
-    // Validações Base (usuário)
     body("email").isEmail().withMessage("O email informado não é válido"),
     body("telefone")
       .matches(/^(\d{10,11}|\(\d{2}\) \s?\d{4,5}-\d{4})$/)
@@ -32,14 +28,11 @@ router.post(
       .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).+$/)
       .withMessage("A senha deve conter maiúscula, minúscula, número e símbolo"),
     
-    // Validação de Tipo de Perfil
     body("tipoPessoa").isIn(['fisica', 'juridica']).withMessage("O tipoPessoa deve ser fisica ou juridica"),
 
-    // Validações Condicionais (Pessoa Física)
     body("nome").if(body("tipoPessoa").equals("fisica")).notEmpty().withMessage("O nome é obrigatório para Pessoa Física"),
     body("cpf").if(body("tipoPessoa").equals("fisica")).custom((value) => validarCPF.isValid(value, true)).withMessage("O CPF informado é inválido"),
 
-    // Validações Condicionais (Pessoa Jurídica)
     body("razaoSocial").if(body("tipoPessoa").equals("juridica")).notEmpty().withMessage("A Razão Social é obrigatória para Pessoa Jurídica"),
     body("cnpj").if(body("tipoPessoa").equals("juridica")).custom((value) => validarCNPJ.isValid(value, true)).withMessage("O CNPJ informado é inválido"),
     body("inscrEstadual").if(body("tipoPessoa").equals("juridica")).optional()
@@ -75,7 +68,6 @@ router.put(
   proprietarioController.atualizarEndereco.bind(proprietarioController)
 );
 
-// Adicionar endereço para um proprietário existente
 router.post(
   "/:id/endereco",
   exigeLogin(),
@@ -104,29 +96,12 @@ router.post(
   proprietarioController.criarEndereco.bind(proprietarioController)
 );
 
-// Remover endereço de um proprietário
 router.delete(
   "/:id/endereco",
   exigeLogin(),
   proprietarioController.removerEndereco.bind(proprietarioController)
 );
 
-//revisar
-// Atualizar senha de um proprietário
-router.put(
-  "/:id/senha",
-  exigeLogin(),
-  [
-    body("senha")
-      .isLength({ min: 8 }).withMessage("A senha deve conter pelo menos 8 caracteres")
-      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).+$/)
-      .withMessage("A senha deve conter maiúscula, minúscula, número e símbolo")
-  ],
-  proprietarioController.atualizarSenha.bind(proprietarioController)
-);
-
-//revisar
-// Atualizar email de um proprietário
 router.put(
   "/:id/email",
   exigeLogin(),
@@ -136,8 +111,6 @@ router.put(
   proprietarioController.atualizarEmail.bind(proprietarioController)
 );
 
-//revisar
-// Atualizar telefone de um proprietário
 router.put(
   "/:id/telefone",
   exigeLogin(),

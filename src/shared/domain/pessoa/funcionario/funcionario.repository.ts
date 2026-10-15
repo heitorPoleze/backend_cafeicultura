@@ -4,6 +4,7 @@ import PessoaRepository from "../pessoa.repository";
 import Endereco from "../../endereco/endereco.vo";
 import PessoaFactory from "../pessoafactory.entity";
 import { BuscaPaginadaDTO, FuncionarioResponseDTO } from "../../../../features/pessoa/pessoa.dto";
+import PessoaDTO from "../pessoa.dto";
 
 class FuncionarioRepository {
   constructor(
@@ -12,12 +13,9 @@ class FuncionarioRepository {
   ) { }
 
   public async salvarComTransacao(f: Funcionario): Promise<number> {
-    // Inicia a transação (Unit of Work)
     return await this.prisma.$transaction(async (tx) => {
-      // 1. Delega a criação da Pessoa (Física/Jurídica) passando o 'tx'
       const id = await this.pessoaRepo.salvar(f.pessoa, tx);
 
-      // 2. O próprio repositório salva sua entidade principal
       await tx.funcionarios.create({
         data: {
           idPeFisica_PFK: id,
@@ -65,13 +63,15 @@ class FuncionarioRepository {
       ? new Endereco(e.cidade, e.bairro, e.cep, e.uf, e.pais, e.logradouro, e.idEndereco_PK)
       : null;
 
-    const dados = {
-      id: f.idPeFisica_PFK,
+
+      const dados: PessoaDTO = {
+      id: p.idPessoa_PK,
       idAdministrador: p.idAdministrador_FK,
       dataCadastro: p.dataCadastro,
       endereco: endereco,
-      nome: p.pessoasfisicas?.nome,
-      cpf: p.pessoasfisicas?.cpf
+      nome: p.pessoasfisicas!.nome,
+      cpf: p.pessoasfisicas!.cpf ?? null,
+      cnpj: null
     };
 
     const pessoa = PessoaFactory.criarPessoa("fisica", dados);

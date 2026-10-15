@@ -17,7 +17,6 @@ class AuthRepository {
         where: { email: entrada },
       });
     } else if (tipo === "cpf") {
-      // Para CPF, busca na tabela pessoasfisicas primeiro
       const pf = await this.db.pessoasfisicas.findFirst({
         where: { cpf: entrada },
       });
@@ -27,7 +26,6 @@ class AuthRepository {
         });
       }
     } else if (tipo === "cnpj") {
-      // Para CNPJ, busca na tabela pessoasjuridicas primeiro
       const pj = await this.db.pessoasjuridicas.findFirst({
         where: { cnpj: entrada },
       });
@@ -40,7 +38,6 @@ class AuthRepository {
 
     if (!usuario) return null;
 
-    // Busca o nome na tabela de pessoas
     const pessoa = await this.db.pessoas.findUnique({
       where: { idPessoa_PK: usuario.idUsuario_PFK },
       include: {
