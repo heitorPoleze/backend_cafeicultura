@@ -1,6 +1,6 @@
 ﻿tags:
   - name: Pessoas
-    description: Cadastro e gestão de clientes, fornecedores, funcionários, meeiros, prestadores e endereços
+    description: Cadastro e gestão de clientes, fornecedores, funcionários, diaristas, meeiros, prestadores e endereços
 
 components:
   schemas:
@@ -12,47 +12,93 @@ components:
         tipoPessoa:
           type: string
           enum: [fisica, juridica]
-          description: Define os campos obrigatórios. Para física, são necessários nome e cpf; para jurídica, razão social e cnpj.
+          description: Define os campos obrigatórios. Para 'fisica', o campo 'nome' é obrigatório; para 'juridica', o campo 'razaoSocial' é obrigatório. CPF, CNPJ e Inscrição Estadual são opcionais.
         nome:
           type: string
+          minLength: 3
+          maxLength: 100
+          example: João da Silva
         cpf:
           type: string
+          nullable: true
+          example: "123.456.789-00"
         razaoSocial:
           type: string
+          minLength: 3
+          maxLength: 100
+          example: Agro Café LTDA
         cnpj:
           type: string
+          nullable: true
+          example: "12.345.678/0001-90"
         inscrEstadual:
           type: string
+          nullable: true
+          example: "123456789"
 
     PessoaFisicaInput:
       type: object
       required:
         - tipoPessoa
         - nome
-        - cpf
       properties:
         tipoPessoa:
           type: string
           enum: [fisica]
+          example: fisica
         nome:
           type: string
+          minLength: 3
+          maxLength: 100
+          example: João da Silva
         cpf:
           type: string
+          nullable: true
+          description: Opcional. Caso informado, deve ser um CPF válido no formato XXX.XXX.XXX-XX.
+          example: "123.456.789-00"
 
     FuncionarioInput:
       allOf:
         - $ref: '#/components/schemas/PessoaFisicaInput'
         - type: object
-          required:
-            - ctps
-            - salario
           properties:
             ctps:
               type: string
+              nullable: true
+              example: "1234567-89"
             salario:
               type: number
               format: float
-              description: Deve ser maior que zero.
+              nullable: true
+              description: Opcional no cadastro. Caso informado, deve ser maior que zero.
+              example: 2500.00
+
+    DiaristaInput:
+      allOf:
+        - $ref: '#/components/schemas/PessoaFisicaInput'
+        - type: object
+          properties:
+            valorHora:
+              type: number
+              format: float
+              nullable: true
+              description: Opcional no cadastro. Caso informado, deve ser maior ou igual a zero.
+              example: 25.50
+
+    IdentificacaoPatchInput:
+      type: object
+      description: Informe apenas 'nome' (Pessoa Física) OU 'razaoSocial' (Pessoa Jurídica), nunca ambos ou nenhum. Deve conter entre 3 e 100 caracteres e no mínimo 3 letras.
+      properties:
+        nome:
+          type: string
+          minLength: 3
+          maxLength: 100
+          example: João da Silva
+        razaoSocial:
+          type: string
+          minLength: 3
+          maxLength: 100
+          example: Agro Café LTDA
 
     EnderecoInput:
       type: object
@@ -66,18 +112,25 @@ components:
       properties:
         cidade:
           type: string
+          example: Santa Teresa
         bairro:
           type: string
+          example: Centro
         cep:
           type: string
           pattern: '^\d{5}-\d{3}$'
+          example: "29650-000"
         uf:
           type: string
+          minLength: 2
           maxLength: 2
+          example: ES
         pais:
           type: string
+          example: Brasil
         logradouro:
           type: string
+          example: Estrada Rural, Km 5
         idEndereco:
           type: integer
           nullable: true
@@ -99,21 +152,49 @@ components:
           example: João da Silva
         cpf:
           type: string
-          example: 123.456.789-00
+          nullable: true
+          example: "123.456.789-00"
         razaoSocial:
           type: string
           example: Empresa LTDA
         cnpj:
           type: string
-          example: 12.345.678/0001-90
+          nullable: true
+          example: "12.345.678/0001-90"
         inscrEstadual:
           type: string
-        endereco:
-          type: object
           nullable: true
+        endereco:
+          $ref: '#/components/schemas/EnderecoInput'
         papel:
           type: string
+          enum: [cliente, fornecedor, funcionario, diarista, meeiro, prestadordeservico]
+          nullable: true
           example: cliente
+
+    FuncionarioResponse:
+      allOf:
+        - $ref: '#/components/schemas/PessoaResponse'
+        - type: object
+          properties:
+            ctps:
+              type: string
+              nullable: true
+              example: "1234567-89"
+            salario:
+              type: number
+              format: float
+              example: 2500.00
+
+    DiaristaResponse:
+      allOf:
+        - $ref: '#/components/schemas/PessoaResponse'
+        - type: object
+          properties:
+            valorHora:
+              type: number
+              format: float
+              example: 25.50
 
 paths:
   /api/v1/clientes:
@@ -144,10 +225,10 @@ paths:
         '400':
           description: Erro de validação nos campos.
         '409':
-          description: CPF ou CNPJ já cadastrado.
+          description: Já existe Cliente com este nome/razão social, ou CPF/CNPJ/Inscrição Estadual já cadastrado.
         '500':
           description: Erro interno do servidor.
-    
+
     get:
       summary: Busca todos os clientes ligados ao administrador autenticado
       tags:
@@ -158,11 +239,20 @@ paths:
       responses:
         '200':
           description: Clientes retornados com sucesso.
-        '400':
-          description: Erro ao processar os parâmetros de paginação.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dados:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PessoaResponse'
+        '403':
+          description: Acesso negado; usuário não pode visualizar clientes.
         '500':
           description: Erro ao buscar clientes.
-    
+
   /api/v1/clientes/{id}:
     get:
       summary: Busca um cliente pelo ID
@@ -185,7 +275,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PessoaResponse'
         '403':
-          description: Acesso negado; usuário não pode visualizar este cliente.
+          description: Acesso negado! Não pode visualizar cliente.
         '404':
           description: Cliente não encontrado.
         '500':
@@ -215,8 +305,10 @@ paths:
                   mensagem:
                     type: string
                     example: Cliente excluído com sucesso
+        '400':
+          description: Cliente possui associações e não pode ser excluído.
         '403':
-          description: Acesso negado ou usuário não pode excluir este cliente.
+          description: Acesso negado! Não pode excluir cliente.
         '404':
           description: Cliente não encontrado.
         '500':
@@ -250,10 +342,10 @@ paths:
         '400':
           description: Erro de validação.
         '409':
-          description: CPF já cadastrado.
+          description: Já existe Fornecedor com este nome/razão social, ou CPF/CNPJ/Inscrição Estadual já cadastrado.
         '500':
           description: Erro interno do servidor.
-    
+
     get:
       summary: Lista fornecedores ligados ao administrador autenticado
       tags:
@@ -264,10 +356,17 @@ paths:
       responses:
         '200':
           description: Fornecedores retornados com sucesso.
-        '400':
-          description: Erro ao processar os parâmetros de paginação.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dados:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PessoaResponse'
         '403':
-          description: Acesso negado; usuário nao pode visualizar os fornecedores.
+          description: Acesso negado; usuário não pode visualizar os fornecedores.
         '500':
           description: Erro ao buscar fornecedores.
 
@@ -293,11 +392,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/PessoaResponse'
         '403':
-          description: Acesso negado; usuário não pode visualizar este fornecedor.
+          description: Acesso negado! Não pode visualizar fornecedor.
         '404':
           description: Fornecedor não encontrado.
         '500':
           description: Erro ao buscar fornecedor.
+
     delete:
       summary: Exclui um fornecedor pelo ID
       tags:
@@ -323,7 +423,7 @@ paths:
                     type: string
                     example: Fornecedor excluído com sucesso
         '403':
-          description: Acesso negado ou usuário não pode excluir este fornecedor.
+          description: Acesso negado ou Fornecedor possui associações e não pode ser excluído.
         '404':
           description: Fornecedor não encontrado.
         '500':
@@ -331,7 +431,7 @@ paths:
 
   /api/v1/funcionarios:
     post:
-      summary: Cadastra um novo funcionário
+      summary: Cadastra um novo funcionário (Apenas Pessoa Física)
       tags:
         - Pessoas
       security:
@@ -357,7 +457,7 @@ paths:
         '400':
           description: Erro de validação.
         '409':
-          description: CPF já cadastrado.
+          description: Já existe Funcionário com este nome, ou CPF já cadastrado.
         '500':
           description: Erro interno.
 
@@ -376,16 +476,12 @@ paths:
               schema:
                 type: object
                 properties:
-                  pagina:
-                    type: integer
-                  limite:
-                    type: integer
                   dados:
                     type: array
                     items:
-                      $ref: '#/components/schemas/PessoaResponse'
-        '404':
-          description: Funcionário não encontrado.
+                      $ref: '#/components/schemas/FuncionarioResponse'
+        '403':
+          description: Acesso negado! Não pode visualizar funcionário.
         '500':
           description: Erro ao buscar funcionários.
 
@@ -409,9 +505,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PessoaResponse'
+                $ref: '#/components/schemas/FuncionarioResponse'
         '403':
-          description: Acesso negado; usuário não pode visualizar este funcionário.
+          description: Acesso negado! Não pode visualizar funcionário.
         '404':
           description: Funcionário não encontrado.
         '500':
@@ -441,8 +537,8 @@ paths:
                   mensagem:
                     type: string
                     example: Funcionário excluído com sucesso
-        '403':  
-          description: Acesso negado ou usuário não pode excluir este funcionário.
+        '403':
+          description: Acesso negado ou Funcionário possui associações e não pode ser excluído.
         '404':
           description: Funcionário não encontrado.
         '500':
@@ -474,6 +570,7 @@ paths:
                 salario:
                   type: number
                   format: float
+                  example: 2800.00
       responses:
         '200':
           description: Salário atualizado com sucesso.
@@ -486,17 +583,172 @@ paths:
                     type: string
                     example: Salário atualizado com sucesso
         '400':
-          description: Erro de validação.
+          description: Erro de validação (salário deve ser maior que zero).
         '403':
-          description: Acesso negado; usuário não pode atualizar salário.
+          description: Acesso negado! Não pode atualizar salário.
         '404':
           description: Funcionário não encontrado.
         '500':
           description: Erro ao atualizar salário.
 
+  /api/v1/diaristas:
+    post:
+      summary: Cadastra um novo diarista (Apenas Pessoa Física)
+      tags:
+        - Pessoas
+      security:
+        - ApiKeyAuth: []
+          cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiaristaInput'
+      responses:
+        '201':
+          description: Diarista cadastrado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Diarista cadastrado com sucesso
+        '400':
+          description: Erro de validação nos campos enviados.
+        '409':
+          description: Já existe Diarista com este nome, ou CPF já cadastrado.
+        '500':
+          description: Erro interno ao realizar cadastro.
+
+    get:
+      summary: Lista diaristas ligados ao administrador autenticado
+      tags:
+        - Pessoas
+      security:
+        - ApiKeyAuth: []
+          cookieAuth: []
+      responses:
+        '200':
+          description: Lista de diaristas retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dados:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DiaristaResponse'
+        '403':
+          description: Acesso negado! Não pode visualizar diarista.
+        '500':
+          description: Erro ao buscar diarista.
+
+  /api/v1/diaristas/{id}:
+    get:
+      summary: Busca um diarista pelo ID
+      tags:
+        - Pessoas
+      security:
+        - ApiKeyAuth: []
+          cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dados do diarista retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiaristaResponse'
+        '403':
+          description: Acesso negado! Não pode visualizar diarista.
+        '404':
+          description: Diarista não encontrado.
+        '500':
+          description: Erro ao buscar diarista.
+
+    delete:
+      summary: Exclui um diarista pelo ID
+      tags:
+        - Pessoas
+      security:
+        - ApiKeyAuth: []
+          cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Diarista excluído com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Diarista excluído com sucesso
+        '403':
+          description: Acesso negado ou Diarista possui associações e não pode ser excluído.
+        '404':
+          description: Diarista não encontrado.
+        '500':
+          description: Erro ao excluir diarista.
+
+  /api/v1/diaristas/{id}/valor-hora:
+    patch:
+      summary: Atualiza o valor da hora de um diarista
+      tags:
+        - Pessoas
+      security:
+        - ApiKeyAuth: []
+          cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - valorHora
+              properties:
+                valorHora:
+                  type: number
+                  format: float
+                  description: Deve ser um valor numérico maior que zero.
+                  example: 30.00
+      responses:
+        '204':
+          description: No Content.
+        '400':
+          description: Erro de validação (valor da hora inválido).
+        '403':
+          description: Acesso negado! Não pode atualizar valor/hora.
+        '404':
+          description: Diarista não encontrado.
+        '500':
+          description: Erro ao atualizar valor/hora.
+
   /api/v1/meeiros:
     post:
-      summary: Cadastra um novo meeiro
+      summary: Cadastra um novo meeiro (Apenas Pessoa Física)
       tags:
         - Pessoas
       security:
@@ -522,7 +774,7 @@ paths:
         '400':
           description: Erro de validação.
         '409':
-          description: CPF já cadastrado.
+          description: Já existe Meeiro com este nome, ou CPF já cadastrado.
         '500':
           description: Erro interno.
 
@@ -541,16 +793,12 @@ paths:
               schema:
                 type: object
                 properties:
-                  pagina:
-                    type: integer
-                  limite:
-                    type: integer
                   dados:
                     type: array
                     items:
                       $ref: '#/components/schemas/PessoaResponse'
-        '404':
-          description: Meeiro não encontrado.
+        '403':
+          description: Acesso negado! Não pode visualizar meeiro.
         '500':
           description: Erro ao buscar meeiros.
 
@@ -576,12 +824,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/PessoaResponse'
         '403':
-          description: Acesso negado; usuário não pode visualizar este meeiro.
+          description: Acesso negado! Não pode visualizar meeiro.
         '404':
           description: Meeiro não encontrado.
         '500':
           description: Erro ao buscar meeiro.
-    
+
     delete:
       summary: Exclui um meeiro pelo ID
       tags:
@@ -607,7 +855,7 @@ paths:
                     type: string
                     example: Meeiro excluído com sucesso
         '403':
-          description: Acesso negado ou usuário não pode excluir este meeiro.
+          description: Acesso negado ou Meeiro possui associações e não pode ser excluído.
         '404':
           description: Meeiro não encontrado.
         '500':
@@ -626,7 +874,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PessoaFisicaInput'
+              $ref: '#/components/schemas/PessoaMistaInput'
       responses:
         '201':
           description: Prestador de Serviço cadastrado com sucesso.
@@ -641,10 +889,10 @@ paths:
         '400':
           description: Erro de validação.
         '409':
-          description: CPF já cadastrado.
+          description: Já existe Prestador de Serviço com este nome/razão social, ou CPF/CNPJ/Inscrição Estadual já cadastrado.
         '500':
           description: Erro interno.
-    
+
     get:
       summary: Lista prestadores ligados ao administrador autenticado
       tags:
@@ -660,16 +908,12 @@ paths:
               schema:
                 type: object
                 properties:
-                  pagina:
-                    type: integer
-                  limite:
-                    type: integer
                   dados:
                     type: array
                     items:
                       $ref: '#/components/schemas/PessoaResponse'
-        '404':
-          description: Prestador não encontrado.
+        '403':
+          description: Usuário não autenticado ou acesso negado.
         '500':
           description: Erro ao buscar prestadores.
 
@@ -695,12 +939,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/PessoaResponse'
         '403':
-          description: Acesso negado; usuário não pode visualizar este prestador.
+          description: Acesso negado! Não pode visualizar prestador de serviço.
         '404':
           description: Prestador de Serviço não encontrado.
         '500':
           description: Erro ao buscar prestador.
-    
+
     delete:
       summary: Exclui um prestador pelo ID
       tags:
@@ -724,9 +968,9 @@ paths:
                 properties:
                   mensagem:
                     type: string
-                    example: Prestador excluído com sucesso
+                    example: Prestador de Serviço excluído com sucesso
         '403':
-          description: Acesso negado ou usuário não pode excluir este prestador.
+          description: Acesso negado ou Prestador de Serviço possui associações e não pode ser excluído.
         '404':
           description: Prestador de Serviço não encontrado.
         '500':
@@ -810,7 +1054,7 @@ paths:
         '400':
           description: Dados inválidos.
         '404':
-          description: Pessoa não encontrada.
+          description: Pessoa não encontrada ou acesso negado.
         '500':
           description: Erro ao cadastrar endereço.
 
@@ -850,7 +1094,7 @@ paths:
         '400':
           description: Dados inválidos.
         '404':
-          description: Pessoa não encontrada.
+          description: Pessoa não encontrada ou acesso negado.
         '500':
           description: Erro ao atualizar endereço.
 
@@ -905,19 +1149,20 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                nome:
-                  type: string
-                razaoSocial:
-                  type: string
+              $ref: '#/components/schemas/IdentificacaoPatchInput'
       responses:
         '204':
-          description: No content
+          description: Identificação atualizada com sucesso (Sem conteúdo).
         '400':
-          description: Dados inválidos.
+          description: Erro de validação (envio de ambos/nenhum campo ou fora do limite de 3 a 100 caracteres/mínimo de 3 letras).
+        '403':
+          description: Acesso negado.
+        '409':
+          description: Já existe pessoa neste papel com este nome ou razão social.
+        '422':
+          description: Tipo de pessoa inválido para o campo enviado.
         '500':
-          description: Erro ao atualizar identificação.
+          description: Erro interno ao atualizar identificação.
 
   /api/v1/pessoas-fisicas/cpf/{id}:
     patch:
@@ -944,6 +1189,7 @@ paths:
               properties:
                 cpf:
                   type: string
+                  example: "123.456.789-00"
       responses:
         '200':
           description: CPF atualizado com sucesso.
@@ -955,10 +1201,16 @@ paths:
                   mensagem:
                     type: string
                     example: CPF Atualizado com sucesso.
+                  resposta:
+                    $ref: '#/components/schemas/PessoaResponse'
         '400':
           description: CPF inválido.
-        '404':
-          description: CPF já cadastrado.
+        '403':
+          description: Acesso negado.
+        '409':
+          description: CPF já cadastrado no sistema.
+        '422':
+          description: Tipo de pessoa inválido (não é Pessoa Física).
         '500':
           description: Erro ao atualizar CPF.
 
@@ -987,6 +1239,7 @@ paths:
               properties:
                 cnpj:
                   type: string
+                  example: "12.345.678/0001-90"
       responses:
         '200':
           description: CNPJ atualizado com sucesso.
@@ -1000,8 +1253,10 @@ paths:
                     example: CNPJ atualizado com sucesso.
         '400':
           description: CNPJ inválido.
-        '404':
-          description: CNPJ já cadastrado.
+        '403':
+          description: Acesso negado.
+        '409':
+          description: CNPJ já cadastrado no sistema.
         '500':
           description: Erro ao atualizar CNPJ.
 
@@ -1030,6 +1285,7 @@ paths:
               properties:
                 inscricaoEstadual:
                   type: string
+                  example: "123456789"
       responses:
         '200':
           description: Inscrição estadual atualizada com sucesso.
@@ -1043,5 +1299,9 @@ paths:
                     example: Inscrição Estadual atualizada com sucesso.
         '400':
           description: Inscrição estadual inválida.
+        '403':
+          description: Acesso negado.
+        '409':
+          description: Inscrição estadual já em uso.
         '500':
           description: Erro ao atualizar inscrição estadual.

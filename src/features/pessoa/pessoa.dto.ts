@@ -17,15 +17,24 @@ export type CreateFuncionarioDTO = CreatePessoaDTO & {
     salario: number;
 };
 
+export type CreateDiaristaDTO = CreatePessoaDTO & {
+  valorHora?: number;
+}
+
 export type CreateClienteDTO = CreatePessoaDTO;
 export type CreateFornecedorDTO = CreatePessoaDTO
 export type CreateMeeiroDTO = CreatePessoaDTO;
 export type CreatePrestadorDTO = CreatePessoaDTO;
 
-export type updateSalarioFuncionarioDTO = {
+export type UpdateSalarioFuncionarioDTO = {
     id: number;
     salario: number;
 };
+
+export type UpdateValorHoraDiaristaDTO = {
+  id: number;
+  valorHora: number;
+}
 
 export type PessoaResponseDTO = {
     id: number;
@@ -50,6 +59,10 @@ export type PessoaJuridicaResponseDTO = PessoaResponseDTO & {
 export type FuncionarioResponseDTO = PessoaFisicaResponseDTO & {
     ctps: string | null;
     salario: number | string;
+};
+
+export type DiaristaResponseDTO = PessoaFisicaResponseDTO & {
+    valorHora: number | string;
 };
 
 export type MeeiroResponseDTO = PessoaFisicaResponseDTO | PessoaJuridicaResponseDTO;

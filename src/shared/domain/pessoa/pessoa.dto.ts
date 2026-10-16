@@ -1,6 +1,7 @@
 import Endereco from "../endereco/endereco.vo";
 export type TipoPapel = 
   | 'funcionario' 
+  | 'diarista'
   | 'cliente' 
   | 'meeiro' 
   | 'fornecedor' 

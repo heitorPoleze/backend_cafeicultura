@@ -100,9 +100,6 @@ class PrestadorRepository {
           where: { idPeFisica_PFK: prestador.pessoa.id! }
         });
         await this.pessoaRepo.excluirPessoa(prestador.pessoa, tx);
-        if (!await this.pessoaRepo.removerEndereco(prestador.pessoa.id!, tx)) {
-          throw new Error("ERRO_REMOVER_ENDERECO");
-        }
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {

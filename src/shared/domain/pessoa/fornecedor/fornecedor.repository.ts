@@ -107,9 +107,6 @@ class FornecedorRepository {
           });
         }
         await this.pessoaRepo.excluirPessoa(fornecedor.pessoa, tx);
-        if (!await this.pessoaRepo.removerEndereco(fornecedor.pessoa.id!, tx)) {
-          throw new Error("ERRO_REMOVER_ENDERECO");
-        };
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
