@@ -598,7 +598,7 @@ model estoquesacas {
 }
 
 model diaristas {
-  idPeFisica_PFK Int      @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
+  idPeFisica_PFK Int      @id @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
   valorHora      Decimal? @db.Decimal(10, 2)
   pessoasfisicas pessoas  @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_diarista")
 }
