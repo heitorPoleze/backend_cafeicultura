@@ -1,6 +1,7 @@
 import ClienteRepo from "../../shared/domain/pessoa/cliente/cliente.repository";
 import FornecedorRepo from "../../shared/domain/pessoa/fornecedor/fornecedor.repository";
 import FuncionarioRepo from "../../shared/domain/pessoa/funcionario/funcionario.repository";
+import DiaristaRepo from "../../shared/domain/pessoa/diarista/diarista.repository";
 import MeeiroRepo from "../../shared/domain/pessoa/meeiro/meeiro.repository";
 import PrestadorRepo from "../../shared/domain/pessoa/prestadordeservico/prestador.repository";
 import PessoaRepo from "../../shared/domain/pessoa/pessoa.repository";
@@ -12,22 +13,26 @@ import {
   CreateClienteDTO,
   CreateFornecedorDTO,
   CreateFuncionarioDTO,
+  CreateDiaristaDTO,
   CreateMeeiroDTO,
   CreatePessoaDTO,
   CreatePrestadorDTO,
   ExcluirPessoaDTO,
   FornecedorResponseDTO,
   FuncionarioResponseDTO,
+  DiaristaResponseDTO,
   ListarPessoasDTO,
   MeeiroResponseDTO,
   PessoaFisicaResponseDTO,
   PessoaJuridicaResponseDTO,
   PrestadorResponseDTO,
-  updateSalarioFuncionarioDTO,
+  UpdateSalarioFuncionarioDTO,
+  UpdateValorHoraDiaristaDTO,
 } from "./pessoa.dto";
 import Cliente from "../../shared/domain/pessoa/cliente/cliente.entity";
 import Fornecedor from "../../shared/domain/pessoa/fornecedor/fornecedor.entity";
 import Funcionario from "../../shared/domain/pessoa/funcionario/funcionario.entity";
+import Diarista from "../../shared/domain/pessoa/diarista/diarista.entity";
 import Meeiro from "../../shared/domain/pessoa/meeiro/meeiro.entity";
 import Prestador from "../../shared/domain/pessoa/prestadordeservico/prestador.entity";
 import PessoaFisica from "../../shared/domain/pessoa/pessoafisica.entity";
@@ -44,6 +49,7 @@ class PessoaService {
     private readonly meeiroRepo: MeeiroRepo,
     private readonly prestadorRepo: PrestadorRepo,
     private readonly pessoaRepo: PessoaRepo,
+    private readonly diaristaRepo: DiaristaRepo,
   ) { }
 
   private extrairNomeAlvo(dados: CreatePessoaDTO): string {
@@ -179,6 +185,12 @@ class PessoaService {
     return await this.funcionarioRepo.salvarComTransacao(funcionario);
   }
 
+  public async cadastrarDiarista(dto: CreateDiaristaDTO) {
+    const pessoaBase = await this.construirPessoaBaseValidada(dto, "diarista");
+    const diarista = new Diarista(pessoaBase, dto.valorHora);
+    return await this.diaristaRepo.salvarComTransacao(diarista);
+  }
+
   public async cadastrarMeeiro(dto: CreateMeeiroDTO) {
     const pessoaBase = await this.construirPessoaBaseValidada(dto, "meeiro");
     return await this.meeiroRepo.salvarComTransacao(new Meeiro(pessoaBase));
@@ -205,6 +217,14 @@ class PessoaService {
       ...this.mapearParaPessoaFisicaDTO(funcionario.pessoa),
       ctps: funcionario.ctps,
       salario: funcionario.salario,
+    };
+  }
+
+  public async buscarDiaristaPorId(idDiarista: number, idUsuarioSessao: number): Promise<DiaristaResponseDTO> {
+    const diarista = this.validarPosseDePapel(await this.diaristaRepo.buscarPorId(idDiarista), idUsuarioSessao);
+    return {
+      ...this.mapearParaPessoaFisicaDTO(diarista.pessoa),
+      valorHora: diarista.valorHora,
     };
   }
 
@@ -252,6 +272,23 @@ class PessoaService {
     return { dados };
   }
 
+  public async buscarDiaristasPorIdAdministrador(
+    idAdministrador: number
+  ): Promise<{ dados: DiaristaResponseDTO[] }> {
+    const resultado = await this.diaristaRepo.listarDiaristas(idAdministrador);
+    if (!resultado || !Array.isArray(resultado.dados)) return { dados: [] };
+
+    const dados = resultado.dados.map((item) => {
+      if (!(item instanceof Diarista)) throw new Error("ERRO_AO_BUSCAR");
+      return {
+        ...this.mapearParaPessoaFisicaDTO(item.pessoa),
+        valorHora: item.valorHora,
+      };
+    });
+
+    return { dados };
+  }
+
   public async buscarClientesPorIdAdministrador(idAdministrador: number): Promise<{ dados: ClienteResponseDTO[] }> {
     const resultado = await this.clienteRepo.buscarClientesPorAdministrador(idAdministrador);
     if (!resultado || !Array.isArray(resultado.dados)) return { dados: [] };
@@ -292,7 +329,7 @@ class PessoaService {
     };
   }
 
-  public async atualizarFuncionarioSalario(dto: updateSalarioFuncionarioDTO, idUsuarioSessao: number) {
+  public async atualizarFuncionarioSalario(dto: UpdateSalarioFuncionarioDTO, idUsuarioSessao: number) {
     const funcionario = this.validarPosseDePapel(await this.funcionarioRepo.buscarPorId(dto.id), idUsuarioSessao);
     funcionario.salario = dto.salario;
 
@@ -301,6 +338,15 @@ class PessoaService {
     return resultado;
   }
 
+  public async atualizarDiaristaValorHora(dto: UpdateValorHoraDiaristaDTO, idUsuarioSessao: number) {
+    const diarista = this.validarPosseDePapel(await this.diaristaRepo.buscarPorId(dto.id), idUsuarioSessao);
+    diarista.valorHora = dto.valorHora;
+
+    const atualizado = await this.diaristaRepo.atualizarValorHora(dto.id, diarista.valorHora);
+    if (!atualizado) throw new Error("NAO_ATUALIZADO");
+    return atualizado;
+  }
+  
   public async cadastrarEnderecoPessoaGenerica(
     pessoaId: number,
     enderecoData: Endereco,
@@ -427,6 +473,11 @@ class PessoaService {
   public async excluirFuncionario(dto: ExcluirPessoaDTO, idUsuarioSessao: number): Promise<void> {
     const funcionario = this.validarPosseDePapel(await this.funcionarioRepo.buscarPorId(dto.id), idUsuarioSessao);
     await this.funcionarioRepo.excluir(funcionario);
+  }
+
+  public async excluirDiarista(dto: ExcluirPessoaDTO, idUsuarioSessao: number): Promise<void> {
+    const diarista = this.validarPosseDePapel(await this.diaristaRepo.buscarPorId(dto.id), idUsuarioSessao);
+    await this.diaristaRepo.excluir(diarista);
   }
 
   public async excluirMeeiro(dto: ExcluirPessoaDTO, idUsuarioSessao: number): Promise<void> {

@@ -145,9 +145,6 @@ class FuncionarioRepository {
           where: { idPeFisica_PFK: funcionario.pessoa.id! }
         });
         await this.pessoaRepo.excluirPessoa(funcionario.pessoa, tx);
-        if (!await this.pessoaRepo.removerEndereco(funcionario.pessoa.id!, tx)) {
-          throw new Error("ERRO_REMOVER_ENDERECO");
-        }
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {

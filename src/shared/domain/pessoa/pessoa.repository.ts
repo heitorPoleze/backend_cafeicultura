@@ -13,6 +13,7 @@ const pessoaInclude = {
   pessoasjuridicas: true,
   enderecos: true,
   funcionarios: true,
+  diaristas: true,
 } satisfies Prisma.pessoasInclude;
 
 type PessoaPayload = Prisma.pessoasGetPayload<{
@@ -28,6 +29,7 @@ const searchPessoas = {
   fornecedores: true,
   clientes: true,
   meeiros: true,
+  diaristas: true,
 } satisfies Prisma.pessoasInclude;
 
 type PessoaSearchPayload = Prisma.pessoasGetPayload<{
@@ -145,6 +147,8 @@ class PessoaRepository {
         return { meeiros: { isNot: null } };
       case "prestadordeservico":
         return { prestadoresdeservico: { isNot: null } };
+      case "diarista":
+        return { diaristas: { isNot: null } };
     }
   }
 
@@ -286,10 +290,28 @@ class PessoaRepository {
     });
   }
 
-  public async excluirPessoa(pessoa: PessoaBase, tx: Prisma.TransactionClient): Promise<void> {
+public async excluirPessoa(pessoa: PessoaBase, tx: Prisma.TransactionClient): Promise<void> {
+    if (!pessoa.id) {
+      throw new Error("ID_INVALIDO");
+    }
+
+    const enderecoId = await this.resolverIdEnderecoDaPessoa(pessoa.id, tx);
+
     await tx.pessoas.delete({
       where: { idPessoa_PK: pessoa.id },
     });
+
+    if (enderecoId) {
+      const [outrasPessoas, armazensCount, propriedadesCount] = await Promise.all([
+        tx.pessoas.count({ where: { idEndereco_FK: enderecoId } }),
+        tx.armazens.count({ where: { idEndereco_FK: enderecoId } }),
+        tx.propriedades.count({ where: { idEndereco_FK: enderecoId } }),
+      ]);
+
+      if (outrasPessoas === 0 && armazensCount === 0 && propriedadesCount === 0) {
+        await tx.enderecos.delete({ where: { idEndereco_PK: enderecoId } });
+      }
+    }
   }
 
   private async resolverIdEnderecoDaPessoa(pessoaId: number, tx?: Prisma.TransactionClient): Promise<number | null> {
@@ -401,6 +423,7 @@ class PessoaRepository {
     if (this.temRelacaoAtiva(p.meeiros)) return "meeiro";
     if (this.temRelacaoAtiva(p.fornecedores)) return "fornecedor";
     if (this.temRelacaoAtiva(p.prestadoresdeservico)) return "prestadordeservico";
+    if (this.temRelacaoAtiva(p.diaristas)) return "diarista";
     return null;
   }
 

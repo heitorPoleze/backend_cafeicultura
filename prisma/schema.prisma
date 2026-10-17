@@ -188,7 +188,7 @@ model fornecedores {
 }
 
 model funcionarios {
-  idPeFisica_PFK Int      @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
+  idPeFisica_PFK Int      @id @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
   ctps           String?  @db.VarChar(14)
   salario        Decimal? @db.Decimal(10, 2)
   pessoasfisicas pessoas  @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_funcionario")
@@ -261,8 +261,9 @@ model pessoas {
   idPessoa_PK           Int                     @id @unique(map: "idPessoa_PK_UNIQUE") @default(autoincrement()) @db.UnsignedInt
   idAdministrador_FK    Int?                    @db.UnsignedInt
   idEndereco_FK         Int?                    @db.UnsignedInt
-  dataCadastro          DateTime                @unique(map: "dataCadastro_UNIQUE") @db.DateTime(0)
+  dataCadastro          DateTime                @db.DateTime(0)
   clientes              clientes?
+  diaristas             diaristas?
   fornecedores          fornecedores?
   funcionarios          funcionarios?
   meeiros               meeiros?
@@ -445,7 +446,7 @@ model transacoesfinanceiras {
   idPropriedade_FK         Int          @db.UnsignedInt
   idFormaPgto_FK           Int          @db.UnsignedInt
   idPessoa_FK              Int          @db.UnsignedInt
-  dataHora                 DateTime     @unique(map: "dataHora_UNIQUE") @db.DateTime(0)
+  dataHora                 DateTime     @db.DateTime(0)
   valor                    Decimal      @db.Decimal(10, 2)
   tipoOperacao             String       @db.VarChar(9)
   despesas                 despesas?
@@ -594,4 +595,10 @@ model estoquesacas {
   idSafra          Int   @db.UnsignedInt
   idTipoCafe       Int   @db.UnsignedInt
   quantidade       Float
+}
+
+model diaristas {
+  idPeFisica_PFK Int      @id @unique(map: "idPeFisica_PFK_UNIQUE") @db.UnsignedInt
+  valorHora      Decimal? @db.Decimal(10, 2)
+  pessoasfisicas pessoas  @relation(fields: [idPeFisica_PFK], references: [idPessoa_PK], onDelete: NoAction, onUpdate: NoAction, map: "pessoa_diarista")
 }

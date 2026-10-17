@@ -91,9 +91,6 @@ class MeeiroRepository {
           where: { idPeFisica_PFK: meeiro.pessoa.id! }
         });
         await this.pessoaRepo.excluirPessoa(meeiro.pessoa, tx);
-        if (!await this.pessoaRepo.removerEndereco(meeiro.pessoa.id!, tx)) {
-          throw new Error("ERRO_REMOVER_ENDERECO");
-        }
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {

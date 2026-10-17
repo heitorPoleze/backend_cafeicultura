@@ -6,6 +6,7 @@ import {
   CreateClienteDTO,
   CreateFornecedorDTO,
   CreateFuncionarioDTO,
+  CreateDiaristaDTO,
   CreateMeeiroDTO,
   CreatePrestadorDTO,
   ExcluirPessoaDTO,
@@ -24,6 +25,7 @@ class PessoaController {
     cliente: "Cliente",
     fornecedor: "Fornecedor",
     funcionario: "Funcionário",
+    diarista: "Diarista",
     meeiro: "Meeiro",
     prestadordeservico: "Prestador de Serviço",
   };
@@ -174,6 +176,14 @@ class PessoaController {
       "funcionário",
     );
   }
+  public async cadastrarDiarista(req: Request, res: Response) {
+    return this.executarCadastro(
+      req,
+      res,
+      (dados: CreateDiaristaDTO) => this.service.cadastrarDiarista(dados),
+      "diarista",
+    );
+  }
 
   public async cadastrarMeeiro(req: Request, res: Response) {
     return this.executarCadastro(
@@ -224,6 +234,39 @@ class PessoaController {
     }
   }
 
+  public async atualizarDiaristaValorHora(req: Request, res: Response) {
+    const erroValidacao = this.obterErroValidacao(req, res);
+    if (erroValidacao) return erroValidacao;
+
+    try {
+      await this.service.atualizarDiaristaValorHora(
+        {
+          id: Number(req.params.id),
+          valorHora: Number(req.body.valorHora),
+        },
+        req.session.idUsuario!,
+      );
+
+      return res.status(204).send();
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        switch (error.message) {
+          case "NAO_ENCONTRADO":
+            return res.status(404).json({ error: "Diarista não encontrado" });
+          case "ACESSO_NEGADO":
+            return res.status(403).json({ error: "Acesso negado! Não pode atualizar valor/hora" });
+          case "VALOR_HORA_INVALIDO":
+            return res.status(400).json({ error: "O valor da hora não pode ser negativo" });
+          case "NAO_ATUALIZADO":
+            return res.status(500).json({ error: "Erro ao atualizar valor/hora" });
+          default:
+            return res.status(500).json({ error: error.message });
+        }
+      }
+      return res.status(500).json({ error: "Erro ao atualizar valor/hora" });
+    }
+  }
+
   public async buscarClientePorId(req: Request, res: Response) {
     return this.executarBusca(
       res,
@@ -248,6 +291,14 @@ class PessoaController {
     );
   }
 
+  public async buscarDiaristaPorId(req: Request, res: Response) {
+    return this.executarBusca(
+      res,
+      () => this.service.buscarDiaristaPorId(Number(req.params.id), req.session.idUsuario!),
+      "Diarista",
+    );
+  }
+
   public async buscarMeeiroPorId(req: Request, res: Response) {
     return this.executarBusca(
       res,
@@ -269,6 +320,14 @@ class PessoaController {
       res,
       () => this.service.buscarFuncionariosPorIdAdministrador(req.session.idUsuario!),
       "Funcionário",
+    );
+  }
+
+  public async buscarDiaristasPorIdAdministrador(req: Request, res: Response) {
+    return this.executarBusca(
+      res,
+      () => this.service.buscarDiaristasPorIdAdministrador(req.session.idUsuario!),
+      "Diarista",
     );
   }
 
@@ -549,6 +608,16 @@ class PessoaController {
       (dto, idUsuario) => this.service.excluirFuncionario(dto, idUsuario),
       "Funcionário",
       "FUNCIONARIO_POSSUI_ASSOCIACOES",
+    );
+  }
+
+  public async excluirDiarista(req: Request, res: Response) {
+    return this.executarExclusao(
+      req,
+      res,
+      (dto, idUsuario) => this.service.excluirDiarista(dto, idUsuario),
+      "Diarista",
+      "DIARISTA_POSSUI_ASSOCIACOES",
     );
   }
 

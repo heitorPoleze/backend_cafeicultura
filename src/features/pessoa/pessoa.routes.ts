@@ -7,6 +7,7 @@ import { prisma } from "../../shared/config/database";
 import ClienteRepo from "../../shared/domain/pessoa/cliente/cliente.repository";
 import FornecedorRepo from "../../shared/domain/pessoa/fornecedor/fornecedor.repository";
 import FuncionarioRepo from "../../shared/domain/pessoa/funcionario/funcionario.repository";
+import DiaristaRepo from "../../shared/domain/pessoa/diarista/diarista.repository";
 import MeeiroRepo from "../../shared/domain/pessoa/meeiro/meeiro.repository";
 import PrestadorRepo from "../../shared/domain/pessoa/prestadordeservico/prestador.repository";
 import PessoaRepo from "../../shared/domain/pessoa/pessoa.repository";
@@ -20,6 +21,7 @@ const pessoaRepo = new PessoaRepo(prisma);
 const clienteRepo = new ClienteRepo(prisma, pessoaRepo);
 const fornecedorRepo = new FornecedorRepo(prisma, pessoaRepo);
 const funcionarioRepo = new FuncionarioRepo(prisma, pessoaRepo);
+const diaristaRepo = new DiaristaRepo(prisma, pessoaRepo);
 const meeiroRepo = new MeeiroRepo(prisma, pessoaRepo);
 const prestadorRepo = new PrestadorRepo(prisma, pessoaRepo);
 
@@ -30,6 +32,7 @@ const pessoaService = new PessoaService(
   meeiroRepo,
   prestadorRepo,
   pessoaRepo,
+  diaristaRepo,
 );
 
 const pessoaController = new PessoaController(pessoaService);
@@ -123,6 +126,14 @@ const validarCriacaoFuncionario = [
     .withMessage("O salário deve ser um valor numérico maior que zero"),
 ];
 
+const validarCriacaoDiarista = [
+  ...validarCriacaoPessoaFisica,
+  body("valorHora")
+    .optional({ checkFalsy: true })
+    .isFloat({ min: 0 })
+    .withMessage("O valorHora deve ser um valor numérico maior ou igual a zero"),
+];
+
 const validarAtualizacaoPessoa = [
   param("id")
     .isInt({ gt: 0 })
@@ -170,6 +181,11 @@ router.get(
   "/funcionarios",
   exigeLogin(),
   pessoaController.buscarFuncionarioPorIdAdministrador.bind(pessoaController),
+);
+router.get(
+  "/diaristas",
+  exigeLogin(),
+  pessoaController.buscarDiaristasPorIdAdministrador.bind(pessoaController)
 );
 router.get(
   "/meeiros",
@@ -286,6 +302,39 @@ router.delete(
   exigeLogin(),
   [param("id").isInt().withMessage("O ID deve ser um número inteiro")],
   pessoaController.excluirFuncionario.bind(pessoaController),
+);
+
+router.post(
+  "/diaristas",
+  exigeLogin(),
+  validarCriacaoDiarista,
+  pessoaController.cadastrarDiarista.bind(pessoaController)
+);
+router.get(
+  "/diaristas/:id",
+  exigeLogin(),
+  [param("id").isInt({ gt: 0 }).withMessage("O ID deve ser um número inteiro válido")],
+  pessoaController.buscarDiaristaPorId.bind(pessoaController)
+);
+router.patch(
+  "/diaristas/:id/valor-hora",
+  exigeLogin(),
+  [
+    param("id").isInt({ gt: 0 }).withMessage("O ID deve ser um número inteiro válido"),
+    body("valorHora")
+      .notEmpty()
+      .withMessage("O campo valorHora é obrigatório")
+      .bail()
+      .isFloat({ gt: 0 })
+      .withMessage("O valor da hora deve ser um número maior que zero"),
+  ],
+  pessoaController.atualizarDiaristaValorHora.bind(pessoaController)
+);
+router.delete(
+  "/diaristas/:id",
+  exigeLogin(),
+  [param("id").isInt({ gt: 0 }).withMessage("O ID deve ser um número inteiro válido")],
+  pessoaController.excluirDiarista.bind(pessoaController)
 );
 
 router.post(
