@@ -111,7 +111,8 @@ class SafraController {
 
     try {
       const id = Number(req.params.id);
-      const safraReativada = await this.safraService.reativarSafra(id);
+      const idUsuario = req.session.idUsuario!;
+      const safraReativada = await this.safraService.reativarSafra(id, idUsuario);
       return res.status(200).json(safraReativada);
 
     } catch (error: unknown) {
@@ -120,6 +121,8 @@ class SafraController {
           return res.status(403).json({ error: 'Acesso negado! Não foi possível reativar safra' });
         } else if (error.message === 'NAO_ENCONTRADA') {
           return res.status(404).json({ error: 'Safra não encontrada' });
+        } else if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
+          return res.status(404).json({ error: 'Propriedade da safra não encontrada' });
         } else if (error.message === 'DUAS_ATIVAS') {
           return res.status(422).json({ error: 'Propriedade possui duas safras ativas' });
         }

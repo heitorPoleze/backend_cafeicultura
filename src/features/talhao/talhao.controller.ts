@@ -166,8 +166,8 @@ export class TalhaoController {
       try {
         const idTalhao = Number(req.params.id);
         const novaDataInicio = new Date(req.body.dataInicio);
-
-        await this.talhaoService.editarDataInicio(idTalhao, novaDataInicio);
+        const idUsuario = req.session.idUsuario!;
+        await this.talhaoService.editarDataInicio(idTalhao, novaDataInicio,idUsuario);
         res.status(200).json({ message: 'Data de início do talhão atualizada com sucesso' });
       } catch (error: unknown) {
         if (error instanceof Error) {
@@ -175,6 +175,8 @@ export class TalhaoController {
             return res.status(403).json({ error: 'Acesso negado! Não foi possível editar a data de início do talhão' });
           } else if (error.message === 'NAO_ENCONTRADO') {
             return res.status(404).json({ error: 'Talhão não encontrado' });
+          } else if (error.message === 'PROPRIEDADE_NAO_ENCONTRADA') {
+            return res.status(404).json({ error: 'Propriedade não encontrada' });
           }
             else if (error.message === 'ERRO_DATA_CONFLITANTE') {
               return res.status(409).json({ error: 'Já existem atividades que ocorreram nesse talhão em datas anteriores' });

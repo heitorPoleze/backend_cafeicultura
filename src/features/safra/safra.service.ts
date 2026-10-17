@@ -119,14 +119,18 @@ export class SafraService {
     });
   }
 
-  public async reativarSafra(idSafra: number, idPropriedadeRequisicao?: number): Promise<SafraRespostaDTO> {
+  public async reativarSafra(idSafra: number, idUsuarioSessao: number): Promise<SafraRespostaDTO> {
     return await this.prisma.$transaction(async (tx) => {
-      const safraAlvo = await this.safraRepository.buscarPorId(idSafra);
+      const safraAlvo = await this.safraRepository.buscarPorId(idSafra, tx);
 
       if (!safraAlvo) {
         throw new Error("NAO_ENCONTRADA");
       }
-      if (idPropriedadeRequisicao && safraAlvo.idPropriedade !== idPropriedadeRequisicao) {
+      const propriedade = await this.propriedadeRepo.buscarPorId(safraAlvo.idPropriedade, tx);
+      if (!propriedade) {
+        throw new Error("PROPRIEDADE_NAO_ENCONTRADA");
+      }
+      if (propriedade.idProprietario !== idUsuarioSessao) {
         throw new Error("ACESSO_NEGADO");
       }
       const totalAtivas = await this.safraRepository.contarSafrasAtivas(

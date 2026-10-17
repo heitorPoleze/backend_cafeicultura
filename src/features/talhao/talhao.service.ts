@@ -149,10 +149,17 @@ class TalhaoService {
       talhoes: resultado.dados
     };
   }
-  public async editarDataInicio(idTalhao: number, novaDataInicio: Date): Promise<void> {
+  public async editarDataInicio(idTalhao: number, novaDataInicio: Date, idUsuarioSessao: number): Promise<void> {
     const talhao = await this.repository.buscarPorId(idTalhao);
     if (!talhao) {
       throw new Error('NAO_ENCONTRADO');
+    }
+    const propriedade = await this.propriedadeRepo.buscarPorId(talhao.idPropriedade);
+    if (!propriedade) {
+      throw new Error('PROPRIEDADE_NAO_ENCONTRADA');
+    }
+    if (propriedade.idProprietario !== idUsuarioSessao) {
+      throw new Error('ACESSO_NEGADO');
     }
     await this.repository.editarDataInicio(talhao, novaDataInicio);
 };
